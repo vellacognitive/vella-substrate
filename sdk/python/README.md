@@ -38,6 +38,12 @@ result = govern(
 print(result["proof_bundle"]["kind"])  # vella_proof_bundle_v1
 ```
 
+## When to use this SDK
+
+This SDK runs VELLA in-process inside your Python application. It is the right choice for agent tool-call hooks, CI/CD gating, edge compute, research notebooks, batch processing, and any context where microsecond-latency adjudication is needed without a separate service.
+
+For enterprise service mesh, polyglot environments (Go, Java, .NET), Kubernetes admission control, or multi-tenant deployments, a different VELLA component (the runtime service or sidecar adapter) is the better fit. See the full [deployment scope](../../DEPLOYMENT.md) in the repository root.
+
 ## API
 
 - `govern(intent, evidence_mask, authority_scope=None, policy_version=None, proof_signing_key=None)`
