@@ -1,71 +1,75 @@
 # VELLA Interface Control Document
-**Version:** v1.2  
-**Status:** Authoritative  
-**Issuer:** Vella Cognitive, LLC  
-**Contact:** agent@vellacognitive.com  
+
+**Version:** v1.3
+**Status:** Authoritative
+**Issuer:** Vella Cognitive, LLC
+**Contact:** agent@vellacognitive.com
 **Repository:** github.com/vellacognitive/vella-substrate
 
 ---
 
 ## 1. Purpose and Scope
 
-This document defines the canonical interface between VELLA and external systems. It is the authoritative normative reference for all integrators, system architects, and compliance reviewers. The machine-readable schema companion to this document is `spec/schemas/icd.json`.
+This document defines the canonical interface between the VELLA embedded SDK and external systems. It is the authoritative normative reference for integrators, system architects, and compliance reviewers working with the SDK published in this repository. The machine-readable schema companion to this document is `spec/schemas/icd.json`.
 
-**This document covers:**
+**Scope of this document.** This ICD specifies the in-process interface exposed by the embedded SDK (`sdk/node/` and `sdk/python/`). Specifically:
+
 - The decision lifecycle from intent submission through proof issuance
-- The trust boundary between VELLA and calling systems
-- Enforcement obligations of the caller
-- Verification procedures for decision authenticity
-- Transport and authentication guidance
+- The trust boundary between VELLA and calling applications
+- Enforcement obligations of the calling application
+- Verification procedures for proof bundle authenticity
 - Error and failure semantics
 - Version compatibility policy
 
-**This document does not cover:**
-- Internal VELLA policy engine implementation
-- Caller-side mission logic or action execution
+**Out of scope.** This document does not cover:
+
+- The commercial VELLA runtime and sidecar (HTTP/gRPC interfaces, deployment topology, transport security) — those are licensed separately and documented separately
+- Internal evaluator implementation
+- Calling-application mission logic or action execution
 - Policy authoring or scenario configuration
 
-> **v1 Policy Note:** In v1, the decision policy is compiled at startup from
-> a policy object defined in the runtime. The default policy (`min-v1`) supports
-> three intents: `EXECUTE_CHANGE`, `ESCALATE_PRIVILEGE`, and `DATA_EXPORT`.
-> Custom policy sets are deployed by providing a custom policy object at
-> runtime initialization. A runtime policy API is planned for a future version.
+**SDK vs. commercial runtime.** VELLA exists in two deployment forms. The embedded SDK in this repository runs in-process, as a library imported into a Node.js or Python application. The commercial runtime (not published here) runs as a standalone service with HTTP and gRPC surfaces, persistence, and multi-tenant operation. Both forms produce and accept the same proof bundle format, verifiable with the same tools in `verify/`. The interface defined in this ICD applies to the SDK. See `DEPLOYMENT.md` for guidance on when each form is appropriate.
+
+**v1 Policy Note.** In v1, the SDK compiles its decision policy at module initialization. The default policy (`min-v1`) supports three intents: `EXECUTE_CHANGE`, `ESCALATE_PRIVILEGE`, and `DATA_EXPORT`. Custom policy sets are deployed by constructing a custom evaluator with an application-supplied policy object. A runtime policy-reload mechanism is planned for a future version.
 
 ---
 
 ## 2. Version History
 
 | Version | Status | Notes |
-|---------|--------|-------|
+|---|---|---|
 | v0 | Pre-release (deprecated) | Schema artifact from internal development. Do not use in integration. |
-| v1.0 | Superseded | Initial authoritative release. Superseded by v1.1. |
-| v1.1 | Superseded | Added error semantics, transport/auth guidance, concurrency guidance, proof retrieval spec. |
-| v1.2 | Current — Authoritative | DecisionResponse fields aligned with runtime (outcome→decision, rationale→reason_code). Envelope property added. All production integrations target v1. |
+| v1.0 | Superseded | Initial authoritative release. |
+| v1.1 | Superseded | Added error semantics and proof retrieval specification. |
+| v1.2 | Superseded | DecisionResponse fields aligned with current implementation. |
+| v1.3 | **Current — Authoritative** | Scoped to the embedded SDK interface. Runtime-specific sections moved to the commercial-runtime documentation set. All production SDK integrations target v1. |
 
-The `$id` field in `spec/schemas/icd.json` is canonicalized to `v1` as of this release. Any prior reference to `vella://contracts/v0/...` schema identifiers should be treated as pre-release and non-binding.
+The `$id` field in `spec/schemas/icd.json` is canonicalized to v1 as of this release. Any prior reference to `vella://contracts/v0/...` schema identifiers should be treated as pre-release and non-binding.
 
 ---
 
 ## 3. Trust Boundary
 
-VELLA is a **pre-execution decision authority**. Its role in the integration is precisely bounded:
+The VELLA SDK is a pre-execution decision authority. Its role in the integration is precisely bounded:
 
 **VELLA is responsible for:**
-- Evaluating an `IntentRequest` against the applicable policy set
-- Issuing a cryptographically signed `DecisionResponse`
-- Producing a tamper-evident proof bundle for audit
 
-**The caller is responsible for:**
+- Evaluating an intent against the compiled policy
+- Issuing a deterministic decision with a reason code
+- Producing a cryptographically signed proof bundle when signing is enabled
+
+**The calling application is responsible for:**
+
 - Halting proposed action execution on `DENIED`
-- Proceeding with or abandoning proposed action on `ALLOWED` (caller's discretion)
-- Maintaining integrity of the `IntentRequest` prior to submission
-- Storing and producing proof bundles upon audit request
+- Proceeding with or abandoning proposed action on `ALLOWED` (application's discretion)
+- Maintaining integrity of the intent parameters prior to the SDK call
+- Persisting proof bundles wherever the application requires them for audit
 
-**Enforcement obligation — DENIED:**  
-A `DENIED` outcome is a **mandatory halt**. The calling system must not execute the proposed action. There is no override, retry, or escalation path within the VELLA interface. If the calling system executes a denied action, that execution is outside the VELLA decision chain and unattested.
+**Enforcement obligation — `DENIED`:**
+A `DENIED` outcome is a mandatory halt. The calling application must not execute the proposed action. There is no override, retry, or escalation path within the VELLA interface. If the calling application executes a denied action, that execution is outside the VELLA decision chain and unattested.
 
-**Enforcement obligation — ALLOWED:**  
-An `ALLOWED` outcome is an authorization finding, not a command. VELLA authorizes; the caller decides whether to proceed. The caller owns execution.
+**Enforcement obligation — `ALLOWED`:**
+An `ALLOWED` outcome is an authorization finding, not a command. VELLA authorizes; the calling application decides whether to proceed. The calling application owns execution.
 
 This boundary is the foundation of VELLA's audit model: every action taken under VELLA's authority is traceable to a specific decision, and every denial is enforceable by inspection of the proof record.
 
@@ -73,123 +77,83 @@ This boundary is the foundation of VELLA's audit model: every action taken under
 
 ## 4. Decision Lifecycle
 
-The complete interface flow from intent to proof:
+The complete interface flow, from intent to proof:
 
 ```
-Caller                          VELLA
-  |                               |
-  |--- IntentRequest ------------>|
-  |    (intent, proposed,         |
-  |     evidence, authority)      |
-  |                               |--- evaluate against policy
-  |                               |--- sign response
-  |<-- DecisionResponse ----------|
-  |    (decision, reason_code,    |
-  |     envelope, trace)          |
-  |                               |
-  |  [if DENIED: halt execution]  |
-  |  [if ALLOWED: caller decides] |
-  |                               |
-  |--- request proof bundle ----->|
-  |<-- ProofBundle ---------------|
-  |    (envelope_id, hash,        |
-  |     signature, urls)          |
-  |                               |
-  |  [store proof for audit]      |
+Application                                   VELLA SDK
+  |                                                |
+  |--- govern({intent, evidenceMask, ...}) ------->|
+  |                                                |--- evaluate against compiled policy
+  |                                                |--- build envelope
+  |                                                |--- sign (if signing key provided)
+  |<-- { decision, reasonCode, latencyUs,     -----|
+  |      proofBundle? }                            |
+  |                                                |
+  |  [if DENIED: halt execution]                   |
+  |  [if ALLOWED: application decides]             |
+  |                                                |
+  |  [if proofBundle present: persist it wherever  |
+  |   the application keeps audit evidence]        |
 ```
 
-### 4.1 IntentRequest
+No network round trip occurs. The SDK call is a synchronous function invocation in the calling application's process.
 
-Submitted by the caller to initiate a decision. Defined in `spec/schemas/icd.json#/definitions/IntentRequest`.
+### 4.1 Intent parameters
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `intent` | Yes | Action intent identifier (e.g., `EXECUTE_CHANGE`) |
-| `proposed.action` | Yes | The action string the caller proposes to execute |
-| `proposed.params` | No | Structured parameters for the proposed action |
-| `evidence.sources` | No | Array of supporting evidence references |
-| `evidence.attachments` | No | Array of attached evidence objects |
-| `authority.domain` | Yes | Authority domain under which the decision is requested |
-| `authority.mode` | No | Operational mode (e.g., `live`, `exercise`, `simulation`) |
-| `authority.policySet` | No | Named policy set override; defaults to domain default |
+Parameters supplied to the SDK's `govern(...)` call.
 
-**Integrity requirement:** The caller must not modify the `IntentRequest` after submission. VELLA's proof chain is anchored to the envelope as submitted.
+| Parameter | Node key / Python key | Required | Description |
+|---|---|---|---|
+| Intent | `intent` / `intent` | Yes | Action intent identifier (e.g., `EXECUTE_CHANGE`) |
+| Evidence mask | `evidenceMask` / `evidence_mask` | Yes | Bitmask asserting which evidence types the application has satisfied. See §4.4 for bit definitions. |
+| Authority scope | `authorityScope` / `authority_scope` | No | Named scope in the compiled policy; defaults to the policy's declared `defaultScope` |
+| Policy version | `policyVersion` / `policy_version` | No | Must match the compiled policy's version string; if omitted, the compiled version is used |
+| Proof signing | `proof.signingKey` / `proof_signing_key` | No | PEM-encoded private key. If provided, a signed proof bundle is included in the result. |
 
-### 4.2 DecisionResponse
+**Integrity requirement.** The calling application must not modify the intent parameters after the `govern(...)` call returns. VELLA's proof chain is anchored to the envelope constructed from the parameters as submitted.
 
-Returned by VELLA synchronously upon evaluation. Defined in `spec/schemas/icd.json#/definitions/DecisionResponse`.
+### 4.2 Decision result
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `decision` | Yes | `ALLOWED` or `DENIED` — the enforcement decision |
-| `reason_code` | No | Machine-readable reason code for the decision (e.g., `POLICY_SATISFIED`, `E_EVIDENCE_MISSING`) |
-| `envelope` | No | Signed proof envelope, present when signing is enabled |
-| `trace.id` | No | Trace identifier for correlation with proof bundle |
-| `trace.at` | No | ISO 8601 timestamp of decision issuance |
+Returned by the SDK synchronously.
 
-**`decision` is the only field with enforcement weight.** `reason_code` is informational and must not be used as the basis for appeal or override.
+| Field | Node key / Python key | Present | Description |
+|---|---|---|---|
+| Decision | `decision` / `decision` | Always | `ALLOWED` or `DENIED` — the enforcement outcome |
+| Reason code | `reasonCode` / `reason_code` | Always | Machine-readable reason for the decision (see §5.2) |
+| Latency | `latencyUs` / `latency_us` | Always | Microsecond latency of the `govern(...)` call |
+| Proof bundle | `proofBundle` / `proof_bundle` | When signing key provided | Signed proof record (see §4.3) |
+| Proof error | `proofError` / `proof_error` | When signing failed | Diagnostic string; `proofBundle` will be absent |
+
+Only `decision` has enforcement weight. `reasonCode` is informational and must not be used as the basis for appeal or override.
 
 ### 4.3 Proof Bundle
 
-Issued by VELLA following a decision. Defined in `spec/schemas/proof.json`.
+Returned as part of the decision result when a signing key is provided. Defined in `spec/schemas/proof.json`.
 
-The proof bundle is the tamper-evident record of the decision. It includes the `envelope_id`, `envelope_hash`, cryptographic `signature`, and retrieval URLs for audit access. The `sha256_bundle` field is the authoritative hash of the complete bundle.
+The proof bundle is the tamper-evident record of the decision. It includes the `envelope_id`, `envelope_hash`, cryptographic signature, and `sha256_bundle` — the authoritative hash of the complete bundle. All fields are deterministic functions of the intent parameters and the signing key.
 
-**Proof Bundle Retrieval**
+**Persistence.** The SDK does not persist proof bundles. The calling application is responsible for writing bundles to whatever storage its audit regime requires (file, database, object store, append-only log). Applications operating in regulated or defense environments must persist the complete proof bundle at decision time.
 
-Proof bundles are retrievable via three endpoints on the VELLA runtime:
+**Retention.** The calling application must retain proof bundles for the duration required by its applicable records retention policy.
 
-| Endpoint | Description |
-|----------|-------------|
-| `GET /sdk/v1/proof/:envelope_id` | Machine-readable JSON proof bundle. Suitable for automated audit workflows. |
-| `GET /sdk/v1/proof/:envelope_id/view` | Human-readable HTML decision record. |
-| `GET /sdk/v1/proofs` | Listing of the 20 most recent proof bundles. |
+### 4.4 Evidence Mask
 
-Callers operating in regulated or defense environments MUST store the complete proof bundle locally at decision time. Do not rely on endpoint retrieval as the primary audit mechanism.
+The `evidenceMask` parameter is an unsigned integer bitmask asserting which classes of evidence the calling application has satisfied prior to the decision request. Bit definitions in the default policy:
 
-**Retention:** Callers operating in regulated or defense environments must retain proof bundles for the duration required by their applicable records retention policy. VELLA does not guarantee long-term storage of proof records accessible via `console_url` or `inspect_url`.
+| Bit | Value | Evidence class |
+|---|---|---|
+| 0 | 1 | `AUTHN` — principal authentication established |
+| 1 | 2 | `AUTHZ` — authorization decision attached |
+| 2 | 4 | `FRESHNESS` — evidence is within its freshness window |
+| 3 | 8 | `ATTESTATION` — platform or artifact attestation present |
 
-### 4.4 Export Evidence
+Custom policies may define additional bits, subject to integer width.
 
-The export evidence schema (`spec/schemas/export.json`) defines the flat evidence record format. An export is a snapshot of a decision event suitable for transmission to external audit systems. The `ok` field indicates whether the export completed successfully; `external_effects` indicates whether the decision had effects beyond the VELLA boundary.
+The calling application is responsible for establishing the truth of each bit it asserts. VELLA evaluates the assertion; it does not independently verify the underlying evidence.
 
----
+### 4.5 Export Evidence
 
-## 4.5 Runtime Request Mapping
-
-The `POST /sdk/v1/decision` endpoint accepts a flat JSON body. The following
-table maps ICD `IntentRequest` fields to their runtime equivalents accepted
-by the min evaluator:
-
-| IntentRequest field | Runtime field | Notes |
-|---------------------|---------------|-------|
-| `intent` | `intent_id` or `intent` or `action` | Evaluator accepts any of the three; `intent_id` is preferred |
-| `authority.domain` | `authority_scope_id` | Maps to a named scope in the compiled policy |
-| `authority.policySet` | `policy_version` | Must match the compiled policy version string (default: `min-v1`) |
-| `evidence` | `evidence_mask` | Integer bitmask; `1` = AUTHN, `2` = AUTHZ, `4` = FRESHNESS, `8` = ATTESTATION |
-| `proposed` | _(not evaluated)_ | Structural field in the IntentRequest schema; not consumed by the min evaluator in v1 |
-
-**Minimal conformant request to `POST /sdk/v1/decision`:**
-```json
-{
-  "intent_id": "EXECUTE_CHANGE",
-  "authority_scope_id": "sdk_v1_default",
-  "evidence_mask": 1,
-  "policy_version": "min-v1"
-}
-```
-
-**Response shape from the min runtime:**
-```json
-{ "decision": "ALLOWED", "reason_code": "POLICY_SATISFIED", "envelope": { ... } }
-{ "decision": "DENIED",  "reason_code": "E_EVIDENCE_MISSING", "envelope": { ... } }
-```
-
-The `decision` and `reason_code` fields match the ICD `DecisionResponse`
-schema directly. When signing is enabled, the `envelope` field contains the
-signed proof bundle. HTTP status is `200` on ALLOWED, `403` on DENIED.
-
-
+The export evidence schema (`spec/schemas/export.json`) defines a flat evidence record format suitable for transmission to external audit systems. An export is a snapshot of a decision event. The `ok` field indicates whether the export completed successfully; `external_effects` indicates whether the decision had effects beyond the VELLA boundary. Exports are produced by application-side tooling, not by the SDK itself.
 
 ---
 
@@ -197,155 +161,122 @@ signed proof bundle. HTTP status is `200` on ALLOWED, `403` on DENIED.
 
 VELLA's error model is fail-closed by design. Absence of a valid decision does not imply authorization.
 
-### 5.1 HTTP Status Codes
+### 5.1 SDK Error Model
 
-| HTTP Status | Meaning |
-|-------------|---------|
-| 200 OK | Decision issued. Inspect `decision` field for ALLOWED or DENIED. A 200 does not imply ALLOWED. |
-| 400 Bad Request | Malformed IntentRequest. Required fields missing or schema validation failed. Decision was not evaluated. Caller must fix the request before retrying. |
-| 422 Unprocessable Entity | IntentRequest is well-formed but semantically invalid (e.g., unknown intent, missing required evidence). Decision outcome is DENIED with a `reason_code`. |
-| 500 Internal Server Error | Evaluator fault. Decision was not issued. Treat as DENIED. Do not proceed with proposed action. |
-| 503 Service Unavailable | VELLA is unavailable or not ready. Decision was not issued. Treat as DENIED. Apply fallback behavior per authority context. |
+The SDK is a synchronous function call. It does not throw exceptions across the boundary to the calling application under normal error conditions. Instead, evaluator-level failures are caught internally and surfaced as `DENIED` with a specific reason code:
 
-### 5.2 Fail-Closed Guarantee
+| Condition | Behavior |
+|---|---|
+| Malformed intent parameters (missing intent, wrong types) | Returns `DENIED` with `reasonCode` = `E_INTENT_REQUIRED` or equivalent specific code |
+| Unknown intent under a scope that disallows unknowns | Returns `DENIED` with `reasonCode` = `DENY_FAST` |
+| Policy version mismatch | Returns `DENIED` with `reasonCode` = `E_POLICY_VERSION_MISMATCH` |
+| Insufficient evidence mask | Returns `DENIED` with `reasonCode` = `E_EVIDENCE_MISSING` |
+| Unexpected evaluator exception | Returns `DENIED` with `reasonCode` = `E_EVALUATOR_INTERNAL` |
+| Signing failure (signing key provided but invalid) | Returns the decision unchanged, with `proofBundle` absent and `proofError` populated |
 
-> **Critical:** In all error conditions (400, 422, 500, 503, network timeout, connection refused), the caller MUST treat the condition as DENIED and apply the deterministic fallback behavior defined for the intent. There is no implicit ALLOWED path. If VELLA cannot be reached, the proposed action must not proceed.
+**Fail-closed guarantee.** In every error path, the outcome is `DENIED`. There is no implicit `ALLOWED` route. A calling application that receives any unexpected result (missing fields, thrown exceptions from the SDK boundary) must treat the condition as `DENIED` and halt the proposed action.
 
-### 5.3 Reason Codes
+### 5.2 Reason Codes
 
-When `decision` is DENIED, the `reason_code` field contains a machine-readable reason:
-
-| Reason Code | Description |
-|-------------|-------------|
-| `POLICY_SATISFIED` | Decision is ALLOWED. All policy requirements met. |
-| `DENY_FAST` | Unknown intent or authority scope not found in policy. Default deny. |
-| `E_INTENT_REQUIRED` | No intent field in request. |
-| `E_POLICY_VERSION_MISMATCH` | Requested policy version does not match loaded policy. |
-| `E_EVIDENCE_MISSING` | Evidence mask insufficient for this intent's policy requirements. |
-| `E_EVALUATOR_INTERNAL` | Internal evaluator error. Treat as infrastructure fault. |
-
----
-
-## 6. Transport and Authentication
-
-Transport security and authentication are intentionally caller-defined in VELLA v1.
-
-### 6.1 Transport
-
-VELLA exposes a single decision endpoint:
-POST /sdk/v1/decision
-Content-Type: application/json
-
-The runtime listens on port 5000 by default. In production, a TLS-terminating reverse proxy or service mesh sidecar SHOULD be placed in front of the VELLA runtime. VELLA does not terminate TLS in v1.
-
-| Deployment Pattern | Description |
-|-------------------|-------------|
-| Kubernetes sidecar | VELLA adapter runs as a sidecar in the same pod. Calls are made over localhost. No transport encryption required within the pod boundary. |
-| Internal service tier | VELLA runs as a separate service. mTLS strongly recommended via service mesh (Istio, Linkerd) or ingress policy. |
-| Air-gapped / classified enclave | VELLA runs fully offline. Transport security enforced at enclave boundary by the integrating system. |
-
-### 6.2 Authentication
-
-VELLA v1 does not implement built-in caller authentication. Recommended patterns:
-
-- **Network-layer isolation:** Restrict access by IP allowlist or Kubernetes NetworkPolicy.
-- **API key header:** Shared secret in a request header validated by a proxy in front of VELLA.
-- **mTLS:** Client certificates validated at the TLS layer. Strongest option for regulated environments.
-
-> **Warning:** The VELLA decision endpoint must not be exposed on a public network interface without authentication controls.
+| Reason code | Decision | Meaning |
+|---|---|---|
+| `POLICY_SATISFIED` | `ALLOWED` | All policy requirements for the intent are met. |
+| `DENY_FAST` | `DENIED` | Unknown intent or unknown authority scope under fail-closed defaults. |
+| `E_INTENT_REQUIRED` | `DENIED` | Request did not include a usable intent identifier. |
+| `E_POLICY_VERSION_MISMATCH` | `DENIED` | Requested policy version does not match the compiled policy version. |
+| `E_EVIDENCE_MISSING` | `DENIED` | Evidence mask does not satisfy the intent's required-evidence mask. |
+| `E_EVALUATOR_INTERNAL` | `DENIED` | Internal evaluator error path. Treat as infrastructure fault. |
 
 ---
 
-## 7. Concurrency and Throughput
+## 6. Concurrency and Execution Model
 
-### 7.1 Request Model
+### 6.1 Call Model
 
-- Each call to `POST /sdk/v1/decision` is independent. No session, no stateful connection, no batch API in v1.
-- The evaluator is synchronous. Callers must wait for the response before proceeding with or halting the proposed action.
-- Bulk or batch decision patterns are not supported in v1. Each proposed action requires a separate decision request.
+- Each `govern(...)` call is independent. The SDK holds no session, no stateful connection, no per-caller context.
+- The evaluator is synchronous. The calling application must wait for the result before proceeding with or halting the proposed action.
+- The SDK is safe to call from multiple threads or async contexts concurrently. The evaluator is a pure function over the compiled policy and the supplied parameters.
 
-### 7.2 Performance Reference
+### 6.2 Performance Reference
 
-Observed decision adjudication latency in benchmark runs (adapter sidecar configuration):
+Observed latency in benchmark runs of the embedded SDK:
 
-| Percentile | Observed Latency |
-|------------|-----------------|
-| p50 (median) | 0.349 ms |
-| p95 | 0.851 ms |
-| p99 | 1.681 ms |
-| Max observed | 5.476 ms |
+| Measurement | Observed Latency |
+|---|---|
+| Evaluation only (warm) | 1–5 µs |
+| Evaluation only (cold, first call) | Up to ~76 µs |
+| With proof bundle generation | ~250 µs end-to-end |
 
-Figures reflect decision adjudication only and are provided as a reference baseline.
+Figures reflect in-process SDK invocation. They do not apply to the commercial runtime, which operates over a network or IPC boundary and has a different latency profile.
 
-### 7.3 Connection Pooling
+### 6.3 Retry and Idempotency
 
-For high-throughput systems, the adapter SHOULD maintain a persistent HTTP connection pool to the VELLA runtime. The runtime supports HTTP keep-alive.
+Do not implement retry-on-`DENIED` logic. A `DENIED` outcome is a policy decision, not a transient error. Retrying with identical inputs produces an identical outcome. Retry-on-`DENIED` indicates a misunderstanding of the authorization contract.
 
-> **Warning:** Do not implement retry-on-DENIED logic. A DENIED outcome is a policy decision, not a transient error. Retrying a DENIED request with identical inputs produces an identical DENIED outcome.
+`govern(...)` is idempotent with respect to policy evaluation: identical inputs produce identical `decision` and `reasonCode`. `proofBundle` fields that depend on time or UUID generation (`envelope_id`, `timestamp`, `exported_at`) will vary between calls with otherwise identical inputs.
 
-## 8. Verification Procedure
+---
 
-VELLA uses two distinct verification paths for two distinct artifacts:
+## 7. Verification Procedure
 
-| Artifact | Public Key | Tool | Purpose |
-|----------|-----------|------|---------|
-| Container image | `cosign.pub` (repo root) | `cosign verify` | Confirms the runtime image was built by Vella Cognitive |
-| Proof bundle | `examples/example-signing.pub` | `verify.sh` or `verify.js` | Confirms the decision bundle was issued by VELLA and is untampered |
+The `verify/verify.js`, `verify/verify.py`, and `verify/verify.sh` scripts are normative verification procedures for proof bundle authenticity. They are not test artifacts — they are specified interface commitments. Integrators in regulated and defense environments must run one of these procedures as part of their audit workflow.
 
-### 8.1 Proof Bundle Verification
+**Node.js verifier** (requires only Node.js built-in crypto):
 
-The `verify/verify.sh` and `verify/verify.js` scripts are **normative verification procedures** for proof bundle authenticity. They are not test artifacts — they are specified interface commitments.
-
-Integrators in regulated and defense environments must run one of these procedures as part of their audit workflow.
-
-**Shell (requires jq and openssl):**
-```bash
-verify/verify.sh <bundle.json> examples/example-signing.pub
+```
+node verify/verify.js <bundle.json> <public-key.pem>
 ```
 
-**Node.js (requires only Node.js built-in crypto):**
-```bash
-node verify/verify.js <bundle.json> examples/example-signing.pub
+**Python verifier** (requires `cryptography`):
+
+```
+python verify/verify.py <bundle.json> <public-key.pem>
 ```
 
-**Verification chain:**
-1. Obtain the proof bundle JSON for the decision under audit (from `GET /sdk/v1/proof/:envelope_id` or from the local proof store at `local proof storage/`)
-2. Retrieve `proof-signing.pub` from `github.com/vellacognitive/vella-substrate` (verify against the commit SHA in the audit record)
-3. Run `verify.sh` or `verify.js` with the proof bundle and public key
+**Shell verifier** (requires `jq` and `openssl`):
+
+```
+verify/verify.sh <bundle.json> <public-key.pem>
+```
+
+### Verification chain
+
+1. Obtain the proof bundle JSON for the decision under audit from the calling application's proof store.
+2. Obtain the public key corresponding to the signing key that produced the bundle. (For bundles signed by an integrator, the integrator manages this key. For bundles signed with the repository's example keypair, see `examples/example-signing.pub`.)
+3. Run one of the three verifiers with the proof bundle and public key as arguments.
 4. The verifier checks:
    - **Envelope hash** — SHA-256 of canonical envelope JSON matches `envelope_hash`
-   - **Signature** — ECDSA-P256 signature over `envelope_hash` is valid against `proof-signing.pub`
+   - **Signature** — ECDSA-P256 signature over `envelope_hash` is valid against the public key
    - **Bundle hash** — SHA-256 of the complete signed bundle matches `sha256_bundle`
-5. A passing verification confirms the proof bundle was issued by VELLA and has not been modified
+5. A passing verification confirms the proof bundle was issued by a signer holding the private key and has not been modified.
 
 **Verification failure** means the proof bundle cannot be relied upon. Do not treat an unverified proof bundle as an authoritative audit record.
 
-### 8.2 Container Image Verification
+### Cross-form compatibility
 
-Container image verification uses `cosign.pub` at the repository root and the `cosign verify` tool. This verifies that the runtime container image was built and published by Vella Cognitive. This is separate from proof bundle verification and uses a different key.
-
-```bash
-cosign verify --key cosign.pub <runtime-image-ref>
-```
+Proof bundles produced by the SDK and proof bundles produced by the commercial runtime use the same format and verify with the same procedures. A bundle signed by either form verifies with the verifiers in this repository.
 
 ---
 
-## 9. Compatibility and Breaking Change Policy
+## 8. Compatibility and Breaking Change Policy
 
 ### v1 Stability Commitments
 
-The following are **stable** in v1 and will not change without a major version increment:
-- `decision` field values: `ALLOWED`, `DENIED`
-- Required fields in `IntentRequest`: `intent`, `proposed`, `authority.domain`
-- Required fields in `DecisionResponse`: `decision`
-- Required fields in `ProofBundle`: all fields marked required in `proof.json`
-- The `verify.sh` interface contract (inputs, outputs, exit codes)
+The following are stable in v1 and will not change without a major version increment:
+
+- `decision` enum values: `ALLOWED`, `DENIED`
+- Required fields in the intent parameters: `intent`, `evidenceMask` / `evidence_mask`
+- Required fields in the decision result: `decision`, `reasonCode` / `reason_code`
+- Required fields in the proof bundle: all fields marked required in `spec/schemas/proof.json`
+- The verifier interface contract (inputs, outputs, exit codes)
+- The canonicalization and signing procedures that produce verifiable bundles
 
 ### Breaking Changes
 
-A breaking change is any modification that would require a caller to update their integration code or compliance posture. Breaking changes increment the major version (`v1` → `v2`) and are announced with a minimum 90-day notice period for production integrators.
+A breaking change is any modification that would require an integrator to update their integration code or compliance posture. Breaking changes increment the major version (v1 → v2) and are announced with a minimum 90-day notice period for production integrators.
 
 Breaking changes include, but are not limited to:
+
 - Removal of a required field
 - Change to `decision` enum values
 - Change to signature algorithm
@@ -354,53 +285,54 @@ Breaking changes include, but are not limited to:
 ### Non-Breaking Changes
 
 The following are non-breaking and may occur within v1:
-- Addition of optional fields to any schema
-- Addition of informational fields to `DecisionResponse`
-- Addition of retrieval URLs to proof bundles
+
+- Addition of optional parameters
+- Addition of informational fields to the decision result
+- Addition of fields to the proof bundle that do not affect verification
 - Documentation clarifications
 
 ---
 
-## 10. Schema Reference
+## 9. Schema Reference
 
 | Schema File | `$id` | Description |
-|-------------|-------|-------------|
-| `spec/schemas/icd.json` | `vella://contracts/v1/icd.json.schema.json` | Canonical interface: IntentRequest, DecisionResponse |
+|---|---|---|
+| `spec/schemas/icd.json` | `vella://contracts/v1/icd.json.schema.json` | Canonical interface contract |
 | `spec/schemas/proof.json` | `vella://contracts/v1/proof.json.schema.json` | Proof bundle structure |
 | `spec/schemas/export.json` | `vella://contracts/v1/export.json.schema.json` | Export evidence record |
 | `spec/threat-model.md` | — | Threat model and protection scope |
-| `policy/POLICY_MATRIX.md` | — | Policy authoring and custom policy deployment |
+| `spec/reason-codes.md` | — | Reason code enumeration with semantics |
+| `policy/POLICY_MATRIX.md` | — | Governance domain taxonomy |
 
 All schemas are JSON Schema Draft 2020-12 compliant.
 
 ---
 
-## 11. Examples
+## 10. Examples
 
 Working examples are provided in `examples/`:
 
 | File | Description |
-|------|-------------|
-| `intent-request.example.json` | Conformant IntentRequest |
-| `evidence-envelope.example.json` | Evidence bundle structure |
-| `decision-response.example.json` | DecisionResponse for ALLOWED and DENIED |
-| `adapter-skeleton.js` | Integration adapter scaffold |
+|---|---|
+| `node-quickstart.js` | Minimal SDK usage example (Node.js) |
+| `python-quickstart.py` | Minimal SDK usage example (Python) |
+| `verify-a-bundle.js` | Standalone verification example |
+| `allowed-bundle.json` | Example `ALLOWED` proof bundle |
+| `denied-bundle.json` | Example `DENIED` proof bundle |
+| `tampered-bundle.json` | Example bundle that fails verification |
+| `walkthrough.md` | Step-by-step walkthrough |
 
 Examples are non-normative. In any conflict between an example and this document, this document governs.
 
 ---
 
-## 12. Normative Precedence
+## 11. Normative Precedence
 
 In descending order of authority:
 
-1. This document (`ICD.md`, v1)
+1. This document (ICD.md, v1)
 2. `spec/schemas/icd.json` (machine-readable schema)
-3. `spec/schemas/proof.json`, `export.json`
-4. `verify/verify.sh`, `verify.js` (normative verification procedures)
+3. `spec/schemas/proof.json`, `spec/schemas/export.json`
+4. `verify/verify.js`, `verify/verify.py`, `verify/verify.sh` (normative verification procedures)
 5. `examples/` (illustrative, non-normative)
 6. All other `spec/` documents
-
----
-
-*VELLA Interface Control Document v1 — Vella Cognitive, LLC — agent@vellacognitive.com*

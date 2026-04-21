@@ -2,61 +2,41 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "vella://contracts/v1/icd.json.schema.json",
   "title": "VELLA SDK Interface Control Document v1",
-  "description": "Defines the canonical interface between VELLA and external systems.",
+  "description": "Describes the embedded-SDK interface as specified in spec/icd.md §4.1 and §4.2. The schema describes the canonical Node/JSON form (camelCase keys). The Python SDK accepts and returns equivalent snake_case keys: intent, evidence_mask, authority_scope, policy_version, proof_signing_key for the request; decision, reason_code, latency_us, proof_bundle, proof_error for the response. Both key forms describe the same interface.",
   "type": "object",
   "definitions": {
-    "IntentRequest": {
+    "IntentParams": {
       "type": "object",
-      "description": "A request envelope submitted to VELLA for decision.",
+      "description": "Parameters supplied to the SDK's govern(...) call. See spec/icd.md §4.1.",
       "required": [
         "intent",
-        "proposed",
-        "authority"
+        "evidenceMask"
       ],
       "properties": {
         "intent": {
           "type": "string",
-          "description": "The action intent identifier (e.g., EXECUTE_CHANGE)."
+          "description": "Action intent identifier (e.g., EXECUTE_CHANGE, ESCALATE_PRIVILEGE, DATA_EXPORT)."
         },
-        "proposed": {
-          "type": "object",
-          "description": "The proposed action payload.",
-          "properties": {
-            "action": {
-              "type": "string"
-            },
-            "params": {
-              "type": "object"
-            }
-          }
+        "evidenceMask": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Bitmask asserting which evidence classes the calling application has satisfied. See spec/icd.md §4.4."
         },
-        "evidence": {
-          "type": "object",
-          "description": "Supporting evidence bundle.",
-          "properties": {
-            "sources": {
-              "type": "array"
-            },
-            "attachments": {
-              "type": "array"
-            }
-          }
+        "authorityScope": {
+          "type": "string",
+          "description": "Named scope in the compiled policy; defaults to the policy's declared defaultScope."
         },
-        "authority": {
+        "policyVersion": {
+          "type": "string",
+          "description": "Must match the compiled policy's version string; if omitted, the compiled version is used."
+        },
+        "proof": {
           "type": "object",
-          "description": "Authority context for the request.",
-          "required": [
-            "domain"
-          ],
+          "description": "Optional proof-signing configuration.",
           "properties": {
-            "domain": {
-              "type": "string"
-            },
-            "mode": {
-              "type": "string"
-            },
-            "policySet": {
-              "type": "string"
+            "signingKey": {
+              "type": "string",
+              "description": "PEM-encoded private key. If provided, a signed proof bundle is included in the response."
             }
           }
         }
@@ -64,9 +44,11 @@
     },
     "DecisionResponse": {
       "type": "object",
-      "description": "The decision outcome returned by VELLA.",
+      "description": "The decision result returned synchronously by the SDK. See spec/icd.md §4.2.",
       "required": [
-        "decision"
+        "decision",
+        "reasonCode",
+        "latencyUs"
       ],
       "properties": {
         "decision": {
@@ -75,29 +57,23 @@
             "ALLOWED",
             "DENIED"
           ],
-          "description": "The enforcement decision."
+          "description": "The enforcement outcome."
         },
-        "reason_code": {
+        "reasonCode": {
           "type": "string",
-          "description": "Machine-readable reason code for the decision."
+          "description": "Machine-readable reason for the decision (see spec/icd.md §5.2)."
         },
-        "envelope": {
-          "type": "object",
-          "description": "Signed proof envelope, present when signing is enabled.",
-          "$ref": "proof.json"
+        "latencyUs": {
+          "type": "number",
+          "description": "Microsecond latency of the govern(...) call."
         },
-        "trace": {
-          "type": "object",
-          "description": "Decision trace reference.",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "at": {
-              "type": "string",
-              "format": "date-time"
-            }
-          }
+        "proofBundle": {
+          "$ref": "proof.json",
+          "description": "Signed proof bundle; present when a signing key was provided and signing succeeded."
+        },
+        "proofError": {
+          "type": "string",
+          "description": "Diagnostic string; present when signing was requested but failed."
         }
       }
     }
@@ -107,28 +83,8 @@
       "type": "string",
       "const": "v1"
     },
-    "scope": {
-      "type": "object",
-      "properties": {
-        "defines": {
-          "type": "string"
-        },
-        "appliesTo": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "doesNotCover": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "request": {
-      "$ref": "#/definitions/IntentRequest"
+      "$ref": "#/definitions/IntentParams"
     },
     "response": {
       "$ref": "#/definitions/DecisionResponse"

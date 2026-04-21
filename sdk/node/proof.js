@@ -59,7 +59,7 @@ export function signBundle(envelope, signingKey) {
   const bundleForHash = {
     ...envelope,
     envelope_hash: envelopeHash,
-    signature_alg: "cosign-ecdsa-p256-sha256",
+    signature_alg: "ecdsa-p256-sha256",
     signature,
   };
 
@@ -71,7 +71,7 @@ export function signBundle(envelope, signingKey) {
   return {
     ...envelope,
     envelope_hash: envelopeHash,
-    signature_alg: "cosign-ecdsa-p256-sha256",
+    signature_alg: "ecdsa-p256-sha256",
     signature,
     sha256_bundle: sha256Bundle,
     key_id: deriveKeyId(signingKey),

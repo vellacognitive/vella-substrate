@@ -1,5 +1,5 @@
 {
-  "envelope_id": "env_019db179-46fb-747c-b36c-b8f501bc493a",
+  "envelope_id": "env_019db25c-2f76-7dfd-bd9c-f18d8471b5af",
   "intent": "DATA_EXPORT",
   "proposed": null,
   "authority_scope": "sdk_v1_default",
@@ -8,14 +8,14 @@
   "reason_code": "E_EVIDENCE_MISSING",
   "policy_version": "min-v1",
   "build_hash": "unset",
-  "timestamp": "2026-04-21T19:16:48.507Z",
+  "timestamp": "2026-04-21T23:24:39.158Z",
   "ok": true,
   "external_effects": false,
-  "envelope_hash": "sha256:4999b022b817af01ed2d226a8f8637dd755e5719559dbb0f864d3c9fd998f258",
-  "signature_alg": "cosign-ecdsa-p256-sha256",
-  "signature": "DojpY7IhEDyV1wk7q0c5U6oeaFNOdkXe2ivIGYAUrbOvr4n8J68g2GfA5UYPIfKLqHVpjyG4kIg2i/Mxjk/dfA==",
-  "sha256_bundle": "sha256:5be0269b502c3483a1e5225df507f975e8ed03367625859513d382dfa4948fba",
-  "key_id": "key_867bead240af0d94",
+  "envelope_hash": "sha256:b528101db8869c59bde3ee278499e382c718dfb05d8ad01b02586cdb832c58d9",
+  "signature_alg": "ecdsa-p256-sha256",
+  "signature": "paq9AHaL7y6aV3eLKH71GNixf7bvXE68RxO/7eHupBXm0ck+DQQ4tTxrA2QK7RKBDxCdDK7Y37mpq6+qK+WS9w==",
+  "sha256_bundle": "sha256:fc1e46c02e4dd692509cf8cc607b0a52bf22eecd63c8194be854952e25b1e5c3",
+  "key_id": "key_a855b1cc6a57f518",
   "kind": "vella_proof_bundle_v1",
-  "exported_at": "2026-04-21T19:16:48.507Z"
+  "exported_at": "2026-04-21T23:24:39.158Z"
 }
