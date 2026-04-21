@@ -1,0 +1,42 @@
+{
+  "name": "@vellacognitive/vella-sdk",
+  "version": "1.0.0",
+  "description": "VELLA — deterministic pre-execution governance substrate. SDK for producing signed decision records.",
+  "license": "MIT",
+  "type": "module",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "evaluator.js",
+    "policy.js",
+    "proof.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vellacognitive/vella-substrate",
+    "directory": "sdk/node"
+  },
+  "homepage": "https://github.com/vellacognitive/vella-substrate#readme",
+  "bugs": {
+    "url": "https://github.com/vellacognitive/vella-substrate/issues"
+  },
+  "keywords": [
+    "vella",
+    "governance",
+    "ai-safety",
+    "pre-execution",
+    "policy",
+    "audit",
+    "proof-bundle"
+  ]
+}
