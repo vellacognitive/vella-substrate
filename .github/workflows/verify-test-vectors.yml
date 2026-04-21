@@ -1,0 +1,75 @@
+name: Verify Test Vectors
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify-vectors:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install cryptography
+
+      - name: Verify valid vectors (Node)
+        run: |
+          for f in test-vectors/valid/*.json; do
+            node verify/verify.js "$f" examples/example-signing.pub
+          done
+
+      - name: Verify tampered vectors fail (Node)
+        run: |
+          for f in test-vectors/tampered/*.json; do
+            if node verify/verify.js "$f" examples/example-signing.pub; then
+              echo "Unexpected verification success for $f"
+              exit 1
+            fi
+          done
+
+      - name: Verify valid vectors (Python)
+        run: |
+          for f in test-vectors/valid/*.json; do
+            python verify/verify.py "$f" examples/example-signing.pub
+          done
+
+      - name: Verify tampered vectors fail (Python)
+        run: |
+          for f in test-vectors/tampered/*.json; do
+            if python verify/verify.py "$f" examples/example-signing.pub; then
+              echo "Unexpected verification success for $f"
+              exit 1
+            fi
+          done
+
+      - name: Verify valid vectors (Shell/OpenSSL)
+        run: |
+          for f in test-vectors/valid/*.json; do
+            bash verify/verify.sh "$f" examples/example-signing.pub
+          done
+
+      - name: Verify tampered vectors fail (Shell/OpenSSL)
+        run: |
+          for f in test-vectors/tampered/*.json; do
+            if bash verify/verify.sh "$f" examples/example-signing.pub; then
+              echo "Unexpected verification success for $f"
+              exit 1
+            fi
+          done

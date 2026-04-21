@@ -1,0 +1,21 @@
+{
+  "envelope_id": "env_019db179-46fc-74f5-87cd-0285ed1fba7e",
+  "intent": "ESCALATE_PRIVILEGE",
+  "proposed": null,
+  "authority_scope": "sdk_v1_default",
+  "evidence_mask": 3,
+  "decision": "ALLOWED",
+  "reason_code": "POLICY_SATISFIED",
+  "policy_version": "min-v1",
+  "build_hash": "unset",
+  "timestamp": "2026-04-21T19:16:48.508Z",
+  "ok": true,
+  "external_effects": false,
+  "envelope_hash": "sha256:bd972b0298b5c093454aa5b7f3bc19a0ae0301d7979924509848a52ec2c04320",
+  "signature_alg": "cosign-ecdsa-p256-sha256",
+  "signature": "A4oeSrEVvgL+9djEna8VbCCiBiThFV41NPaeqW5ibjYOAORirmu8EaW5E6IG2ZLoqw7d+eIGAUYk7n7pLLUEgg==",
+  "sha256_bundle": "sha256:316c33a22833bb20f8d15545c9ff46422b9a8250af7e28aabee7216780bf6ae1",
+  "key_id": "key_867bead240af0d94",
+  "kind": "vella_proof_bundle_v1",
+  "exported_at": "2026-04-21T19:16:48.508Z"
+}
