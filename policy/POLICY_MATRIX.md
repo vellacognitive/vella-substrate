@@ -489,7 +489,7 @@ VELLA adjudicates and records. It does not issue commands, enforce deny-paths, o
 
 ### Adapter sidecar pattern
 
-For systems that cannot be modified to call VELLA inline, the adapter sidecar pattern intercepts proposed actions at the boundary and proxies the decision call. Helm charts for production sidecar deployment are available in `verify/`. See [`spec/icd.md §3`](../spec/icd.md) for adapter interface requirements.
+For systems that cannot be modified to call VELLA inline, the adapter sidecar pattern intercepts proposed actions at the boundary and proxies the decision call. Helm charts for production sidecar deployment are part of the commercial runtime and not published in this repository; contact `agent@vellacognitive.com` for access. See [`spec/icd.md §3`](../spec/icd.md) for adapter interface requirements.
 
 ### Evidence envelope immutability
 
@@ -498,4 +498,4 @@ Decision records produced by VELLA are cryptographically signed and immutable by
 ---
 
 *VELLA is a pre-execution decision authority substrate. It is non-executing by design.*
-*MIT License · Vella Cognitive, LLC · agent.com*
+*MIT License · Vella Cognitive, LLC · agent@vellacognitive.com*

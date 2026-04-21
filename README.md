@@ -56,6 +56,16 @@ print(result["proof_bundle"]["envelope_id"])
 - Test vectors:
   - `test-vectors/valid/` and `test-vectors/tampered/` for verifier CI and audit workflows
 
+## Where this SDK fits
+
+The VELLA SDK in this repository is one of several VELLA components. It runs in-process inside Node.js and Python applications and is designed for agent hooks, CI/CD gating, edge compute, research notebooks, and any other context where a library-level adjudicator with microsecond latency is the right fit.
+
+For enterprise service mesh deployments, polyglot environments, network-boundary enforcement, Kubernetes admission control, or multi-tenant adjudication, the runtime service and sidecar adapter (available via commercial license from Vella Cognitive, LLC) are the appropriate components.
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the complete deployment scope and the table of technical specifications.
+
+For commercial licensing or integration services: `agent@vellacognitive.com`
+
 ## How to verify a proof bundle
 
 ```bash
