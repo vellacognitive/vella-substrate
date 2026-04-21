@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vella://contracts/v1/export.json.schema.json",
+  "title": "VELLA SDK Export Evidence v1",
+  "type": "object",
+  "required": [
+    "ok",
+    "kind",
+    "scenario_id",
+    "mode",
+    "external_effects",
+    "recorded_at",
+    "envelope_id",
+    "envelope_hash",
+    "signature_alg",
+    "signature"
+  ],
+  "properties": {
+    "ok": { "type": "boolean" },
+
+    "kind": { "type": "string", "const": "vella_export_evidence_v1" },
+    "evidence_kind": { "type": "string" },
+
+    "scenario_id": { "type": "string" },
+    "mode": { "type": "string" },
+    "external_effects": { "type": "boolean" },
+
+    "recorded_at": { "type": "string" },
+    "envelope_id": { "type": "string" },
+    "envelope_hash": { "type": "string" },
+
+    "signature_alg": { "type": "string" },
+    "signature": { "type": "string" },
+
+    "status": { "type": "string" },
+    "action": { "type": "string" }
+  },
+  "additionalProperties": true
+}

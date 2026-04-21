@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vella://contracts/v1/icd.json.schema.json",
+  "title": "VELLA SDK Interface Control Document v1",
+  "description": "Defines the canonical interface between VELLA and external systems.",
+  "type": "object",
+  "definitions": {
+    "IntentRequest": {
+      "type": "object",
+      "description": "A request envelope submitted to VELLA for decision.",
+      "required": [
+        "intent",
+        "proposed",
+        "authority"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "description": "The action intent identifier (e.g., EXECUTE_CHANGE)."
+        },
+        "proposed": {
+          "type": "object",
+          "description": "The proposed action payload.",
+          "properties": {
+            "action": {
+              "type": "string"
+            },
+            "params": {
+              "type": "object"
+            }
+          }
+        },
+        "evidence": {
+          "type": "object",
+          "description": "Supporting evidence bundle.",
+          "properties": {
+            "sources": {
+              "type": "array"
+            },
+            "attachments": {
+              "type": "array"
+            }
+          }
+        },
+        "authority": {
+          "type": "object",
+          "description": "Authority context for the request.",
+          "required": [
+            "domain"
+          ],
+          "properties": {
+            "domain": {
+              "type": "string"
+            },
+            "mode": {
+              "type": "string"
+            },
+            "policySet": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "DecisionResponse": {
+      "type": "object",
+      "description": "The decision outcome returned by VELLA.",
+      "required": [
+        "decision"
+      ],
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": [
+            "ALLOWED",
+            "DENIED"
+          ],
+          "description": "The enforcement decision."
+        },
+        "reason_code": {
+          "type": "string",
+          "description": "Machine-readable reason code for the decision."
+        },
+        "envelope": {
+          "type": "object",
+          "description": "Signed proof envelope, present when signing is enabled.",
+          "$ref": "proof.json"
+        },
+        "trace": {
+          "type": "object",
+          "description": "Decision trace reference.",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
+    }
+  },
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "v1"
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "defines": {
+          "type": "string"
+        },
+        "appliesTo": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "doesNotCover": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "request": {
+      "$ref": "#/definitions/IntentRequest"
+    },
+    "response": {
+      "$ref": "#/definitions/DecisionResponse"
+    }
+  }
+}

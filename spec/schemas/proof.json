@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vella://contracts/v1/proof.json.schema.json",
+  "title": "VELLA SDK Proof Bundle v1",
+  "type": "object",
+  "required": [
+    "ok",
+    "kind",
+    "exported_at",
+    "envelope_id",
+    "envelope_hash",
+    "signature_alg",
+    "signature",
+    "sha256_bundle",
+    "key_id"
+  ],
+  "properties": {
+    "ok": { "type": "boolean" },
+    "kind": { "type": "string", "const": "vella_proof_bundle_v1" },
+    "exported_at": { "type": "string" },
+    "console_url": { "type": "string" },
+    "inspect_url": { "type": "string" },
+    "export_url": { "type": "string" },
+    "envelope_id": { "type": "string" },
+    "envelope_hash": { "type": "string" },
+    "signature_alg": { "type": "string" },
+    "signature": { "type": "string" },
+    "sha256_bundle": { "type": "string" },
+    "key_id": { "type": "string", "pattern": "^key_[a-f0-9]{16}$" }
+  },
+  "additionalProperties": true
+}
