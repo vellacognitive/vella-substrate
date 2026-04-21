@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vella-sdk"
+version = "1.0.0"
+description = "VELLA — deterministic pre-execution governance substrate. SDK for producing signed decision records."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "Vella Cognitive, LLC", email = "agent@vellacognitive.com" }
+]
+dependencies = [
+  "cryptography>=41.0"
+]
+keywords = [
+  "vella",
+  "governance",
+  "ai-safety",
+  "pre-execution",
+  "policy",
+  "audit",
+  "proof-bundle"
+]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Security",
+  "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[project.optional-dependencies]
+dev = ["ruff", "mypy", "pytest"]
+
+[project.urls]
+Homepage = "https://github.com/vellacognitive/vella-substrate"
+Repository = "https://github.com/vellacognitive/vella-substrate"
+Issues = "https://github.com/vellacognitive/vella-substrate/issues"
+
+[tool.setuptools.packages.find]
+include = ["vella*"]
+
+[tool.mypy]
+strict = true
