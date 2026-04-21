@@ -81,7 +81,7 @@ def sign_bundle(envelope: dict[str, object], signing_key_pem: str | bytes) -> di
     bundle_for_hash = {
         **envelope,
         "envelope_hash": envelope_hash,
-        "signature_alg": "cosign-ecdsa-p256-sha256",
+        "signature_alg": "ecdsa-p256-sha256",
         "signature": signature,
     }
     canonical_bundle = json.dumps(bundle_for_hash, sort_keys=True, separators=(",", ":"))
@@ -90,7 +90,7 @@ def sign_bundle(envelope: dict[str, object], signing_key_pem: str | bytes) -> di
     return {
         **envelope,
         "envelope_hash": envelope_hash,
-        "signature_alg": "cosign-ecdsa-p256-sha256",
+        "signature_alg": "ecdsa-p256-sha256",
         "signature": signature,
         "sha256_bundle": sha256_bundle,
         "key_id": derive_key_id(signing_key_pem),

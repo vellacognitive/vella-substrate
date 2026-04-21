@@ -34,7 +34,7 @@ as authorized in the audit record.
 ### 2.2 Tampering with decision artifacts
 
 Evidence exports and proof bundles are hash-bound and replay-verifiable.
-A tampered artifact will fail structural verification under `verify.sh`.
+A tampered artifact will fail structural verification under the verifiers in `verify/`.
 
 **Protection claim:** Modification of a proof bundle after issuance is
 detectable by any party with access to the bundle and the corresponding proof-signing public key.
@@ -137,7 +137,7 @@ VELLA's design addresses the following adversary classes:
 
 | Adversary | Threat | VELLA's response |
 |-----------|--------|-----------------|
-| External attacker | Tamper with proof bundles or swap artifacts | Hash-bound exports, `verify.sh` verification chain |
+| External attacker | Tamper with proof bundles or swap artifacts | Hash-bound exports, verification chain in `verify/` |
 | Malicious insider | Misuse credentials or misrepresent outputs | Explicit output typing, ICD prohibitions, audit record |
 | Process attacker | Force premature authority escalation | Deferral doctrine — unknown intents denied by default |
 | Integration drift | Expand capability through configuration | Sealed policy set; capability does not expand without explicit policy change |
@@ -164,9 +164,9 @@ This document covers the VELLA decision substrate as specified in
 |----------|-------------|
 | `spec/icd.md §3` | Trust boundary — formal definition of caller vs. VELLA responsibilities |
 | `spec/icd.md §4.3` | Proof bundle scope and retention obligations |
-| `spec/icd.md §5` | Verification procedure — normative proof bundle verification |
+| `spec/icd.md §7` | Verification procedure — normative proof bundle verification |
 | `policy/POLICY_MATRIX.md` | Policy misconfiguration risk |
-| `verify/verify.sh` | Normative verification implementation |
+| `verify/verify.js`, `verify/verify.py`, `verify/verify.sh` | Normative verification implementations |
 
 ---
 
