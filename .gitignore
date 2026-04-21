@@ -1,0 +1,19 @@
+# Node
+node_modules/
+dist/
+
+# Python
+*.egg-info/
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Keys and env
+*.key
+.env
+.env.*
+
+# Misc
+.DS_Store
