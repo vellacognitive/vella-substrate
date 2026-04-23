@@ -139,3 +139,5 @@ The proof bundle format is identical across all VELLA components. A bundle produ
 - SDK questions, bug reports, security disclosures: [SECURITY.md](SECURITY.md) or open a GitHub issue
 - Commercial licensing, runtime / sidecar access, integration services: `agent@vellacognitive.com`
 - Research collaboration and partnership inquiries: `agent@vellacognitive.com`
+- Website: https://vellacognitive.com
+- Research essay: https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance

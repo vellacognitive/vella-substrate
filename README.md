@@ -1,6 +1,7 @@
 # VELLA — Governance Substrate
 
 VELLA is a deterministic pre-execution decision authority that returns `ALLOWED` or `DENIED` and produces signed proof bundles that can be verified independently.
+For the conceptual argument behind this release, see [An Inspectable Substrate for AI Governance](https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance).
 
 ## Install
 

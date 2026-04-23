@@ -5,4 +5,5 @@ authors:
 version: 1.0.0
 license: MIT
 repository-code: https://github.com/vellacognitive/vella-substrate
+url: https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance
 type: software

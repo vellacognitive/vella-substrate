@@ -38,7 +38,7 @@ classifiers = [
 dev = ["ruff", "mypy", "pytest"]
 
 [project.urls]
-Homepage = "https://github.com/vellacognitive/vella-substrate"
+Homepage = "https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance"
 Repository = "https://github.com/vellacognitive/vella-substrate"
 Issues = "https://github.com/vellacognitive/vella-substrate/issues"
 

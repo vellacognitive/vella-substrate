@@ -26,7 +26,7 @@
     "url": "https://github.com/vellacognitive/vella-substrate",
     "directory": "sdk/node"
   },
-  "homepage": "https://github.com/vellacognitive/vella-substrate#readme",
+  "homepage": "https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance",
   "bugs": {
     "url": "https://github.com/vellacognitive/vella-substrate/issues"
   },
