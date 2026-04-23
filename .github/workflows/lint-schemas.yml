@@ -31,23 +31,63 @@ jobs:
           from pathlib import Path
           from jsonschema import Draft202012Validator
 
-          roots = [Path("spec/schemas"), Path("test-vectors"), Path("examples")]
+          schema_dir = Path("spec/schemas")
+          schema_paths = {
+            "proof": schema_dir / "proof.json",
+            "export": schema_dir / "export.json",
+            "icd": schema_dir / "icd.json",
+          }
+
+          schemas = {}
+          for key, path in schema_paths.items():
+            with path.open("r", encoding="utf-8") as handle:
+              schemas[key] = json.load(handle)
+            Draft202012Validator.check_schema(schemas[key])
+
+          validators = {
+            "vella_proof_bundle_v1": Draft202012Validator(schemas["proof"]),
+            "vella_export_evidence_v1": Draft202012Validator(schemas["export"]),
+          }
+
+          parse_roots = [schema_dir, Path("test-vectors"), Path("examples")]
           json_files = []
-          for root in roots:
+          for root in parse_roots:
             if root.exists():
               json_files.extend(sorted(root.rglob("*.json")))
 
           if not json_files:
             raise SystemExit("No JSON files found to validate")
 
+          parsed = 0
+          validated = 0
           for path in json_files:
             with path.open("r", encoding="utf-8") as handle:
-              json.load(handle)
+              payload = json.load(handle)
+            parsed += 1
 
-          for path in sorted(Path("spec/schemas").glob("*.json")):
-            with path.open("r", encoding="utf-8") as handle:
-              schema = json.load(handle)
-            Draft202012Validator.check_schema(schema)
+            if not isinstance(payload, dict):
+              continue
 
-          print(f"Validated {len(json_files)} JSON files and schema compliance checks passed")
+            kind = payload.get("kind")
+            if kind is None:
+              continue
+
+            if kind not in validators:
+              raise SystemExit(f"Unknown kind '{kind}' in {path}")
+
+            errors = sorted(validators[kind].iter_errors(payload), key=lambda e: list(e.path))
+            if errors:
+              first = errors[0]
+              loc = ".".join(str(p) for p in first.path) or "<root>"
+              raise SystemExit(
+                f"Schema validation failed for {path} at {loc}: {first.message}"
+              )
+            validated += 1
+
+          if validated == 0:
+            raise SystemExit("No schema-bound JSON instances were validated")
+
+          print(
+            f"Parsed {parsed} JSON files; validated {validated} schema-bound instances; schema checks passed"
+          )
           PY

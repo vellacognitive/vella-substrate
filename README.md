@@ -13,6 +13,29 @@ npm install @vellacognitive/vella-sdk
 pip install vella-sdk
 ```
 
+## Local development
+
+### Node SDK from source
+
+```bash
+cd sdk/node
+npm ci
+npm test
+```
+
+### Python SDK from source
+
+```bash
+cd sdk/python
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -e ".[dev]"
+pytest
+ruff check .
+mypy --strict vella/
+```
+
 ## Quick example
 
 ```js
@@ -86,6 +109,10 @@ See [SECURITY.md](SECURITY.md).
 ## Citation
 
 See [CITATION.cff](CITATION.cff).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## Contact
 

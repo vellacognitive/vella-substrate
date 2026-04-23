@@ -8,6 +8,18 @@ Python SDK for deterministic pre-execution adjudication and signed proof-bundle 
 pip install vella-sdk
 ```
 
+## From source (development)
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -e ".[dev]"
+pytest
+ruff check .
+mypy --strict vella/
+```
+
 ## Basic usage
 
 ```python
