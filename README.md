@@ -1,9 +1,17 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19738377.svg)](https://doi.org/10.5281/zenodo.19738377)
 
-# VELLA — Governance Substrate
+# VELLA — Governance Substrate for AI Agents & Autonomous Systems
 
-VELLA is a deterministic pre-execution decision authority that returns `ALLOWED` or `DENIED` and produces signed proof bundles that can be verified independently.
-For the conceptual argument behind this release, see [An Inspectable Substrate for AI Governance](https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance).
+**VELLA is the decision layer between an AI agent or autonomous system proposing an action and that action being taken.** It sits where alignment, input safety, and IAM don't: at the specific moment an autonomous system is about to act, under a specific policy, with specific evidence in hand.
+
+Given a proposed action and an evidence mask, VELLA returns `ALLOWED` or `DENIED` deterministically and emits a cryptographically signed proof bundle. The bundle can be verified offline by any third party with only the bundle and a public key — no access to VELLA, the agent, or the originating system required.
+
+This is a reference implementation, MIT-licensed. It's designed to be the primitive that agent frameworks, audit pipelines, and compliance systems build on.
+
+**Start here:**
+- [An Inspectable Substrate for AI Governance](https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance) — the conceptual argument (~14 min read)
+- [Quickstart](#quickstart) — Node or Python SDK, working example in 2 minutes
+- [Threat model](spec/threat-model.md) — what VELLA does and does not protect against
 
 ## Install
 
