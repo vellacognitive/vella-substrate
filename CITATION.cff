@@ -3,7 +3,12 @@ title: "VELLA — Governance Substrate"
 authors:
   - name: "Vella Cognitive, LLC"
 version: 1.0.0
+doi: 10.5281/zenodo.19738377
 license: MIT
 repository-code: https://github.com/vellacognitive/vella-substrate
 url: https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance
 type: software
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.19738377
+    description: "Zenodo archive — v1.0.0"

@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19738377.svg)](https://doi.org/10.5281/zenodo.19738377)
+
 # VELLA — Governance Substrate for AI Agents & Autonomous Systems
 
 **VELLA is the decision layer between an AI agent or autonomous system proposing an action and that action being taken.** It sits where alignment, input safety, and IAM don't: at the specific moment an autonomous system is about to act, under a specific policy, with specific evidence in hand.
@@ -114,9 +116,17 @@ This repository is released under the MIT License.
 
 See [SECURITY.md](SECURITY.md).
 
-## Citation
+## Citing this work
 
-See [CITATION.cff](CITATION.cff).
+If you reference VELLA in research, writing, or technical documentation, please cite:
+
+> Wilson, M. (2026). *VELLA: An Inspectable Substrate for AI Governance* (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.19738377
+
+The conceptual argument accompanying this release is available as a companion essay:
+
+> Wilson, M. (2026). *An Inspectable Substrate for AI Governance*. Vella Cognitive. https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance
+
+Machine-readable citation metadata is available in [CITATION.cff](CITATION.cff).
 
 ## Contributing
 
