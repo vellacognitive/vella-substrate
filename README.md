@@ -120,7 +120,7 @@ See [SECURITY.md](SECURITY.md).
 
 If you reference VELLA in research, writing, or technical documentation, please cite:
 
-> Wilson, M. (2026). *VELLA: An Inspectable Substrate for AI Governance* (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.19738377
+> Wilson, M. (2026). *An Inspectable Substrate for AI Governance* (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.19738377
 
 The conceptual argument accompanying this release is available as a companion essay:
 
