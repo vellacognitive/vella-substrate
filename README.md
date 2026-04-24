@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19738377.svg)](https://doi.org/10.5281/zenodo.19738377)
+
 # VELLA — Governance Substrate
 
 VELLA is a deterministic pre-execution decision authority that returns `ALLOWED` or `DENIED` and produces signed proof bundles that can be verified independently.
@@ -106,9 +108,17 @@ This repository is released under the MIT License.
 
 See [SECURITY.md](SECURITY.md).
 
-## Citation
+## Citing this work
 
-See [CITATION.cff](CITATION.cff).
+If you reference VELLA in research, writing, or technical documentation, please cite:
+
+> Wilson, M. (2026). *VELLA: An Inspectable Substrate for AI Governance* (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.19738377
+
+The conceptual argument accompanying this release is available as a companion essay:
+
+> Wilson, M. (2026). *An Inspectable Substrate for AI Governance*. Vella Cognitive. https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance
+
+Machine-readable citation metadata is available in [CITATION.cff](CITATION.cff).
 
 ## Contributing
 
