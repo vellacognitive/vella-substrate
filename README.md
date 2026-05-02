@@ -12,6 +12,7 @@ This is a reference implementation, MIT-licensed. It's designed to be the primit
 - [An Inspectable Substrate for AI Governance](https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance) — the conceptual argument (~14 min read)
 - [Quickstart](#quickstart) — Node or Python SDK, working example in 2 minutes
 - [Threat model](spec/threat-model.md) — what VELLA does and does not protect against
+- [AI-assisted integration prompting](AI_INTEGRATION_PROMPTING.md) — prompt patterns for using AI coding agents to integrate VELLA without outsourcing authority decisions
 
 ## Install
 
