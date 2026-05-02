@@ -8,6 +8,23 @@ Given a proposed action and an evidence mask, VELLA returns `ALLOWED` or `DENIED
 
 This is a reference implementation, MIT-licensed. It's designed to be the primitive that agent frameworks, audit pipelines, and compliance systems build on.
 
+## What this repo proves
+
+This repository demonstrates the core VELLA primitive:
+
+1. Before an action runs, the caller submits a proposed intent, such as `DATA_EXPORT`, `ESCALATE_PRIVILEGE`, or `EXECUTE_CHANGE`, along with evidence indicators.
+2. VELLA evaluates that request against policy.
+3. VELLA returns a deterministic `ALLOWED` or `DENIED` decision.
+4. `DENIED` is fail-closed: the caller must not execute the action.
+5. If signing is enabled, VELLA emits a proof bundle.
+6. That proof bundle can be verified offline using the tools in this repo.
+
+VELLA decides whether an action is authorized before it runs. The calling system remains responsible for carrying out — or blocking — the action.
+
+The SDK is designed for in-process, low-latency adjudication; the authority decision can sit directly on the action path rather than being deferred to post-hoc logging.
+
+This public SDK is a focused reference implementation of the VELLA decision/proof primitive. Production deployment patterns that require a runtime service, sidecar adapter, Helm packaging, or management plane are supported through separate commercial components.
+
 **Start here:**
 - [An Inspectable Substrate for AI Governance](https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance) — the conceptual argument (~14 min read)
 - [Quickstart](#quick-example) — Node or Python SDK, working example in 2 minutes
