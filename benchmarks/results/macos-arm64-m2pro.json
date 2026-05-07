@@ -1,0 +1,108 @@
+{
+  "node": {
+    "runtime": "node",
+    "fingerprint": {
+      "cpu_model": "Apple M2 Pro",
+      "cpu_count": 12,
+      "arch": "arm64",
+      "platform": "darwin",
+      "release": "25.4.0",
+      "node_version": "v22.21.1",
+      "gc_exposed": true,
+      "quick": false,
+      "timestamp": "2026-05-07T19:26:21.614Z"
+    },
+    "results": [
+      {
+        "label": "decision-only",
+        "runs": 11,
+        "warmup": 10000,
+        "iterations_per_run": 100000,
+        "median_of_medians_ns": {
+          "p50": 125,
+          "p95": 125,
+          "p99": 167
+        },
+        "sample_run_ns": {
+          "min": 41,
+          "p50": 125,
+          "p95": 458,
+          "p99": 500,
+          "max": 146833,
+          "mean": 174.62143
+        }
+      },
+      {
+        "label": "with-proof",
+        "runs": 11,
+        "warmup": 2000,
+        "iterations_per_run": 10000,
+        "median_of_medians_ns": {
+          "p50": 153250,
+          "p95": 179375,
+          "p99": 246625
+        },
+        "sample_run_ns": {
+          "min": 144834,
+          "p50": 153959,
+          "p95": 179250,
+          "p99": 254584,
+          "max": 863834,
+          "mean": 162061.2901
+        }
+      }
+    ]
+  },
+  "python": {
+    "runtime": "python",
+    "fingerprint": {
+      "machine": "arm64",
+      "processor": "arm",
+      "platform": "macOS-26.4.1-arm64-arm-64bit",
+      "python_version": "3.12.13",
+      "python_implementation": "CPython",
+      "quick": false,
+      "timestamp": "2026-05-07T19:29:36.574226+00:00"
+    },
+    "results": [
+      {
+        "label": "decision-only",
+        "runs": 11,
+        "warmup": 10000,
+        "iterations_per_run": 100000,
+        "median_of_medians_ns": {
+          "p50": 959.0,
+          "p95": 1042.0,
+          "p99": 1167.0
+        },
+        "sample_run_ns": {
+          "min": 875.0,
+          "p50": 959.0,
+          "p95": 1042.0,
+          "p99": 1166.0,
+          "max": 88084.0,
+          "mean": 990.6153
+        }
+      },
+      {
+        "label": "with-proof",
+        "runs": 11,
+        "warmup": 2000,
+        "iterations_per_run": 10000,
+        "median_of_medians_ns": {
+          "p50": 158084.0,
+          "p95": 179583.0,
+          "p99": 227000.0
+        },
+        "sample_run_ns": {
+          "min": 155584.0,
+          "p50": 159792.0,
+          "p95": 182375.0,
+          "p99": 239792.0,
+          "max": 387125.0,
+          "mean": 163936.0072
+        }
+      }
+    ]
+  }
+}

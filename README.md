@@ -1,4 +1,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19738377.svg)](https://doi.org/10.5281/zenodo.19738377)
+[![Test SDK](https://github.com/vellacognitive/vella-substrate/actions/workflows/test-sdk.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/test-sdk.yml)
+[![Verify Test Vectors](https://github.com/vellacognitive/vella-substrate/actions/workflows/verify-test-vectors.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/verify-test-vectors.yml)
+[![Lint Schemas](https://github.com/vellacognitive/vella-substrate/actions/workflows/lint-schemas.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/lint-schemas.yml)
 
 # VELLA — Governance Substrate for AI Agents & Autonomous Systems
 
@@ -23,8 +26,6 @@ VELLA decides whether an action is authorized before it runs. The calling system
 
 The SDK is designed for in-process, low-latency adjudication; the authority decision can sit directly on the action path rather than being deferred to post-hoc logging.
 
-This public SDK is a focused reference implementation of the VELLA decision/proof primitive. Production deployment patterns that require a runtime service, sidecar adapter, Helm packaging, or management plane are supported through separate commercial components.
-
 **Start here:**
 - [An Inspectable Substrate for AI Governance](https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance) — the conceptual argument (~14 min read)
 - [Quickstart](#quick-example) — Node or Python SDK, working example in 2 minutes
@@ -33,29 +34,31 @@ This public SDK is a focused reference implementation of the VELLA decision/proo
 
 ## Install
 
-```bash
-npm install @vellacognitive/vella-sdk
-```
-
-```bash
-pip install vella-sdk
-```
-
-## Local development
+> **Registry packages are not yet published.** `npm install @vellacognitive/vella-sdk` and `pip install vella-sdk` will be live with v1.0.1. Until then, install from source against this repository — the SDK has no external runtime dependencies on Node and one (`cryptography`) on Python.
 
 ### Node SDK from source
 
 ```bash
-cd sdk/node
+git clone https://github.com/vellacognitive/vella-substrate.git
+cd vella-substrate/sdk/node
 npm ci
 npm test
+```
+
+Then import directly from the checkout, or `npm pack` to produce a tarball:
+
+```bash
+npm pack          # produces vellacognitive-vella-sdk-1.0.0.tgz
+# in your project:
+npm install /path/to/vellacognitive-vella-sdk-1.0.0.tgz
 ```
 
 ### Python SDK from source
 
 ```bash
-cd sdk/python
-python3 -m venv .venv
+git clone https://github.com/vellacognitive/vella-substrate.git
+cd vella-substrate/sdk/python
+python3.10 -m venv .venv      # 3.10+ required; replace with python3.11/3.12 as available
 . .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -e ".[dev]"
@@ -107,6 +110,8 @@ print(result["proof_bundle"]["envelope_id"])
   - `verify/verify.js`, `verify/verify.py`, `verify/verify.sh` standalone proof-bundle verifiers
 - Test vectors:
   - `test-vectors/valid/` and `test-vectors/tampered/` for verifier CI and audit workflows
+- Benchmarks:
+  - `benchmarks/` reproducible latency harness for both SDKs — see [`benchmarks/README.md`](benchmarks/README.md) for methodology and reference results
 
 ## Where this SDK fits
 
