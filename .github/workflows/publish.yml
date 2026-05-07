@@ -30,7 +30,7 @@ jobs:
     outputs:
       version: ${{ steps.derive.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Derive expected version from tag
         id: derive
@@ -76,9 +76,9 @@ jobs:
       run:
         working-directory: sdk/node
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
@@ -89,15 +89,8 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Publish (with provenance)
-        # Auth: one-time NPM_TOKEN (Granular Access Token, scope @vellacognitive,
-        # 30-day expiration). To be replaced by Trusted Publisher OIDC after the
-        # first publish — see workflow header comment.
-        # Provenance: still OIDC-signed via id-token: write below; only auth
-        # is token-based.
+      - name: Publish (Trusted Publisher OIDC + provenance)
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-python:
     name: Publish vella-sdk to PyPI
@@ -108,9 +101,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
