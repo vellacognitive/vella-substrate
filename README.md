@@ -34,38 +34,17 @@ The SDK is designed for in-process, low-latency adjudication; the authority deci
 
 ## Install
 
-> **Registry packages are not yet published.** `npm install @vellacognitive/vella-sdk` and `pip install vella-sdk` will be live with v1.0.1. Until then, install from source against this repository — the SDK has no external runtime dependencies on Node and one (`cryptography`) on Python.
-
-### Node SDK from source
-
 ```bash
-git clone https://github.com/vellacognitive/vella-substrate.git
-cd vella-substrate/sdk/node
-npm ci
-npm test
+npm install @vellacognitive/vella-sdk
 ```
 
-Then import directly from the checkout, or `npm pack` to produce a tarball:
-
 ```bash
-npm pack          # produces vellacognitive-vella-sdk-1.0.0.tgz
-# in your project:
-npm install /path/to/vellacognitive-vella-sdk-1.0.0.tgz
+pip install vella-sdk
 ```
 
-### Python SDK from source
+The Node package has no runtime dependencies. The Python package depends only on [`cryptography`](https://pypi.org/project/cryptography/) for ECDSA signing. Python 3.10+ required; Node 18+ required.
 
-```bash
-git clone https://github.com/vellacognitive/vella-substrate.git
-cd vella-substrate/sdk/python
-python3.10 -m venv .venv      # 3.10+ required; replace with python3.11/3.12 as available
-. .venv/bin/activate
-python -m pip install --upgrade pip
-pip install -e ".[dev]"
-pytest
-ruff check .
-mypy --strict vella/
-```
+Releases on npm and PyPI are published via [Trusted Publisher](https://docs.pypi.org/trusted-publishers/) (OIDC) from this repository's tagged GitHub Releases. The npm package carries [provenance attestations](https://docs.npmjs.com/generating-provenance-statements) you can verify with `npm audit signatures`.
 
 ## Quick example
 
@@ -98,6 +77,35 @@ result = govern(
 
 print(result["decision"], result["reason_code"])
 print(result["proof_bundle"]["envelope_id"])
+```
+
+## Local development
+
+Contributors and anyone running an unreleased revision against their own code path:
+
+### Node SDK from source
+
+```bash
+git clone https://github.com/vellacognitive/vella-substrate.git
+cd vella-substrate/sdk/node
+npm ci
+npm test
+```
+
+To install the source checkout into another project, `npm pack` produces a tarball that `npm install /path/to/tarball.tgz` will accept.
+
+### Python SDK from source
+
+```bash
+git clone https://github.com/vellacognitive/vella-substrate.git
+cd vella-substrate/sdk/python
+python3.10 -m venv .venv      # 3.10+ required; replace with python3.11/3.12 as available
+. .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -e ".[dev]"
+pytest
+ruff check .
+mypy --strict vella/
 ```
 
 ## What this repository contains
