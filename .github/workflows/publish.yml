@@ -90,7 +90,14 @@ jobs:
         run: npm test
 
       - name: Publish (with provenance)
+        # Auth: one-time NPM_TOKEN (Granular Access Token, scope @vellacognitive,
+        # 30-day expiration). To be replaced by Trusted Publisher OIDC after the
+        # first publish — see workflow header comment.
+        # Provenance: still OIDC-signed via id-token: write below; only auth
+        # is token-based.
         run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-python:
     name: Publish vella-sdk to PyPI
