@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19738377.svg)](https://doi.org/10.5281/zenodo.19738377)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19738376.svg)](https://doi.org/10.5281/zenodo.19738376)
 [![Test SDK](https://github.com/vellacognitive/vella-substrate/actions/workflows/test-sdk.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/test-sdk.yml)
 [![Verify Test Vectors](https://github.com/vellacognitive/vella-substrate/actions/workflows/verify-test-vectors.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/verify-test-vectors.yml)
 [![Lint Schemas](https://github.com/vellacognitive/vella-substrate/actions/workflows/lint-schemas.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/lint-schemas.yml)
@@ -151,7 +151,7 @@ See [SECURITY.md](SECURITY.md).
 
 If you reference VELLA in research, writing, or technical documentation, please cite:
 
-> Wilson, M. (2026). *An Inspectable Substrate for AI Governance* (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.19738377
+> Wilson, M. (2026). *An Inspectable Substrate for AI Governance*. Zenodo. https://doi.org/10.5281/zenodo.19738376
 
 The conceptual argument accompanying this release is available as a companion essay:
 
