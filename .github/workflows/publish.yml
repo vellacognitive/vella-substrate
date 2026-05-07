@@ -1,0 +1,134 @@
+name: Publish SDKs
+
+# Triggers on a published GitHub Release. Tag the release `vX.Y.Z` and the
+# version in package.json / pyproject.toml must match. Both jobs use OIDC
+# Trusted Publisher flows — no long-lived secrets in the repo.
+#
+# One-time setup (already done; documented here for the audit trail):
+#   npm:  Settings → Trusted publishers → Add (repo: vellacognitive/vella-substrate,
+#         workflow: publish.yml, environment: release).
+#   PyPI: Project → Publishing → Trusted publishers → Add pending publisher
+#         (same triple) before the project exists; PyPI promotes it on first
+#         publish.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to verify (must match package versions, e.g. v1.0.1)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify-versions:
+    name: Verify tag matches package versions
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.derive.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Derive expected version from tag
+        id: derive
+        run: |
+          TAG="${{ github.event.release.tag_name || inputs.tag }}"
+          VERSION="${TAG#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Tag $TAG → expected version $VERSION"
+
+      - name: Check sdk/node/package.json version
+        run: |
+          NODE_VER=$(node -e "console.log(require('./sdk/node/package.json').version)")
+          if [ "$NODE_VER" != "${{ steps.derive.outputs.version }}" ]; then
+            echo "::error::sdk/node/package.json version $NODE_VER does not match tag-derived ${{ steps.derive.outputs.version }}"
+            exit 1
+          fi
+
+      - name: Check sdk/python/pyproject.toml version
+        run: |
+          PY_VER=$(python3 -c "import tomllib; print(tomllib.load(open('sdk/python/pyproject.toml','rb'))['project']['version'])")
+          if [ "$PY_VER" != "${{ steps.derive.outputs.version }}" ]; then
+            echo "::error::sdk/python/pyproject.toml version $PY_VER does not match tag-derived ${{ steps.derive.outputs.version }}"
+            exit 1
+          fi
+
+      - name: Check sdk/python/vella/__init__.py version
+        run: |
+          INIT_VER=$(python3 -c "import re; print(re.search(r'__version__\s*=\s*\"([^\"]+)\"', open('sdk/python/vella/__init__.py').read()).group(1))")
+          if [ "$INIT_VER" != "${{ steps.derive.outputs.version }}" ]; then
+            echo "::error::sdk/python/vella/__init__.py __version__ $INIT_VER does not match tag-derived ${{ steps.derive.outputs.version }}"
+            exit 1
+          fi
+
+  publish-node:
+    name: Publish @vellacognitive/vella-sdk to npm
+    needs: verify-versions
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: sdk/node
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Publish (with provenance)
+        # Auth: one-time NPM_TOKEN (Granular Access Token, scope @vellacognitive,
+        # 30-day expiration). To be replaced by Trusted Publisher OIDC after the
+        # first publish — see workflow header comment.
+        # Provenance: still OIDC-signed via id-token: write below; only auth
+        # is token-based.
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-python:
+    name: Publish vella-sdk to PyPI
+    needs: verify-versions
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tooling
+        run: python -m pip install --upgrade pip build
+
+      - name: Build sdist + wheel
+        working-directory: sdk/python
+        run: python -m build
+
+      - name: Run tests against built wheel
+        working-directory: sdk/python
+        run: |
+          python -m pip install dist/*.whl
+          python -m pip install pytest cryptography
+          pytest -q
+
+      - name: Publish to PyPI (Trusted Publisher / OIDC)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: sdk/python/dist/

@@ -8,7 +8,7 @@ from .evaluator import create_evaluator
 from .policy import DEFAULT_POLICY
 from .proof import build_envelope, sign_bundle
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 _EVALUATOR = create_evaluator(DEFAULT_POLICY)
 

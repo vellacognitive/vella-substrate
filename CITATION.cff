@@ -2,7 +2,7 @@ cff-version: 1.2.0
 title: "VELLA — Governance Substrate"
 authors:
   - name: "Vella Cognitive, LLC"
-version: 1.0.0
+version: 1.0.1
 doi: 10.5281/zenodo.19738377
 license: MIT
 repository-code: https://github.com/vellacognitive/vella-substrate
