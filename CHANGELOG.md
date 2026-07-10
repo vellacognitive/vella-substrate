@@ -5,13 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.2] - Unreleased
 
-### Added
 - Export and document `create_evaluator` as the public Python API for application-supplied policy evaluation.
-
-### Changed
-- Custom evaluator failures now return `DENIED` with `E_EVALUATOR_INTERNAL` at the public authority boundary.
+- Document custom policy evaluator usage.
+- Preserve existing `govern(...)` behavior and proof/signing behavior.
 
 ## [1.0.1] - 2026-05-07
 
