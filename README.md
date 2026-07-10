@@ -46,6 +46,8 @@ pip install vella-sdk
 
 The Node package has no runtime dependencies. The Python package depends only on [`cryptography`](https://pypi.org/project/cryptography/) for ECDSA signing. Python 3.10+ required; Node 18+ required.
 
+Python applications with an application-supplied policy can use the stable `from vella import create_evaluator` API. See the [Python SDK custom-policy documentation](sdk/python/README.md#custom-policy-evaluators).
+
 Releases on npm and PyPI are published via [Trusted Publisher](https://docs.pypi.org/trusted-publishers/) (OIDC) from this repository's tagged GitHub Releases. The npm package carries [provenance attestations](https://docs.npmjs.com/generating-provenance-statements) you can verify with `npm audit signatures`.
 
 ## Quick example

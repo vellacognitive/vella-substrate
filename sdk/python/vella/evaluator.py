@@ -24,6 +24,10 @@ DECISION_DENIED_EVIDENCE: Decision = {
     "decision": "DENIED",
     "reason_code": "E_EVIDENCE_MISSING",
 }
+DECISION_DENIED_INTERNAL: Decision = {
+    "decision": "DENIED",
+    "reason_code": "E_EVALUATOR_INTERNAL",
+}
 
 
 @dataclass(frozen=True)
@@ -164,8 +168,14 @@ class Evaluator:
         self.policy_version = compiled_policy.policy_version
 
     def evaluate(self, input_dict: Mapping[str, object] | None) -> Decision:
+        try:
+            return self._evaluate(input_dict)
+        except Exception:  # noqa: BLE001 - the public authority boundary must fail closed
+            return DECISION_DENIED_INTERNAL.copy()
+
+    def _evaluate(self, input_dict: Mapping[str, object] | None) -> Decision:
         if input_dict is None:
-            return DECISION_DENIED_INTENT_REQUIRED
+            return DECISION_DENIED_INTENT_REQUIRED.copy()
 
         raw_intent = (
             input_dict.get("intent_id")
@@ -174,22 +184,22 @@ class Evaluator:
         )
         intent_id = _normalize_id(raw_intent)
         if not intent_id:
-            return DECISION_DENIED_INTENT_REQUIRED
+            return DECISION_DENIED_INTENT_REQUIRED.copy()
 
         authority_scope_id = input_dict.get("authority_scope_id")
         if authority_scope_id is None or authority_scope_id == "":
             scope = self._default_scope
             if scope is None:
-                return DECISION_DENIED_FAST
+                return DECISION_DENIED_FAST.copy()
         else:
             scope = self._compiled.scopes.get(str(authority_scope_id))
             if scope is None:
-                return DECISION_DENIED_FAST
+                return DECISION_DENIED_FAST.copy()
 
         required_mask = scope.intent_rules.get(intent_id)
         if required_mask is None:
             if not scope.allow_unknown_intents:
-                return DECISION_DENIED_FAST
+                return DECISION_DENIED_FAST.copy()
             required_mask = scope.default_required_mask
 
         requested_policy_version = input_dict.get("policy_version")
@@ -198,13 +208,13 @@ class Evaluator:
             and requested_policy_version != ""
             and str(requested_policy_version) != self._compiled.policy_version
         ):
-            return DECISION_DENIED_POLICY_VERSION
+            return DECISION_DENIED_POLICY_VERSION.copy()
 
         evidence_mask = to_evidence_mask(input_dict.get("evidence_mask"), self._compiled.evidence_bits)
         if (evidence_mask & required_mask) != required_mask:
-            return DECISION_DENIED_EVIDENCE
+            return DECISION_DENIED_EVIDENCE.copy()
 
-        return DECISION_ALLOWED
+        return DECISION_ALLOWED.copy()
 
 
 def create_evaluator(policy_input: Mapping[str, object] | None = None) -> Evaluator:
