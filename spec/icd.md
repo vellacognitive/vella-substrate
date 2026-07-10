@@ -30,7 +30,7 @@ This document defines the canonical interface between the VELLA embedded SDK and
 
 **SDK vs. commercial runtime.** VELLA exists in two deployment forms. The embedded SDK in this repository runs in-process, as a library imported into a Node.js or Python application. The commercial runtime (not published here) runs as a standalone service with HTTP and gRPC surfaces, persistence, and multi-tenant operation. Both forms produce and accept the same proof bundle format, verifiable with the same tools in `verify/`. The interface defined in this ICD applies to the SDK. See `DEPLOYMENT.md` for guidance on when each form is appropriate.
 
-**v1 Policy Note.** In v1, the SDK compiles its decision policy at module initialization. The default policy (`min-v1`) supports three intents: `EXECUTE_CHANGE`, `ESCALATE_PRIVILEGE`, and `DATA_EXPORT`. Custom policy sets are deployed by constructing a custom evaluator with an application-supplied policy object. A runtime policy-reload mechanism is planned for a future version.
+**v1 Policy Note.** In v1, the SDK compiles its decision policy at module initialization. The default policy (`min-v1`) supports three intents: `EXECUTE_CHANGE`, `ESCALATE_PRIVILEGE`, and `DATA_EXPORT`. Python applications deploy custom policy sets through the public `from vella import create_evaluator` API with an application-supplied policy object. The returned evaluator accepts the mapping-based request fields defined in §4.1 and returns `decision` and `reason_code`; unexpected evaluator failures return `DENIED` with `E_EVALUATOR_INTERNAL`. A runtime policy-reload mechanism is planned for a future version.
 
 ---
 
