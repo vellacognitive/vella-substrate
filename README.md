@@ -2,7 +2,7 @@
   <img src="assets/vella-authority-boundary.svg" alt="VELLA — Authority before consequence · proof after decision">
 </p>
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19738376.svg)](https://doi.org/10.5281/zenodo.19738376)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19738376-blue.svg)](https://doi.org/10.5281/zenodo.19738376)
 [![Test SDK](https://github.com/vellacognitive/vella-substrate/actions/workflows/test-sdk.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/test-sdk.yml)
 [![Verify Test Vectors](https://github.com/vellacognitive/vella-substrate/actions/workflows/verify-test-vectors.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/verify-test-vectors.yml)
 [![Lint Schemas](https://github.com/vellacognitive/vella-substrate/actions/workflows/lint-schemas.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/lint-schemas.yml)
