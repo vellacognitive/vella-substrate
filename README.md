@@ -6,10 +6,9 @@
 [![Test SDK](https://github.com/vellacognitive/vella-substrate/actions/workflows/test-sdk.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/test-sdk.yml)
 [![Verify Test Vectors](https://github.com/vellacognitive/vella-substrate/actions/workflows/verify-test-vectors.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/verify-test-vectors.yml)
 [![Lint Schemas](https://github.com/vellacognitive/vella-substrate/actions/workflows/lint-schemas.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/lint-schemas.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 # VELLA: Governance Substrate for AI Agents & Autonomous Systems
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **An agent can propose the action. VELLA decides whether it has authority to happen and leaves proof of the decision.**
 
@@ -18,7 +17,7 @@
 </p>
 
 <p align="center">
-  <sub><strong>Contextual execution-boundary visualization.</strong> VELLA is an embedded SDK, not a dashboard; the calling system owns the interface and execution path.</sub>
+  <sub><strong>Contextual execution-boundary visualization.</strong> VELLA is an embedded SDK; callers own the UI and execution.</sub>
 </p>
 
 **VELLA is the decision layer between an AI agent or autonomous system proposing an action and that action being taken.** It sits where alignment, input safety, and IAM don't: at the specific moment an autonomous system is about to act, under a specific policy, with specific evidence in hand.
