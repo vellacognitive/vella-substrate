@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/vella-authority-boundary.svg" alt="VELLA — Authority before consequence · proof after decision">
+</p>
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19738376.svg)](https://doi.org/10.5281/zenodo.19738376)
 [![Test SDK](https://github.com/vellacognitive/vella-substrate/actions/workflows/test-sdk.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/test-sdk.yml)
 [![Verify Test Vectors](https://github.com/vellacognitive/vella-substrate/actions/workflows/verify-test-vectors.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/verify-test-vectors.yml)
@@ -6,6 +10,12 @@
 # VELLA — Governance Substrate for AI Agents & Autonomous Systems
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+**An agent can propose the action. VELLA decides whether it has authority to happen — and leaves proof of the decision.**
+
+<p align="center">
+  <img src="assets/vella-consequence-boundary.gif" alt="Animated VELLA consequence-boundary demo showing proposed agent actions evaluated against authority and evidence, with allowed and denied decisions recorded in a signed proof ledger">
+</p>
 
 **VELLA is the decision layer between an AI agent or autonomous system proposing an action and that action being taken.** It sits where alignment, input safety, and IAM don't: at the specific moment an autonomous system is about to act, under a specific policy, with specific evidence in hand.
 

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="480" viewBox="0 0 1500 480" role="img" aria-labelledby="title desc">
+  <title id="title">VELLA — authority boundary GitHub hero</title>
+  <desc id="desc">The original VELLA wordmark crosses a precise authority boundary between proposed action and a signed deterministic decision.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#080C13"/><stop offset=".49" stop-color="#0A1018"/><stop offset=".51" stop-color="#0A111B"/><stop offset="1" stop-color="#090C16"/></linearGradient>
+    <linearGradient id="boundary" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#76E2CA" stop-opacity="0"/><stop offset=".2" stop-color="#76E2CA"/><stop offset=".52" stop-color="#C3F3FF"/><stop offset=".78" stop-color="#9A94FF"/><stop offset="1" stop-color="#9A94FF" stop-opacity="0"/></linearGradient>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#86EBD7" stop-opacity=".2"/><stop offset=".62" stop-color="#6AB8D8" stop-opacity=".055"/><stop offset="1" stop-color="#6AB8D8" stop-opacity="0"/></radialGradient>
+    <pattern id="rules" width="72" height="24" patternUnits="userSpaceOnUse"><path d="M0 24H72" stroke="#A6B7CA" stroke-opacity=".055"/><path d="M72 0V24" stroke="#A6B7CA" stroke-opacity=".035"/></pattern>
+    <filter id="blur" x="-100%" y="-20%" width="300%" height="140%"><feGaussianBlur stdDeviation="13"/></filter>
+  </defs>
+
+  <rect width="1500" height="480" rx="24" fill="url(#bg)"/>
+  <rect x="1" y="1" width="1498" height="478" rx="23" fill="none" stroke="#D8E4F4" stroke-opacity=".13"/>
+  <rect x="28" y="28" width="1444" height="424" rx="10" fill="url(#rules)"/>
+  <rect x="596" y="0" width="308" height="480" fill="url(#halo)"/>
+  <rect x="748" y="42" width="4" height="396" rx="2" fill="url(#boundary)" filter="url(#blur)" opacity=".7"/>
+  <rect x="749.5" y="42" width="1" height="396" fill="url(#boundary)"/>
+
+  <g fill="none" stroke="#AFC0D4" stroke-width="1.2">
+    <path d="M100 240H318" stroke-opacity=".22"/>
+    <path d="M1182 240H1400" stroke-opacity=".22"/>
+    <path d="M318 240L360 198H405" stroke="#76E2CA" stroke-opacity=".46"/>
+    <path d="M1095 198H1140L1182 240" stroke="#9B97FF" stroke-opacity=".46"/>
+  </g>
+  <g fill="#D7E4F2"><circle cx="100" cy="240" r="2.5" opacity=".6"/><circle cx="1400" cy="240" r="2.5" opacity=".6"/></g>
+
+  <g transform="translate(405 112) scale(2.65)" fill="none" stroke="#F2F7FD" stroke-width="3" stroke-linejoin="miter" stroke-miterlimit="4" stroke-linecap="butt">
+    <path d="M0 0H50L25 60Z"/><path d="M103 0H67V60H103"/><path d="M67 30H97"/><path d="M120 0V60H150"/><path d="M167 0V60H197"/><path d="M214 60L237 0L260 60"/><path d="M222.43 38H251.57"/>
+  </g>
+
+  <g font-family="IBM Plex Mono, ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" letter-spacing="1.45">
+    <text x="96" y="72" fill="#6E849B">01 / PROPOSED ACTION</text>
+    <text x="1404" y="72" text-anchor="end" fill="#7A7EAA">03 / SIGNED DECISION</text>
+    <text x="750" y="72" text-anchor="middle" fill="#8FD9CF">02 / AUTHORITY BOUNDARY</text>
+  </g>
+
+  <g transform="translate(558 333)">
+    <rect width="384" height="42" rx="21" fill="#0E1722" stroke="#BED1E5" stroke-opacity=".18"/>
+    <circle cx="24" cy="21" r="4" fill="#78E1C8"/>
+    <text x="41" y="26" fill="#AFC2D6" font-family="IBM Plex Mono, ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" letter-spacing="1.25">POLICY PINNED</text>
+    <path d="M188 13V29" stroke="#AFC2D6" stroke-opacity=".18"/>
+    <circle cx="211" cy="21" r="4" fill="#9C98FF"/>
+    <text x="228" y="26" fill="#AFC2D6" font-family="IBM Plex Mono, ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" letter-spacing="1.25">PROOF VERIFIED</text>
+  </g>
+  <text x="750" y="421" text-anchor="middle" fill="#74889F" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16" font-weight="500" letter-spacing="1.45">AUTHORITY BEFORE CONSEQUENCE · PROOF AFTER DECISION</text>
+</svg>
