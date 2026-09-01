@@ -25,6 +25,27 @@ jobs:
           npm ci
           npm test
 
+      - name: GitHub Actions adapter allows satisfied policy
+        id: vella_allowed
+        uses: ./integrations/github-action
+        with:
+          intent: EXECUTE_CHANGE
+          evidence-mask: "1"
+
+      - name: GitHub Actions adapter denies missing evidence
+        id: vella_denied
+        continue-on-error: true
+        uses: ./integrations/github-action
+        with:
+          intent: ESCALATE_PRIVILEGE
+          evidence-mask: "1"
+
+      - name: Verify adapter deny path failed closed
+        if: steps.vella_denied.outcome != 'failure'
+        run: |
+          echo "Expected the VELLA authority gate to fail on DENIED"
+          exit 1
+
       - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:

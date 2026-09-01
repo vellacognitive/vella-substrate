@@ -10,6 +10,8 @@ This repository includes:
 - Verifiers: `verify/`
 - Specifications and schemas: `spec/`
 - Test vectors: `test-vectors/`
+- Reference adapters: `integrations/`
+- Public integration, use-case, roadmap, and positioning documentation
 
 Please keep changes narrow and aligned to the component you are editing.
 
@@ -56,6 +58,8 @@ Tampered vectors must fail verification.
 - Add or update tests for SDK logic changes.
 - Keep generated artifacts and local caches out of commits.
 - Update docs when API behavior, schema fields, or workflow expectations change.
+- For a new adapter, satisfy the acceptance bar in [INTEGRATIONS.md](INTEGRATIONS.md), including a tested fail-closed deny path.
+- For a public use case, document the consequence boundary, evidence source, deny path, and proof-retention posture described in [USE_CASES.md](USE_CASES.md).
 
 ## Security reporting
 

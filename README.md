@@ -39,10 +39,41 @@ VELLA decides whether an action is authorized before it runs. The calling system
 The SDK is designed for in-process, low-latency adjudication; the authority decision can sit directly on the action path rather than being deferred to post-hoc logging.
 
 **Start here:**
+
 - [An Inspectable Substrate for AI Governance](https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance) — the conceptual argument (~14 min read)
 - [Quickstart](#quick-example) — Node or Python SDK, working example in 2 minutes
+- [GitHub Actions authority gate](integrations/github-action/README.md) — block a protected workflow step on `DENIED`
+- [Integration map](INTEGRATIONS.md) — shipped surfaces, compatible hook points, and planned adapters
+- [Use-case registry](USE_CASES.md) — concrete consequence boundaries and deny-path obligations
+- [Public roadmap](ROADMAP.md) — shipped, next, and exploratory work
 - [Threat model](spec/threat-model.md) — what VELLA does and does not protect against
 - [AI-assisted integration prompting](AI_INTEGRATION_PROMPTING.md) — prompt patterns for using AI coding agents to integrate VELLA without outsourcing authority decisions
+
+## How VELLA differs
+
+VELLA is not an agent framework, policy daemon, proxy, or governance platform. It is the embedded authority primitive those systems can call when a proposed action needs a deterministic, evidence-conditioned decision and a proof that survives the originating system.
+
+| Adjacent system | Primary job | VELLA's boundary |
+|---|---|---|
+| Agent framework | Plans work and invokes tools | VELLA does not own the loop; it adjudicates the proposed consequential action |
+| General policy engine | Evaluates broad application policy | VELLA binds an action, authority scope, policy version, and evidence state to `ALLOWED` or `DENIED` |
+| Proxy or gateway | Intercepts and forwards traffic | The embedded SDK supplies the authority decision; the caller remains the enforcement point |
+| Audit or logging system | Records what happened | VELLA decides before execution and can emit a signed, offline-verifiable proof bundle |
+| Authority or receipt protocol | Standardizes authority exchange | VELLA is a small implementation substrate with a compiled policy path, evidence-conditioned adjudication, and portable proof |
+
+The useful combination is **minimal + embedded + evidence-conditioned + deterministic + independently verifiable**. See the [public positioning and provenance note](docs/positioning-and-provenance.md) for the narrower claim VELLA makes within the emerging execution-authorization category.
+
+## Integration surfaces
+
+| Surface | Public status | Use it for |
+|---|---|---|
+| Node.js and Python SDKs | **Shipped** | In-process action gates with no network dependency |
+| GitHub Actions authority gate | **Shipped reference adapter** | Protected deployment, release, or change-control jobs |
+| Generic tool-dispatch hook | **Documented pattern** | Agent harnesses that expose a pre-tool-call interception point |
+| Claude Code / Claude Agent SDK, MCP client dispatch, LangGraph, OpenAI Agents | **Compatible insertion points; dedicated adapters planned** | Framework-native distribution without coupling the substrate to a framework |
+| HTTP, gRPC, sidecar, and Kubernetes surfaces | **Commercial components; not published here** | Polyglot, network-boundary, and multi-tenant enforcement |
+
+Status means exactly what it says: named compatibility is not represented as a maintained adapter until adapter code and tests exist in this repository. See [INTEGRATIONS.md](INTEGRATIONS.md) for the current matrix.
 
 ## Install
 
@@ -134,6 +165,10 @@ mypy --strict vella/
   - `test-vectors/valid/` and `test-vectors/tampered/` for verifier CI and audit workflows
 - Benchmarks:
   - `benchmarks/` reproducible latency harness for both SDKs — see [`benchmarks/README.md`](benchmarks/README.md) for methodology and reference results
+- Integrations:
+  - `integrations/github-action/` fail-closed GitHub Actions reference adapter
+- Public adoption docs:
+  - `INTEGRATIONS.md`, `USE_CASES.md`, `ROADMAP.md`, and `docs/positioning-and-provenance.md`
 
 ## Where this SDK fits
 

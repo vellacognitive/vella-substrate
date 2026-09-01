@@ -1,0 +1,55 @@
+name: VELLA Authority Gate
+description: Fail a GitHub Actions step when VELLA denies a proposed consequential action.
+
+inputs:
+  intent:
+    description: VELLA intent identifier, such as EXECUTE_CHANGE.
+    required: true
+  evidence-mask:
+    description: Decimal evidence bitmask established by the workflow.
+    required: true
+  authority-scope:
+    description: Optional authority scope identifier.
+    required: false
+  policy-version:
+    description: Optional policy version; must match the compiled policy.
+    required: false
+  proof-signing-key:
+    description: Optional PEM-encoded EC private key supplied from GitHub Actions secrets.
+    required: false
+  proof-output:
+    description: Path for a signed proof bundle when proof-signing-key is supplied.
+    required: false
+    default: vella-proof.json
+
+outputs:
+  decision:
+    description: VELLA decision, ALLOWED or DENIED.
+    value: ${{ steps.gate.outputs.decision }}
+  reason-code:
+    description: Machine-readable VELLA reason code.
+    value: ${{ steps.gate.outputs['reason-code'] }}
+  latency-us:
+    description: In-process adjudication latency in microseconds.
+    value: ${{ steps.gate.outputs['latency-us'] }}
+  proof-path:
+    description: Proof-bundle path when signing was requested and succeeded.
+    value: ${{ steps.gate.outputs['proof-path'] }}
+
+runs:
+  using: composite
+  steps:
+    - id: gate
+      shell: bash
+      env:
+        VELLA_INTENT: ${{ inputs.intent }}
+        VELLA_EVIDENCE_MASK: ${{ inputs['evidence-mask'] }}
+        VELLA_AUTHORITY_SCOPE: ${{ inputs['authority-scope'] }}
+        VELLA_POLICY_VERSION: ${{ inputs['policy-version'] }}
+        VELLA_PROOF_SIGNING_KEY: ${{ inputs['proof-signing-key'] }}
+        VELLA_PROOF_OUTPUT: ${{ inputs['proof-output'] }}
+      run: node "$GITHUB_ACTION_PATH/gate.mjs"
+
+branding:
+  icon: shield
+  color: purple
