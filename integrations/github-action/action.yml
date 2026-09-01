@@ -18,7 +18,7 @@ inputs:
     description: Optional PEM-encoded EC private key supplied from GitHub Actions secrets.
     required: false
   proof-output:
-    description: Path for a signed proof bundle when proof-signing-key is supplied.
+    description: Regular-file path inside GITHUB_WORKSPACE; symbolic and hard-link aliases are rejected.
     required: false
     default: vella-proof.json
 

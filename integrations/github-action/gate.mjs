@@ -1,5 +1,15 @@
-import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
+import {
+  appendFileSync,
+  closeSync,
+  constants,
+  fchmodSync,
+  lstatSync,
+  mkdirSync,
+  openSync,
+  realpathSync,
+  writeFileSync,
+} from "node:fs";
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
 import { govern } from "../../sdk/node/index.js";
 
@@ -27,6 +37,111 @@ function fail(message) {
     .replaceAll("\n", "%0A");
   process.stderr.write(`::error title=VELLA Authority Gate::${escaped}\n`);
   process.exit(1);
+}
+
+function isInside(root, candidate) {
+  const relativePath = relative(root, candidate);
+  return relativePath !== ".."
+    && !relativePath.startsWith(`..${sep}`)
+    && !isAbsolute(relativePath);
+}
+
+function pathError(path, message) {
+  return new Error(`VELLA proof-output ${path} ${message}`);
+}
+
+function readPathState(path) {
+  try {
+    return lstatSync(path);
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      return null;
+    }
+    throw error;
+  }
+}
+
+function createSafeParent(workspace, relativeProofPath) {
+  const workspaceReal = realpathSync(workspace);
+  const parentRelativePath = dirname(relativeProofPath);
+  let current = workspace;
+
+  if (parentRelativePath !== ".") {
+    for (const component of parentRelativePath.split(sep)) {
+      current = join(current, component);
+      let state = readPathState(current);
+      if (!state) {
+        try {
+          mkdirSync(current, { mode: 0o700 });
+        } catch (error) {
+          if (error?.code !== "EEXIST") {
+            throw error;
+          }
+        }
+        state = readPathState(current);
+      }
+
+      if (!state || state.isSymbolicLink()) {
+        throw pathError(current, "must not contain symbolic links");
+      }
+      if (!state.isDirectory()) {
+        throw pathError(current, "must contain only directory components");
+      }
+    }
+  }
+
+  const parentReal = realpathSync(current);
+  if (!isInside(workspaceReal, parentReal)) {
+    throw pathError(parentReal, "must remain inside GITHUB_WORKSPACE");
+  }
+  return parentReal;
+}
+
+function writeProof(workspace, configuredPath, proofBundle) {
+  if (/[\r\n]/.test(configuredPath)) {
+    throw new Error("VELLA proof-output must not contain line breaks");
+  }
+
+  const workspacePath = resolve(workspace);
+  const requestedPath = resolve(workspacePath, configuredPath);
+  const relativeProofPath = relative(workspacePath, requestedPath);
+  if (!relativeProofPath || !isInside(workspacePath, requestedPath)) {
+    throw pathError(requestedPath, "must resolve to a file inside GITHUB_WORKSPACE");
+  }
+
+  const parentReal = createSafeParent(workspacePath, relativeProofPath);
+  const proofPath = join(parentReal, basename(relativeProofPath));
+  if (/[\r\n]/.test(proofPath)) {
+    throw new Error("VELLA proof-output must not contain line breaks");
+  }
+  const finalState = readPathState(proofPath);
+  if (finalState?.isSymbolicLink()) {
+    throw pathError(proofPath, "must not be a symbolic link");
+  }
+  if (finalState && !finalState.isFile()) {
+    throw pathError(proofPath, "must be a regular file");
+  }
+  if (finalState && finalState.nlink !== 1) {
+    throw pathError(proofPath, "must not share storage through hard links");
+  }
+  const noFollowFlag = Number.isInteger(constants.O_NOFOLLOW) ? constants.O_NOFOLLOW : 0;
+
+  let descriptor;
+  try {
+    descriptor = openSync(
+      proofPath,
+      constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | noFollowFlag,
+      0o600,
+    );
+    fchmodSync(descriptor, 0o600);
+    writeFileSync(descriptor, `${JSON.stringify(proofBundle, null, 2)}\n`, "utf8");
+  } finally {
+    if (descriptor !== undefined) {
+      closeSync(descriptor);
+    }
+  }
+
+  return proofPath;
 }
 
 const intent = optional(process.env.VELLA_INTENT);
@@ -60,22 +175,15 @@ if (signingKey) {
     fail(`VELLA proof signing failed: ${result.proofError ?? "unknown error"}`);
   }
 
-  const workspace = resolve(optional(process.env.GITHUB_WORKSPACE) ?? process.cwd());
-  proofPath = resolve(workspace, optional(process.env.VELLA_PROOF_OUTPUT) ?? "vella-proof.json");
-  const relativeProofPath = relative(workspace, proofPath);
-  if (
-    relativeProofPath === ".."
-    || relativeProofPath.startsWith(`..${sep}`)
-    || isAbsolute(relativeProofPath)
-  ) {
-    fail("VELLA proof-output must resolve inside GITHUB_WORKSPACE");
+  try {
+    proofPath = writeProof(
+      optional(process.env.GITHUB_WORKSPACE) ?? process.cwd(),
+      optional(process.env.VELLA_PROOF_OUTPUT) ?? "vella-proof.json",
+      result.proofBundle,
+    );
+  } catch (error) {
+    fail(error instanceof Error ? error.message : "VELLA proof-output could not be written safely");
   }
-
-  mkdirSync(dirname(proofPath), { recursive: true });
-  writeFileSync(proofPath, `${JSON.stringify(result.proofBundle, null, 2)}\n`, {
-    encoding: "utf8",
-    mode: 0o600,
-  });
 }
 
 writeOutput("decision", result.decision);

@@ -10,6 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update GitHub-owned workflow actions to their current Node 24-backed major versions after live example verification exposed the Node 20 runtime deprecation.
+- Pin privileged publishing actions to reviewed commit SHAs and add automated GitHub Actions dependency update proposals.
+- Enable repository release immutability for releases published after `v1.0.3`.
+
+### Fixed
+
+- Bind every registry publish job to the single commit selected by a validated stable release tag, and bind release-triggered runs to the commit captured by the release event.
+- Keep release inputs out of generated shell source and reject noncanonical tag syntax before checkout.
+- Reject symbolic-link, hard-link, line-break, and workspace-escape proof paths before emitting action decision outputs.
+- Preserve signed denied proofs in the production workflow example and correct release-immutability guidance.
+- Assert the adapter's ALLOWED decision explicitly in hosted SDK CI.
+- Preserve safe signed-proof writes on Windows while retaining no-follow enforcement where the platform supports it.
 
 ## [1.0.3] - 2026-09-01
 

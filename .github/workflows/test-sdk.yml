@@ -7,6 +7,25 @@ on:
     branches: [main]
 
 jobs:
+  portable-proof-write:
+    name: Portable proof write (${{ matrix.os }})
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v7
+        with:
+          node-version: "20"
+
+      - name: Write and verify a normal in-workspace proof
+        run: node --test --test-name-pattern "writes and independently verifies" integrations/github-action/gate.test.mjs
+
   sdk-tests:
     runs-on: ubuntu-latest
 
@@ -22,6 +41,11 @@ jobs:
       - name: Verify release metadata consistency
         run: node scripts/check-release-consistency.mjs
 
+      - name: Release and action boundary tests
+        run: |
+          node --test scripts/check-release-consistency.test.mjs
+          node --test integrations/github-action/gate.test.mjs
+
       - name: Node SDK tests
         working-directory: sdk/node
         run: |
@@ -34,6 +58,12 @@ jobs:
         with:
           intent: EXECUTE_CHANGE
           evidence-mask: "1"
+
+      - name: Verify adapter allow path emitted ALLOWED
+        if: steps.vella_allowed.outputs.decision != 'ALLOWED'
+        run: |
+          echo "Expected the VELLA authority gate to emit ALLOWED"
+          exit 1
 
       - name: GitHub Actions adapter denies missing evidence
         id: vella_denied

@@ -2,7 +2,7 @@ name: Publish SDKs
 
 # Triggers on a published GitHub Release. Tag the release `vX.Y.Z` and the
 # version across packages, citation metadata, and changelog must match. Both jobs use OIDC
-# Trusted Publisher flows — no long-lived secrets in the repo.
+# Trusted Publisher flows; no long-lived secrets in the repo.
 #
 # One-time setup (already done; documented here for the audit trail):
 #   npm:  Settings → Trusted publishers → Add (repo: vellacognitive/vella-substrate,
@@ -36,24 +36,68 @@ jobs:
   verify-versions:
     name: Verify tag matches package versions
     runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      RELEASE_EVENT_SHA: ${{ github.event_name == 'release' && github.sha || '' }}
     outputs:
       version: ${{ steps.derive.outputs.version }}
+      sha: ${{ steps.source.outputs.sha }}
+      tag: ${{ steps.derive.outputs.tag }}
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Derive expected version from tag
+      - name: Validate release tag
         id: derive
+        shell: bash
         run: |
-          TAG="${{ github.event.release.tag_name || inputs.tag }}"
-          VERSION="${TAG#v}"
+          if [[ ! "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "Release tag must use stable vMAJOR.MINOR.PATCH syntax" >&2
+            exit 1
+          fi
+          VERSION="${RELEASE_TAG#v}"
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Tag $TAG → expected version $VERSION"
+          echo "Validated tag $RELEASE_TAG with expected version $VERSION"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: refs/tags/${{ steps.derive.outputs.tag }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Bind release to checked-out commit
+        id: source
+        shell: bash
+        run: |
+          TAG_COMMIT="$(git rev-parse --verify "refs/tags/${RELEASE_TAG}^{commit}")"
+          HEAD_COMMIT="$(git rev-parse --verify HEAD)"
+          if [[ "$TAG_COMMIT" != "$HEAD_COMMIT" ]]; then
+            echo "Release tag resolves to $TAG_COMMIT, but checkout is $HEAD_COMMIT" >&2
+            exit 1
+          fi
+          if [[ -n "$RELEASE_EVENT_SHA" ]]; then
+            if [[ ! "$RELEASE_EVENT_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+              echo "Release event did not provide a full commit SHA" >&2
+              exit 1
+            fi
+            EVENT_COMMIT="$(git rev-parse --verify "${RELEASE_EVENT_SHA}^{commit}")"
+            if [[ "$TAG_COMMIT" != "$EVENT_COMMIT" ]]; then
+              echo "Release tag resolves to $TAG_COMMIT, but the release event identifies $EVENT_COMMIT" >&2
+              exit 1
+            fi
+          fi
+          echo "sha=$TAG_COMMIT" >> "$GITHUB_OUTPUT"
+          echo "Bound $RELEASE_TAG to $TAG_COMMIT"
 
       - name: Verify all release surfaces
         run: |
-          node scripts/check-release-consistency.mjs \
-            --tag "${{ github.event.release.tag_name || inputs.tag }}" \
+          CHECK_ARGS=(
+            --tag "$RELEASE_TAG"
             --require-released
+            --require-tagged-head
+          )
+          if [[ -n "$RELEASE_EVENT_SHA" ]]; then
+            CHECK_ARGS+=(--expected-commit "$RELEASE_EVENT_SHA")
+          fi
+          node scripts/check-release-consistency.mjs "${CHECK_ARGS[@]}"
 
   publish-node:
     name: Publish @vellacognitive/vella-sdk to npm
@@ -68,9 +112,12 @@ jobs:
       run:
         working-directory: sdk/node
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.verify-versions.outputs.sha }}
+          persist-credentials: false
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
@@ -95,9 +142,12 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.verify-versions.outputs.sha }}
+          persist-credentials: false
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: "3.12"
 
@@ -116,6 +166,6 @@ jobs:
           pytest -q
 
       - name: Publish to PyPI (Trusted Publisher / OIDC)
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
         with:
           packages-dir: sdk/python/dist/

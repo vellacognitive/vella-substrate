@@ -30,13 +30,15 @@ jobs:
         run: ./scripts/deploy.sh
 
       - name: Retain VELLA proof
+        if: always() && hashFiles('artifacts/vella-deploy-proof.json') != ''
         uses: actions/upload-artifact@v7
         with:
           name: vella-deploy-proof
-          path: ${{ steps.vella.outputs['proof-path'] }}
+          path: artifacts/vella-deploy-proof.json
+          if-no-files-found: error
 ```
 
-For production use, pin the action to a reviewed immutable release tag such as `v1.0.3` or to a commit SHA. A moving major-version tag, when available, is a convenience channel rather than the highest-assurance pin.
+For production use, pin the action to a reviewed version tag such as `v1.0.3` or, for the highest assurance, to the full commit SHA for that release. The existing `v1.0.3` GitHub release predates repository release immutability. Release immutability is enabled for future VELLA releases and will lock each new release's tag and assets when it is published. A moving major-version tag, when available, is a convenience channel rather than a high-assurance pin.
 
 The repository also includes a [runnable protected-deployment workflow](../../examples/github-actions-protected-deploy/README.md) that exercises allowed and denied decisions, verifies the signed proof, and keeps the simulated consequence unreachable on denial.
 
@@ -49,7 +51,7 @@ The repository also includes a [runnable protected-deployment workflow](../../ex
 | `authority-scope` | No | Explicit authority scope; unknown scopes fail closed |
 | `policy-version` | No | Expected policy version; mismatches fail closed |
 | `proof-signing-key` | No | PEM private key from a GitHub Actions secret |
-| `proof-output` | No | Path inside `GITHUB_WORKSPACE`; defaults to `vella-proof.json` |
+| `proof-output` | No | Regular-file path inside `GITHUB_WORKSPACE`; symlinked components and targets are rejected; defaults to `vella-proof.json` |
 
 ## Outputs
 
@@ -66,6 +68,6 @@ The action does not establish authentication or authorization evidence for you. 
 
 A denied gate stops this job step. Repository administrators remain responsible for preventing alternate workflows, direct deployments, or other paths that bypass the protected job. Store signing material in GitHub Actions secrets or an approved external secret manager; never commit a private key.
 
-When proof signing is requested, a signing or proof-path failure also fails the step and withholds decision outputs. A consequence step should retain the normal success condition and additionally check `steps.<id>.outputs.decision == 'ALLOWED'` when using a custom `if` expression.
+When proof signing is requested, a signing or proof-path failure also fails the step and withholds decision outputs. Existing regular proof files may be replaced, but symbolic links, multiply linked files, non-directory parent components, and paths outside the workspace are rejected. On platforms that expose a no-follow file-open flag, the final open also rejects a link swap. These checks protect against hostile checked-out path topology; code already executing concurrently with the same runner authority is outside this boundary. A consequence step should retain the normal success condition and additionally check `steps.<id>.outputs.decision == 'ALLOWED'` when using a custom `if` expression.
 
-For higher-assurance deployment, pin action dependencies, use protected environments, restrict workflow modification, retain the signed proof as an artifact, and verify it independently with the repository's [`verify/`](../../verify/README.md) tooling.
+For higher-assurance deployment, pin action dependencies, use protected environments, restrict workflow modification, retain the signed proof as an artifact, and verify it independently with the repository's [`verify/`](../../verify/README.md) tooling. GitHub Actions artifacts provide workflow evidence retention, not permanent write-once compliance storage; copy proofs into an approved immutable record system when that property is required.

@@ -62,6 +62,13 @@ node scripts/check-release-consistency.mjs
 
 The publish workflow additionally checks the release tag and requires a dated changelog entry before either package can be published.
 
+Run the release and GitHub Action boundary tests from the repository root:
+
+```bash
+node --test scripts/check-release-consistency.test.mjs
+node --test integrations/github-action/gate.test.mjs
+```
+
 ## Pull request expectations
 
 - Include a clear summary of behavior change.
