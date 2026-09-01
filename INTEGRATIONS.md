@@ -57,6 +57,8 @@ This wrapper is intentionally incomplete: production integrations must derive ev
 
 The first maintained public adapter is [`integrations/github-action/`](integrations/github-action/README.md). It is dependency-free, fails the workflow step on `DENIED`, and optionally writes a signed proof bundle for artifact retention.
 
+The [protected-deployment example](examples/github-actions-protected-deploy/README.md) is directly runnable from this repository. It exercises satisfied and missing evidence, independently verifies the signed decision, and keeps the simulated deployment unreachable after denial.
+
 ## Adapter acceptance bar
 
 A framework-specific adapter is considered shipped only when it includes:

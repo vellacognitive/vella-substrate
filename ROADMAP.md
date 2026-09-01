@@ -11,6 +11,7 @@ This roadmap tracks the public reference implementation and its adoption surface
 - Public interface contract, schemas, reason codes, threat model, test vectors, and benchmark harness.
 - npm and PyPI distribution with trusted publishing; npm provenance attestations.
 - GitHub Actions reference adapter for protected changes and deployments.
+- Runnable protected-deployment example with allowed and denied paths, signed-proof retention, and independent verification.
 - Public integration map, use-case registry, and positioning/provenance posture.
 
 ## Next

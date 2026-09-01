@@ -2,7 +2,11 @@
 
 **Snapshot date:** 2026-08-31
 
+**Last reviewed:** 2026-09-01 by Vella Cognitive, LLC
+
 **Status:** Public positioning note; not a legal opinion
+
+**Maintenance:** Review this claim surface at every minor release or at least quarterly, and whenever a cited implementation, public chronology, or VELLA-specific evidence materially changes.
 
 The execution-authorization category is converging quickly. Multiple independent projects now use deterministic, pre-execution, fail-closed, policy, authority, receipt, and proof language. VELLA does not claim to have originated that broad category.
 
