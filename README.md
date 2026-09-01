@@ -12,6 +12,8 @@
 
 **An agent can propose the action. VELLA decides whether it has authority to happen and leaves proof of the decision.**
 
+**Install:** `npm install @vellacognitive/vella-sdk` or `pip install vella-sdk` · [Run the two-minute example](#quick-example)
+
 <p align="center">
   <img src="assets/vella-consequence-boundary.gif" alt="Animated VELLA consequence-boundary demo showing proposed agent actions evaluated against authority and evidence, with allowed and denied decisions recorded in a signed proof ledger">
 </p>
@@ -46,6 +48,7 @@ The SDK is designed for in-process, low-latency adjudication; the authority deci
 - [An Inspectable Substrate for AI Governance](https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance): the conceptual argument (~14 min read)
 - [Quickstart](#quick-example): Node or Python SDK, working example in 2 minutes
 - [GitHub Actions authority gate](integrations/github-action/README.md): block a protected workflow step on `DENIED`
+- [Runnable protected deployment](examples/github-actions-protected-deploy/README.md): exercise both the allowed and denied paths and verify the signed proof
 - [Integration map](INTEGRATIONS.md): shipped surfaces, compatible hook points, and planned adapters
 - [Use-case registry](USE_CASES.md): concrete consequence boundaries and deny-path obligations
 - [Public roadmap](ROADMAP.md): shipped, next, and exploratory work

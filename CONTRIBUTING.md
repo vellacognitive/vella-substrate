@@ -52,6 +52,16 @@ done
 
 Tampered vectors must fail verification.
 
+## Verify release metadata
+
+Before preparing a release, make sure every version-bearing surface agrees:
+
+```bash
+node scripts/check-release-consistency.mjs
+```
+
+The publish workflow additionally checks the release tag and requires a dated changelog entry before either package can be published.
+
 ## Pull request expectations
 
 - Include a clear summary of behavior change.

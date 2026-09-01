@@ -10,3 +10,4 @@ This directory contains minimal usage examples and signed sample bundles.
 - `tampered-bundle.json` — intentionally tampered sample (verification should fail)
 - `example-signing.pub` — public key corresponding to the key used to generate sample bundles
 - `walkthrough.md` — narrative walk-through
+- `github-actions-protected-deploy/` — runnable allowed/denied deployment-gate example with proof verification

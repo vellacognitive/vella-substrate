@@ -19,7 +19,7 @@ jobs:
 
       - name: Check authority with VELLA
         id: vella
-        uses: vellacognitive/vella-substrate/integrations/github-action@main
+        uses: vellacognitive/vella-substrate/integrations/github-action@v1.0.3
         with:
           intent: EXECUTE_CHANGE
           evidence-mask: "1"
@@ -36,7 +36,9 @@ jobs:
           path: ${{ steps.vella.outputs['proof-path'] }}
 ```
 
-For production use, pin the action to a reviewed commit SHA or release tag instead of `@main`.
+For production use, pin the action to a reviewed immutable release tag such as `v1.0.3` or to a commit SHA. A moving major-version tag, when available, is a convenience channel rather than the highest-assurance pin.
+
+The repository also includes a [runnable protected-deployment workflow](../../examples/github-actions-protected-deploy/README.md) that exercises allowed and denied decisions, verifies the signed proof, and keeps the simulated consequence unreachable on denial.
 
 ## Inputs
 
@@ -63,5 +65,7 @@ For production use, pin the action to a reviewed commit SHA or release tag inste
 The action does not establish authentication or authorization evidence for you. The preceding workflow steps must derive the mask from trusted state, and branch protection or environment rules must prevent an untrusted change from rewriting the gate itself.
 
 A denied gate stops this job step. Repository administrators remain responsible for preventing alternate workflows, direct deployments, or other paths that bypass the protected job. Store signing material in GitHub Actions secrets or an approved external secret manager; never commit a private key.
+
+When proof signing is requested, a signing or proof-path failure also fails the step and withholds decision outputs. A consequence step should retain the normal success condition and additionally check `steps.<id>.outputs.decision == 'ALLOWED'` when using a custom `if` expression.
 
 For higher-assurance deployment, pin action dependencies, use protected environments, restrict workflow modification, retain the signed proof as an artifact, and verify it independently with the repository's [`verify/`](../../verify/README.md) tooling.

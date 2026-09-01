@@ -54,10 +54,6 @@ const result = govern({
   proof: signingKey ? { signingKey } : undefined,
 });
 
-writeOutput("decision", result.decision);
-writeOutput("reason-code", result.reasonCode);
-writeOutput("latency-us", result.latencyUs);
-
 let proofPath = "";
 if (signingKey) {
   if (!result.proofBundle) {
@@ -80,6 +76,12 @@ if (signingKey) {
     encoding: "utf8",
     mode: 0o600,
   });
+}
+
+writeOutput("decision", result.decision);
+writeOutput("reason-code", result.reasonCode);
+writeOutput("latency-us", result.latencyUs);
+if (proofPath) {
   writeOutput("proof-path", proofPath);
 }
 

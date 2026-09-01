@@ -8,7 +8,7 @@ The public `min-v1` policy recognizes three intents. Evidence masks below use th
 
 | Consequence boundary | Intent | Required default evidence | Deny-path obligation | Example integration |
 |---|---|---|---|---|
-| Production deploy, release, configuration commit, or other controlled change | `EXECUTE_CHANGE` | `AUTHN` (`1`) | Do not run the deploy, release, or mutation step | [GitHub Actions gate](integrations/github-action/README.md) |
+| Production deploy, release, configuration commit, or other controlled change | `EXECUTE_CHANGE` | `AUTHN` (`1`) | Do not run the deploy, release, or mutation step | [Runnable GitHub Actions gate](examples/github-actions-protected-deploy/README.md) |
 | Privilege or role escalation | `ESCALATE_PRIVILEGE` | `AUTHN + AUTHZ` (`3`) | Do not grant the role, token, or elevated session | SDK call at the privilege boundary |
 | Data export or disclosure | `DATA_EXPORT` | `AUTHN + AUTHZ` (`3`) | Do not create, transmit, or publish the export | SDK call before export generation or transfer |
 

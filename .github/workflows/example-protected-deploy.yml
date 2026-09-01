@@ -1,0 +1,86 @@
+name: Example Protected Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      evidence-state:
+        description: Evidence presented to the VELLA gate
+        required: true
+        default: satisfied
+        type: choice
+        options:
+          - satisfied
+          - missing
+
+permissions:
+  contents: read
+
+jobs:
+  protected-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Establish deployment evidence
+        id: evidence
+        shell: bash
+        run: |
+          if [ "${{ inputs['evidence-state'] }}" = "satisfied" ]; then
+            echo 'mask=1' >> "$GITHUB_OUTPUT"
+          else
+            echo 'mask=0' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create demonstration signing identity
+        id: signing
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          openssl ecparam -name prime256v1 -genkey -noout \
+            -out "$RUNNER_TEMP/vella-example-signing.pem"
+          openssl ec -in "$RUNNER_TEMP/vella-example-signing.pem" -pubout \
+            -out artifacts/vella-example-signing.pub
+          {
+            echo 'private-key<<VELLA_EXAMPLE_KEY_EOF'
+            cat "$RUNNER_TEMP/vella-example-signing.pem"
+            echo 'VELLA_EXAMPLE_KEY_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check deployment authority with VELLA
+        id: vella
+        uses: ./integrations/github-action
+        with:
+          intent: EXECUTE_CHANGE
+          evidence-mask: ${{ steps.evidence.outputs.mask }}
+          proof-signing-key: ${{ steps.signing.outputs.private-key }}
+          proof-output: artifacts/vella-deploy-proof.json
+
+      - name: Verify the signed decision independently
+        if: always() && hashFiles('artifacts/vella-deploy-proof.json') != ''
+        run: |
+          node verify/verify.js \
+            artifacts/vella-deploy-proof.json \
+            artifacts/vella-example-signing.pub
+
+      - name: Run simulated deployment consequence
+        if: success() && steps.vella.outputs.decision == 'ALLOWED'
+        shell: bash
+        run: |
+          printf '%s\n' \
+            'Simulated deployment completed after a verified VELLA ALLOWED decision.' \
+            > artifacts/deployment-receipt.txt
+
+      - name: Retain decision evidence
+        if: always() && hashFiles('artifacts/**') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: vella-protected-deployment-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: error
