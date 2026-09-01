@@ -67,4 +67,4 @@ def govern(
         }
 
 
-__all__ = ["govern", "create_evaluator", "DEFAULT_POLICY", "__version__"]
+__all__ = ["DEFAULT_POLICY", "__version__", "create_evaluator", "govern"]

@@ -30,7 +30,7 @@ def _load_ec_private_key(signing_key_pem: str | bytes) -> ec.EllipticCurvePrivat
     key_bytes = signing_key_pem.encode("utf-8") if isinstance(signing_key_pem, str) else signing_key_pem
     private_key = serialization.load_pem_private_key(key_bytes, password=None)
     if not isinstance(private_key, ec.EllipticCurvePrivateKey):
-        raise ValueError("signing key must be an EC private key")
+        raise ValueError("signing key must be an EC private key")  # noqa: TRY004
     return private_key
 
 

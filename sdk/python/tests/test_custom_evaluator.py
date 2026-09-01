@@ -1,5 +1,4 @@
-from collections.abc import Mapping
-from typing import Iterator
+from collections.abc import Iterator, Mapping
 
 from vella import create_evaluator, govern
 
