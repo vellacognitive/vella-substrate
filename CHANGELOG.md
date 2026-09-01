@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Update GitHub-owned workflow actions to their current Node 24-backed major versions after live example verification exposed the Node 20 runtime deprecation.
+
 ## [1.0.3] - 2026-09-01
 
 ### Added

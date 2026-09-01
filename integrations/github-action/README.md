@@ -12,7 +12,7 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Establish deployment evidence
         run: ./scripts/verify-deployment-authority.sh
@@ -30,7 +30,7 @@ jobs:
         run: ./scripts/deploy.sh
 
       - name: Retain VELLA proof
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: vella-deploy-proof
           path: ${{ steps.vella.outputs['proof-path'] }}
