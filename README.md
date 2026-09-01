@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/vella-authority-boundary.svg" alt="VELLA — Authority before consequence · proof after decision">
+  <img src="assets/vella-authority-boundary.svg" alt="VELLA. Authority before consequence · proof after decision">
 </p>
 
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19738376-blue.svg)](https://doi.org/10.5281/zenodo.19738376)
@@ -7,11 +7,11 @@
 [![Verify Test Vectors](https://github.com/vellacognitive/vella-substrate/actions/workflows/verify-test-vectors.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/verify-test-vectors.yml)
 [![Lint Schemas](https://github.com/vellacognitive/vella-substrate/actions/workflows/lint-schemas.yml/badge.svg)](https://github.com/vellacognitive/vella-substrate/actions/workflows/lint-schemas.yml)
 
-# VELLA — Governance Substrate for AI Agents & Autonomous Systems
+# VELLA: Governance Substrate for AI Agents & Autonomous Systems
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**An agent can propose the action. VELLA decides whether it has authority to happen — and leaves proof of the decision.**
+**An agent can propose the action. VELLA decides whether it has authority to happen and leaves proof of the decision.**
 
 <p align="center">
   <img src="assets/vella-consequence-boundary.gif" alt="Animated VELLA consequence-boundary demo showing proposed agent actions evaluated against authority and evidence, with allowed and denied decisions recorded in a signed proof ledger">
@@ -19,7 +19,7 @@
 
 **VELLA is the decision layer between an AI agent or autonomous system proposing an action and that action being taken.** It sits where alignment, input safety, and IAM don't: at the specific moment an autonomous system is about to act, under a specific policy, with specific evidence in hand.
 
-Given a proposed action and an evidence mask, VELLA returns `ALLOWED` or `DENIED` deterministically and emits a cryptographically signed proof bundle. The bundle can be verified offline by any third party with only the bundle and a public key — no access to VELLA, the agent, or the originating system required.
+Given a proposed action and an evidence mask, VELLA returns `ALLOWED` or `DENIED` deterministically and emits a cryptographically signed proof bundle. The bundle can be verified offline by any third party with only the bundle and a public key. No access to VELLA, the agent, or the originating system is required.
 
 This is a reference implementation, MIT-licensed. It's designed to be the primitive that agent frameworks, audit pipelines, and compliance systems build on.
 
@@ -34,20 +34,20 @@ This repository demonstrates the core VELLA primitive:
 5. If signing is enabled, VELLA emits a proof bundle.
 6. That proof bundle can be verified offline using the tools in this repo.
 
-VELLA decides whether an action is authorized before it runs. The calling system remains responsible for carrying out — or blocking — the action.
+VELLA decides whether an action is authorized before it runs. The calling system remains responsible for carrying out or blocking the action.
 
 The SDK is designed for in-process, low-latency adjudication; the authority decision can sit directly on the action path rather than being deferred to post-hoc logging.
 
 **Start here:**
 
-- [An Inspectable Substrate for AI Governance](https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance) — the conceptual argument (~14 min read)
-- [Quickstart](#quick-example) — Node or Python SDK, working example in 2 minutes
-- [GitHub Actions authority gate](integrations/github-action/README.md) — block a protected workflow step on `DENIED`
-- [Integration map](INTEGRATIONS.md) — shipped surfaces, compatible hook points, and planned adapters
-- [Use-case registry](USE_CASES.md) — concrete consequence boundaries and deny-path obligations
-- [Public roadmap](ROADMAP.md) — shipped, next, and exploratory work
-- [Threat model](spec/threat-model.md) — what VELLA does and does not protect against
-- [AI-assisted integration prompting](AI_INTEGRATION_PROMPTING.md) — prompt patterns for using AI coding agents to integrate VELLA without outsourcing authority decisions
+- [An Inspectable Substrate for AI Governance](https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance): the conceptual argument (~14 min read)
+- [Quickstart](#quick-example): Node or Python SDK, working example in 2 minutes
+- [GitHub Actions authority gate](integrations/github-action/README.md): block a protected workflow step on `DENIED`
+- [Integration map](INTEGRATIONS.md): shipped surfaces, compatible hook points, and planned adapters
+- [Use-case registry](USE_CASES.md): concrete consequence boundaries and deny-path obligations
+- [Public roadmap](ROADMAP.md): shipped, next, and exploratory work
+- [Threat model](spec/threat-model.md): what VELLA does and does not protect against
+- [AI-assisted integration prompting](AI_INTEGRATION_PROMPTING.md): prompt patterns for using AI coding agents to integrate VELLA without outsourcing authority decisions
 
 ## How VELLA differs
 
@@ -164,7 +164,7 @@ mypy --strict vella/
 - Test vectors:
   - `test-vectors/valid/` and `test-vectors/tampered/` for verifier CI and audit workflows
 - Benchmarks:
-  - `benchmarks/` reproducible latency harness for both SDKs — see [`benchmarks/README.md`](benchmarks/README.md) for methodology and reference results
+  - `benchmarks/` reproducible latency harness for both SDKs. See [`benchmarks/README.md`](benchmarks/README.md) for methodology and reference results
 - Integrations:
   - `integrations/github-action/` fail-closed GitHub Actions reference adapter
 - Public adoption docs:
