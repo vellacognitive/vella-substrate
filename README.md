@@ -17,6 +17,10 @@
   <img src="assets/vella-consequence-boundary.gif" alt="Animated VELLA consequence-boundary demo showing proposed agent actions evaluated against authority and evidence, with allowed and denied decisions recorded in a signed proof ledger">
 </p>
 
+<p align="center">
+  <sub><strong>Contextual execution-boundary visualization.</strong> VELLA is an embedded SDK, not a dashboard; the calling system owns the interface and execution path.</sub>
+</p>
+
 **VELLA is the decision layer between an AI agent or autonomous system proposing an action and that action being taken.** It sits where alignment, input safety, and IAM don't: at the specific moment an autonomous system is about to act, under a specific policy, with specific evidence in hand.
 
 Given a proposed action and an evidence mask, VELLA returns `ALLOWED` or `DENIED` deterministically and emits a cryptographically signed proof bundle. The bundle can be verified offline by any third party with only the bundle and a public key. No access to VELLA, the agent, or the originating system is required.
