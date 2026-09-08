@@ -17,6 +17,7 @@ const checks = [
   ["python-types", python, ["-m", "mypy", "--strict", "vella/"], "sdk/python"],
   ["action", process.execPath, ["--test", "integrations/github-action/gate.test.mjs"], "."],
   ["release-tests", process.execPath, ["--test", "scripts/check-release-consistency.test.mjs"], "."],
+  ["migration-rollback", process.execPath, ["scripts/check-migration.mjs"], "."],
   ["release-metadata", process.execPath, ["scripts/check-release-consistency.mjs"], "."],
   ["production-proofs", process.execPath, ["--test", "scripts/proof-conformance.test.mjs"], "."],
   ["mcp-experiment", "npm", ["test"], "integrations/mcp-experiment"],

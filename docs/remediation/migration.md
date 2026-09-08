@@ -1,8 +1,8 @@
 # Migrating to v2 proofs — release preparation
 
-These changes are unreleased. Package metadata still identifies the existing release baseline, 1.0.3; that published version does not contain this implementation. Do not publish these changes under that version or move an existing release tag.
+These changes are unreleased. The owner selected SDK 2.0.0 and MCP adapter 1.0.0 for this candidate. SDK 1.0.3 remains the prior published baseline and does not contain this implementation. Both candidate versions remain unreleased; the MCP package remains private. Do not move existing release tags.
 
-The owner approved a new exact-byte envelope with separate legacy verification. The development SDK's high-level `govern` now emits `vella_proof_bundle_v2` when signing succeeds. This changes proof output and therefore requires a major release under the repository's compatibility policy. The public release version, announcement and rollout date remain pending. The existing ICD's notice commitment remains in effect.
+The owner approved a new exact-byte envelope with separate legacy verification. The development SDK's high-level `govern` now emits `vella_proof_bundle_v2` when signing succeeds. This changes proof output and therefore requires a major release under the repository's compatibility policy. The public release versions are selected; announcement and rollout dates remain pending. The existing ICD's notice commitment remains in effect.
 
 ## Application changes
 
@@ -22,10 +22,10 @@ V1 does not authenticate every visible field. Metadata including `kind`, `export
 
 The format dispatcher now rejects unknown formats and routes v2-looking records exclusively to v2 verification. Direct legacy helpers retain historical hash rules for explicit archival interpretation. Legacy verification emits a limitation warning. Do not use v1 proofs to establish exact MCP action binding, transferable permission or execution success.
 
-A rollback can restore the prior application/package version, but retained v2 records still require a v2-capable verifier. Keep both verifier paths available during migration. Release packages, immutable pins and end-to-end rollback procedures are part of the later release milestone.
+A rollback can restore the prior application/package version, but retained v2 records still require a v2-capable verifier. Keep both verifier paths available during migration. The candidate manifest supplies package hashes and immutable pins. Follow the staged rollout and rollback procedure in [release-candidate.md](release-candidate.md), including the installed producer/retained-proof rehearsal.
 
 ## Running repository verifiers
 
 Keep the repository directory layout intact. Node v2 verification loads `sdk/node/proof-v2.cjs`. Python v2 verification requires the SDK's Python modules, `cryptography` and `rfc8785`. The shell v2 verifier additionally requires Python and calls the Python structural helper, while checking the signature with OpenSSL. Set `VELLA_VERIFY_PYTHON` to select that Python interpreter.
 
-Portable installed verification entry points and the supported-runtime package matrix remain part of the distribution milestone; copying a single verifier script is not sufficient for v2.
+Both installed SDKs expose v2 verification APIs. Copying a single repository verifier script is not sufficient for v2; the candidate source archive preserves its dependencies and layout. See the [qualified runtime matrix](release-candidate.md).

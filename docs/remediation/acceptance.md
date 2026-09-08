@@ -59,3 +59,9 @@ M1 correctness changes and the M2/M3 local reference implementations are ready f
 Next steps are to create a reviewable immutable candidate and run hosted CI, agree deployment performance thresholds and sustained MCP load tests, reconcile the final compatibility/version/notice plan, and prepare immutable adoption pins and rollback instructions for that candidate. The private package's broad development peer range must be replaced with a tested release compatibility range before publication.
 
 The existing main-branch hardening track remains separate. Current release/Action regression checks pass, but this branch's v2 output is a breaking development change. Existing stable tags must not move. Publication requires the owner's release authorization; the established “push” workflow covers commit, branch push, PR checks, merge and clean-main synchronization, not package publication.
+
+## Release-preparation update
+
+The initial implementation was merged through PR #15 and the deterministic deadline-test correction through PR #16; all checks passed on final main `5a076d833e9dfd13e981cc4d34fc6a3e131b7272`. The table above is the preserved initial local snapshot, not the final candidate acceptance record.
+
+The owner subsequently selected SDK 2.0.0 / MCP 1.0.0 and the [sustained operating limits](local-reference.md). The next candidate adds bounded exact-action approval sets for concurrent distinct reports, time-until-dispatch/total instrumentation, a reproducible healthy/fault/recovery harness, exact MCP peer compatibility, installed producer rollback verification, and [release/rollback guidance](release-candidate.md). The separate handoff report binds final packages, hosted checks, workload results, source hashes and residual owner release decisions to the exact candidate. A16 is not closed by a smoke run or by the earlier microbenchmarks.

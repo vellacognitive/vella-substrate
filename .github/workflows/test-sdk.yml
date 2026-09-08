@@ -199,6 +199,20 @@ jobs:
           npm test
           npm run typecheck
           npm run demo
+      - name: Concurrent operational and recovery smoke checks
+        run: node integrations/mcp-server/operational/run.mjs --smoke --output "$RUNNER_TEMP/operational-smoke.json"
+      - name: Upload operational smoke evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: operational-${{ matrix.os }}-node-${{ matrix.node }}
+          path: ${{ runner.temp }}/operational-smoke.json
       - name: Clean candidate package installation
         if: matrix.os == 'ubuntu-latest' && matrix.node == '24'
         run: node scripts/check-package-install.mjs
+      - name: Fetch immutable rollback baseline
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '24'
+        run: git fetch --depth=1 origin cbafda49ddb1682832b438498437d62de4f84d95
+      - name: Installed producer migration and retained-proof rollback rehearsal
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '24'
+        run: node scripts/check-migration.mjs

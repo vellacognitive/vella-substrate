@@ -104,7 +104,7 @@ for (const scenario of cases) {
       successCalls: samples.filter(s=>s.shouldExecute).length, expectedStoppedCalls: samples.filter(s=>!s.shouldExecute).length,
       endToEndMs, stagesMs: Object.fromEntries(stages.map(name=>[name, quantiles(samples.map(s=>s.timings[name]).filter(Number.isFinite))])),
       unexpected, effectsIncludingWarmupAndRecovery: effects, verifiedProofs, verifiedReceipts, recoveryCalls: expected.length-recoveryStart,
-      passed: unexpected.length === 0 && endToEndMs.p95 <= p95Limit && endToEndMs.p99 <= plan.thresholds.p99Ms,
+      passed: unexpected.length === 0 && (smoke || (endToEndMs.p95 <= p95Limit && endToEndMs.p99 <= plan.thresholds.p99Ms)),
       limits: { p95Ms: p95Limit, p99Ms: plan.thresholds.p99Ms } };
     report.scenarios.push(row); await save(); console.log(JSON.stringify({ completed: row.mode, bytes: row.bytes, concurrency: row.concurrency, measuredCalls: row.measuredCalls, passed: row.passed, endToEndMs }));
   } catch (error) {

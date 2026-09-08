@@ -99,6 +99,15 @@ const versions = new Map([
   ],
 ]);
 
+const mcpPackage = JSON.parse(read("integrations/mcp-server/package.json"));
+const mcpLock = JSON.parse(read("integrations/mcp-server/package-lock.json"));
+if (!stableVersionPattern.test(mcpPackage.version) || mcpLock.version !== mcpPackage.version || mcpLock.packages?.[""]?.version !== mcpPackage.version) {
+  fail("MCP package and lockfile must identify the same stable candidate version");
+}
+if (mcpPackage.peerDependencies?.["@vellacognitive/vella-sdk"] !== nodePackage.version || mcpLock.packages?.[""]?.peerDependencies?.["@vellacognitive/vella-sdk"] !== nodePackage.version || mcpLock.packages?.["../../sdk/node"]?.version !== nodePackage.version) {
+  fail("MCP peer and locked local SDK must exactly match the tested SDK version");
+}
+
 const expectedVersion = nodePackage.version;
 for (const [label, version] of versions) {
   if (version !== expectedVersion) {

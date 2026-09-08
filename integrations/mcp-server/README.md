@@ -1,6 +1,6 @@
 # Vella governed MCP server — unreleased local reference
 
-This separate package wraps registered MCP tool handlers with the Node SDK's mandatory-proof execution gate. It implements the owner-selected local report-export reference workflow. The package is private and unreleased; its development peer range is not a claim that published 1.0.3 supports these APIs. Release versions and compatibility pins must be set together before publication.
+This separate package wraps registered MCP tool handlers with the Node SDK's mandatory-proof execution gate. It implements the owner-selected local report-export reference workflow. The 1.0.0 candidate is private and unreleased. Its exact peer dependency is SDK 2.0.0, the tested API pairing; published SDK 1.0.3 cannot supply these APIs. Install the candidate tarballs together until publication is authorized.
 
 ## Run from this repository
 

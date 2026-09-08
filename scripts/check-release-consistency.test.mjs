@@ -19,6 +19,8 @@ const releaseVersion = JSON.parse(
 ).version;
 const releaseTag = `v${releaseVersion}`;
 const releaseFiles = [
+  "integrations/mcp-server/package.json",
+  "integrations/mcp-server/package-lock.json",
   "CHANGELOG.md",
   "CITATION.cff",
   "scripts/check-release-consistency.mjs",
@@ -140,4 +142,27 @@ test("rejects shell-shaped and noncanonical tags as data", (t) => {
     assert.equal(result.status, 1, tag);
     assert.match(result.stderr, /is not a stable release tag/, tag);
   }
+});
+
+
+test("rejects an unbounded MCP compatibility claim", t => {
+  const fixtureRoot = createTaggedRepository(t);
+  const path = join(fixtureRoot, "integrations/mcp-server/package.json");
+  const pkg = JSON.parse(readFileSync(path, "utf8"));
+  pkg.peerDependencies["@vellacognitive/vella-sdk"] = "*";
+  writeFileSync(path, JSON.stringify(pkg));
+  const result = checkRelease(fixtureRoot);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /MCP peer and locked local SDK must exactly match/);
+});
+
+test("rejects mismatched MCP package versions", t => {
+  const fixtureRoot = createTaggedRepository(t);
+  const path = join(fixtureRoot, "integrations/mcp-server/package-lock.json");
+  const lock = JSON.parse(readFileSync(path, "utf8"));
+  lock.version = "999.0.0";
+  writeFileSync(path, JSON.stringify(lock));
+  const result = checkRelease(fixtureRoot);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /MCP package and lockfile/);
 });
