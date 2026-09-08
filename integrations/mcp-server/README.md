@@ -1,8 +1,8 @@
 # Vella governed MCP server — local reference
 
-This package wraps registered MCP tool handlers with the Node SDK's mandatory-proof execution gate. MCP 1.1.0 and SDK 2.1.0 are unpublished candidates. The default local example remains v2; `example/pqc/reference-server.mjs` opts into v3 hybrid proofs. The candidate peer is exactly SDK 2.1.0.
+This package wraps registered MCP tool handlers with the Node SDK's mandatory-proof execution gate. MCP 1.1.0 pairs with SDK 2.1.0. The default local example remains v2; `example/pqc/reference-server.mjs` opts into v3 hybrid proofs. The required peer is exactly SDK 2.1.0.
 
-Use the candidate tarballs from the handoff package for evaluation. SDK 2.0.0 is published; the earlier MCP 1.0.0 first npm publication remains pending maintainer account recovery. Do not assume candidate versions are available from the registry. See [migration and runtime requirements](../../spec/pqc/MIGRATION.md).
+Install the exact pair with `npm install @vellacognitive/vella-sdk@2.1.0 @vellacognitive/vella-mcp-server@1.1.0`, or use the matching verified handoff tarballs. See [migration and runtime requirements](https://github.com/vellacognitive/vella-substrate/blob/main/spec/pqc/MIGRATION.md).
 
 ## Run from this repository
 

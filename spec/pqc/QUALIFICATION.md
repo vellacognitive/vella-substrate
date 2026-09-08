@@ -1,6 +1,6 @@
 # Post-quantum candidate qualification
 
-**SDK 2.1.0 / MCP 1.1.0 — unpublished.** M1 owner contract accepted by Mike Wilson on 2026-09-08. Full healthy/fault acceptance passed. Soak and matched classical diagnostic are complete.
+**SDK 2.1.0 / MCP 1.1.0 — owner-authorized release.** M1 owner contract accepted by Mike Wilson on 2026-09-08. Full healthy/fault acceptance passed. Soak and matched classical diagnostic are complete.
 
 ## Build and measurement boundary
 
@@ -94,4 +94,4 @@ Microsecond policy adjudication remains supported within the measured in-process
 
 The cryptographic claim is limited to the explicit P-256 + ML-DSA-65 authorization profile and SHA-384 bindings under trusted operator configuration. It is not whole-platform quantum safety, FIPS certification, a seven-year cryptographic guarantee, trusted timestamps, remote-service latency, or protection from a compromised host/operator.
 
-The acceptance ledger records remaining gates and owner handoff. Package publication remains a separate decision.
+The owner accepted the candidate for merge and authorized publication on 2026-09-08. The acceptance ledger and publication receipt distinguish completed qualification from registry completion.

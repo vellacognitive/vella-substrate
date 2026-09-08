@@ -1,6 +1,6 @@
-# Hybrid migration and rollback — SDK 2.1.0 / MCP 1.1.0 candidate
+# Hybrid migration and rollback — SDK 2.1.0 / MCP 1.1.0
 
-Status: unpublished candidates. Owner contract accepted 2026-09-08. Installed artifacts, resource/latency runs and hosted matrix have passed the qualification described in QUALIFICATION.md. Final owner release acceptance remains pending. Publication is a separate decision.
+Status: owner-authorized release. Owner contract accepted 2026-09-08. Installed artifacts, resource/latency runs and hosted matrix have passed the qualification described in QUALIFICATION.md. The owner accepted the candidate for merge and separately authorized publication on 2026-09-08. Registry completion is tracked by the release workflow and publication receipt.
 
 ## Compatibility
 
@@ -16,14 +16,14 @@ Status: unpublished candidates. Owner contract accepted 2026-09-08. Installed ar
 | Packaged `vella-verify-v3` (Node or Python) | Explicit v3 plus supplied public registry/key-set | Same hybrid runtime as its SDK |
 | `verify/verify-v3.sh` | Python v3 CLI; set `VELLA_PYTHON` if needed | Installed Python SDK with `pqc` extra |
 
-Ranges describe the candidate's intended compatibility; the acceptance ledger identifies actual qualified combinations. Package versions are minor increments because v3 is additive and opt-in. Applications cannot use MCP 1.1.0 with SDK 2.0.0 for the new provider path. The exact peer and acceptance pairing is SDK 2.1.0 / MCP 1.1.0. Future SDK versions require a new compatibility qualification. Native ML-DSA failure is explicit; no single-signature fallback exists.
+Ranges describe the release's intended compatibility; the acceptance ledger identifies actual qualified combinations. Package versions are minor increments because v3 is additive and opt-in. Applications cannot use MCP 1.1.0 with SDK 2.0.0 for the new provider path. The exact peer and acceptance pairing is SDK 2.1.0 / MCP 1.1.0. Future SDK versions require a new compatibility qualification. Native ML-DSA failure is explicit; no single-signature fallback exists.
 
-Node SDK introduces no external crypto library dependency. Python's optional `pqc` extra pins cryptography; applications adopting it must reconcile this dependency in their lockfile. The v3 Python provider imports native ML-DSA only when the operation is selected. The MCP package keeps its pinned official MCP/zod dependencies. Install from candidate artifacts until publication is authorized and verified; no registry availability is implied.
+Node SDK introduces no external crypto library dependency. Python's optional `pqc` extra pins cryptography; applications adopting it must reconcile this dependency in their lockfile. The v3 Python provider imports native ML-DSA only when the operation is selected. The MCP package keeps its pinned official MCP/zod dependencies. Use exact registry versions after publication is verified, or the verified handoff artifacts.
 
 ## Rollout
 
 1. Inventory each proof producer, verifier, approval issuer and governed route. Keep a backup of the current application/package lockfiles and the existing v1/v2 public verification material. Record which operator configuration selects each format; do not let a received envelope choose execution trust.
-2. Install the candidate SDK and MCP tarballs together in a staging application; install the Python wheel with `[pqc]` into a qualified interpreter. Verify package checksums against the handoff manifest. Keep the old verifiers for old archives.
+2. Install the SDK and MCP tarballs together in a staging application; install the Python wheel with `[pqc]` into a qualified interpreter. Verify package checksums against the handoff manifest. Keep the old verifiers for old archives.
 3. As the operator, create a protected key directory with `openLocalKeyStore({directory, initialize: true})`, then `rotate()` to create the first active hybrid pair. Close the store before starting a separate reference server. Never expose key initialization, rotation, approvals or evidence editing as agent-accessible tools.
 4. Create private report/proof directories. Configure `operatorUid`, `serverId`, `reportDirectory`, `proofDirectory`, `keyDirectory`, and `evidenceStatePath`; use the packaged hybrid reference launcher with this config file. Launch configuration and all ancestors must be operator-controlled. The report schema permits at most 4096 characters; workload acceptance specifically measures 1024/4096 ASCII bytes.
 5. Reissue approvals using the v3 SHA-384 action, tool-definition and policy digests. v2 SHA-256 approvals cannot carry over. Both case-sensitive report routes need exact approvals. Use the same HYBRID_PROFILE in approval computation, governor, gate and proof sink.

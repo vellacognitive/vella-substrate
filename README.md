@@ -14,7 +14,7 @@
 
 **SDK 2.0.0 / MCP 1.0.0:** this release adds [v2 proofs](spec/proof-v2.md), a mandatory execution gate and a [local MCP server binding](integrations/mcp-server/README.md). SDK 1.0.3 does not contain these changes. See [migration](docs/remediation/migration.md) and the [acceptance ledger](docs/remediation/acceptance.md).
 
-**Release candidate — SDK 2.1.0 / MCP 1.1.0 (unpublished):** the owner-approved [v3 hybrid proof contract](spec/pqc/PROOF-CONTRACT.md) adds opt-in P-256 + ML-DSA-65 proofs and SHA-384 bindings. [Migration](spec/pqc/MIGRATION.md) · [Measured qualification](spec/pqc/QUALIFICATION.md) · [Acceptance ledger](spec/pqc/ACCEPTANCE.md). This is a proof-boundary feature, not a claim that the whole platform is quantum safe.
+**SDK 2.1.0 / MCP 1.1.0:** the owner-approved [v3 hybrid proof contract](spec/pqc/PROOF-CONTRACT.md) adds opt-in P-256 + ML-DSA-65 proofs and SHA-384 bindings. [Migration](spec/pqc/MIGRATION.md) · [Measured qualification](spec/pqc/QUALIFICATION.md) · [Acceptance ledger](spec/pqc/ACCEPTANCE.md). This is a proof-boundary feature, not a claim that the whole platform is quantum safe.
 
 **Install:** `npm install @vellacognitive/vella-sdk` or `pip install vella-sdk` · [Run the two-minute example](#quick-example)
 

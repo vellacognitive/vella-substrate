@@ -1,6 +1,6 @@
 # PQ production acceptance ledger — public v3 candidate
 
-SDK 2.1.0 (Node/Python) and MCP 1.1.0 are unpublished, opt-in candidates. Mike Wilson accepted the M1 contract and authorized continuation on 2026-09-08. Engineering qualification passed the referenced final evidence; M5 owner release acceptance remains pending. Publication is a separate decision.
+SDK 2.1.0 (Node/Python) and MCP 1.1.0 are qualified, opt-in releases. Mike Wilson accepted the M1 contract and authorized continuation on 2026-09-08. Engineering qualification passed the referenced final evidence; The owner accepted the candidate for merge with “push,” then explicitly authorized publication on 2026-09-08. Registry completion remains separately verifiable.
 
 ## Traceability
 
@@ -22,11 +22,15 @@ All expected-versus-observed checks are in the source harness and raw evidence. 
 | PQ10 | Pass | Existing v1/v2 proof/verifier interpretation remains unchanged. Installed mixed-archive checks pass. rollback-check.mjs restores SDK 2.0.0, resumes explicitly classical SDK output, preserves independent v3 archive verification and keeps the hybrid MCP route stopped; no retired key is reactivated. |
 | PQ11 | Pass on qualified matrix | Clean Node archives and Python wheel installs, public types, native provider checks, packaged CLI/shell routes and six hosted combinations pass. Unsupported Node runtime rejects the hybrid operation while default v2 remains available. SDK/MCP pairing is exactly 2.1.0/1.1.0. |
 | PQ12 | Pass | operational/run.mjs retains the unchanged six healthy scenarios, four faults, recovery, matched classical diagnostic and 30-minute soak. QUALIFICATION.md reports passing latency/resource limits, outliers, standalone providers and storage sizing. |
-| PQ13 | Owner contract review accepted | OWNER-REVIEW.md and REVIEW-DISPOSITION.md record Mike Wilson's selected review, corrected findings, retests and residual limits. This is owner review independent of implementation, not external specialist certification. Final candidate acceptance remains pending. |
-| PQ14 | Technical handoff ready; owner acceptance pending | README/ICD/API/release notes, MIGRATION.md, QUALIFICATION.md and the immutable source/package/evidence packet are delivered. Owner selects final acceptance, main merge through the established push workflow, rollout and separate publication. |
+| PQ13 | Owner contract review accepted | OWNER-REVIEW.md and REVIEW-DISPOSITION.md record Mike Wilson's selected review, corrected findings, retests and residual limits. This is owner review independent of implementation, not external specialist certification. Final candidate acceptance and publication authorization were subsequently received. |
+| PQ14 | Owner accepted; publication authorized | README/ICD/API/release notes, MIGRATION.md, QUALIFICATION.md and the immutable source/package/evidence packet are delivered. Owner accepted the candidate, completed the main merge through the push workflow, and separately authorized publication. |
 
 ## Milestones and remaining decisions
 
-M0 and M1 owner decisions are resolved. M2 SDK/keys/verifiers, M3 governed MCP and M4 engineering qualification have passed the documented checks. M5 has a prepared handoff and awaits owner acceptance of the final candidate. The selected owner review is recorded honestly; no external review procurement or certification is claimed.
+M0 and M1 owner decisions are resolved. M2 SDK/keys/verifiers, M3 governed MCP and M4 engineering qualification have passed the documented checks. M5 handoff was delivered and the owner accepted the final candidate for merge and publication. The selected owner review is recorded honestly; no external review procurement or certification is claimed.
 
-The release packet contains actual local and hosted results, candidate distributions, measured distributions where hashes differ, verification manifests and a rollback fixture rebuilt from the immutable classical source. The latter is labeled as a rebuilt fixture, not a registry download. Package publication and deployment have not occurred. Main remains unchanged until the owner invokes the push workflow.
+The release packet contains actual local and hosted results, candidate distributions, measured distributions where hashes differ, verification manifests and a rollback fixture rebuilt from the immutable classical source. The latter is labeled as a rebuilt fixture, not a registry download. The candidate merged through PR #19 as `47cf32a86ce08b7e3d0116a5a14a89dd050a3558`, with a file tree identical to qualified source `a4140ff8c89ccf43bddc5b0bcea4af14d5d170c1`. Publication is authorized; the registry receipt establishes actual upload completion. No deployment is implied.
+
+## Release preparation amendment
+
+The publication revision changes release status and packaged README text only; executable files, public types, dependencies, formats and package versions remain those of the qualified candidate. The release receipt records package payload comparisons and registry identities. Existing candidate evidence stays immutable. The first MCP registry publication is version 1.1.0; superseded, unpublished 1.0.0 is not required as an intermediate release.

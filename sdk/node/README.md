@@ -1,6 +1,6 @@
 # @vellacognitive/vella-sdk
 
-**SDK 2.1.0 candidate (unpublished):** opt-in v3 proofs require both P-256 and ML-DSA-65. Existing defaults remain v2. See the [hybrid migration runbook](https://github.com/vellacognitive/vella-substrate/blob/main/spec/pqc/MIGRATION.md).
+**SDK 2.1.0:** opt-in v3 proofs require both P-256 and ML-DSA-65. Existing defaults remain v2. See the [hybrid migration runbook](https://github.com/vellacognitive/vella-substrate/blob/main/spec/pqc/MIGRATION.md).
 
 Node.js SDK for deterministic pre-execution adjudication and signed proof-bundle generation.
 
