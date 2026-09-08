@@ -31,7 +31,7 @@ Supply the validated candidate/source digest as `buildHash` in launch configurat
 
 ## Operating limits and failure handling
 
-Use the accepted local workload envelope: 1, 4 or 8 concurrent calls; 1,024 or 4,096 ASCII content bytes; no automatic retries. The schema separately limits content to 4,096 JavaScript string code units, so the byte envelope does not cover maximum-size non-ASCII inputs. There is no unbounded admission queue or open-loop rate guarantee. Apply host admission control before accepting more concurrent actions than the qualified envelope.
+Use the accepted local workload envelope: 1, 4 or 8 concurrent calls; 1,024 or 4,096 ASCII content bytes; no automatic retries. The schema separately limits content to 4,096 JavaScript string code units, so the byte envelope does not cover maximum-size non-ASCII inputs. The harness bounds in-flight calls; the server reference does not itself enforce an admission limit. Operators must apply admission control before accepting more concurrent actions than the qualified envelope. No open-loop arrival-rate guarantee is established.
 
 `until_dispatch` measures gate entry through the start of handler dispatch. `total` measures gate entry through receipt retention. Client end-to-end latency also includes MCP transport and serialization. A missing dispatch timing means the handler was not started. Outcome and retention fields determine recovery; latency alone does not.
 
