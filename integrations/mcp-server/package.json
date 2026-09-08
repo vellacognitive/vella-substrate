@@ -1,6 +1,6 @@
 {
   "name": "@vellacognitive/vella-mcp-server",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "Vella governed MCP server binding for local stdio tools",
   "license": "MIT",
@@ -10,7 +10,9 @@
     ".": {
       "types": "./index.d.ts",
       "import": "./index.js"
-    }
+    },
+    "./pqc/operator": "./example/pqc/operator.mjs",
+    "./pqc/reference-server": "./example/pqc/reference-server.mjs"
   },
   "files": [
     "index.js",
@@ -23,7 +25,7 @@
     "node": ">=22"
   },
   "peerDependencies": {
-    "@vellacognitive/vella-sdk": "2.0.0"
+    "@vellacognitive/vella-sdk": "2.1.0"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.0.0",

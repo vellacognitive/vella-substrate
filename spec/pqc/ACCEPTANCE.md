@@ -1,0 +1,32 @@
+# PQ production acceptance ledger — public v3 candidate
+
+SDK 2.1.0 (Node/Python) and MCP 1.1.0 are unpublished, opt-in candidates. Mike Wilson accepted the M1 contract and authorized continuation on 2026-09-08. Engineering qualification passed the referenced final evidence; M5 owner release acceptance remains pending. Publication is a separate decision.
+
+## Traceability
+
+The release packet's SOURCE.json identifies the final source commit, source archive and package hashes. Local duration-controlled measurements use the installed runtime from `a8682521743b5f59759f42d8587d487f9241185c`; `package-payload-equivalence.json` proves the final Node/MCP executable and configuration payloads are identical, with only public type declarations changed. The Python distribution is unchanged. Raw workload records retain their own source inventory and installed lockfile hash. Hosted artifacts identify their actual checkout, including GitHub's synthetic PR merge commit where applicable; the push matrix qualifies the branch commit directly. Historical results are not relabeled as new measurements.
+
+All expected-versus-observed checks are in the source harness and raw evidence. There are 281 fresh cross-language/provider/domain assertions, 120 schema/vector assertions, four fixed public vectors verified in both languages, and 30 integration tests. The hosted qualification also reruns 98 Node SDK, 80 Python SDK and 16 MCP regression tests, public TypeScript declarations, strict Python typing and lint. The six new-profile jobs use Node 24.20.0 with Python 3.12, 3.13 and 3.14 on Linux/macOS. Legacy runtime checks remain separate. See QUALIFICATION.md for durations, stage/resource measurements, exclusions and actual latency results.
+
+| ID | Technical / review state | Fixture and observed evidence |
+|---|---|---|
+| PQ01 | Owner accepted | THREAT-AND-HASH-MAP.md, OWNER-REVIEW.md and DEPENDENCY-REVIEW.md define the authorization boundary, seven-year retention target, annual review/rotation and explicit exclusions. |
+| PQ02 | Pass; contract frozen | PROOF-CONTRACT.md, public v3 schemas and public-vectors-v3.json; conformance.mjs, schema_check.py and golden-vectors.test.mjs validate exact bytes, metadata, bounded domain and rejection behavior. |
+| PQ03 | Pass | Fresh and fixed Node/Python vectors plus installed-check.mjs exercise both producers and Node/Python/shell archive verification. Installed and six-platform hosted results pass. |
+| PQ04 | Pass | Conformance and reference integration tests reject missing, changed or substituted signatures/keys, unknown suites and draft/mixed profiles. Both configured signatures are mandatory. |
+| PQ05 | Pass within declared bounds | Bounded parser adversarial checks pass. Native pressure fixture observes 8 accepted, 8 explicitly rejected, 8 effects and zero queue. Full resource/soak evidence passes; no unbounded-input or universal denial-of-service guarantee is implied. |
+| PQ06 | Pass within local custody boundary | Lifecycle/key tests cover portable keys, permissions, expiry, atomic revision changes, concurrent rotation/revocation, uncertain-write refusal and writer exclusion. Native crash/recovery verifies explicit stale-lock recovery and fresh-call restart. MIGRATION.md records compromise response and custody limits. |
+| PQ07 | Pass | Action/digest and native route tests bind SHA-384 action, approval, policy, definition, authorization and receipt references; signed key-set/revision agrees with supplied trust. Mutations and legacy approvals reject. |
+| PQ08 | Pass | Full fault run reconciles zero effects for missing/invalid evidence, signing and authorization-retention prerequisites; all 64 recovery calls succeed. Gate tests recheck expiry and revision immediately before dispatch. |
+| PQ09 | Pass within fsync/process boundary | Full workload artifacts reconcile. Receipt-write failures preserve the observed outcome. Cancellation tests preserve unused authorizations or report unknown outcomes after possible dispatch without replay. Native process termination leaves 8 unused valid proofs, zero effects, then one fresh recovery call. No power-loss guarantee. |
+| PQ10 | Pass | Existing v1/v2 proof/verifier interpretation remains unchanged. Installed mixed-archive checks pass. rollback-check.mjs restores SDK 2.0.0, resumes explicitly classical SDK output, preserves independent v3 archive verification and keeps the hybrid MCP route stopped; no retired key is reactivated. |
+| PQ11 | Pass on qualified matrix | Clean Node archives and Python wheel installs, public types, native provider checks, packaged CLI/shell routes and six hosted combinations pass. Unsupported Node runtime rejects the hybrid operation while default v2 remains available. SDK/MCP pairing is exactly 2.1.0/1.1.0. |
+| PQ12 | Pass | operational/run.mjs retains the unchanged six healthy scenarios, four faults, recovery, matched classical diagnostic and 30-minute soak. QUALIFICATION.md reports passing latency/resource limits, outliers, standalone providers and storage sizing. |
+| PQ13 | Owner contract review accepted | OWNER-REVIEW.md and REVIEW-DISPOSITION.md record Mike Wilson's selected review, corrected findings, retests and residual limits. This is owner review independent of implementation, not external specialist certification. Final candidate acceptance remains pending. |
+| PQ14 | Technical handoff ready; owner acceptance pending | README/ICD/API/release notes, MIGRATION.md, QUALIFICATION.md and the immutable source/package/evidence packet are delivered. Owner selects final acceptance, main merge through the established push workflow, rollout and separate publication. |
+
+## Milestones and remaining decisions
+
+M0 and M1 owner decisions are resolved. M2 SDK/keys/verifiers, M3 governed MCP and M4 engineering qualification have passed the documented checks. M5 has a prepared handoff and awaits owner acceptance of the final candidate. The selected owner review is recorded honestly; no external review procurement or certification is claimed.
+
+The release packet contains actual local and hosted results, candidate distributions, measured distributions where hashes differ, verification manifests and a rollback fixture rebuilt from the immutable classical source. The latter is labeled as a rebuilt fixture, not a registry download. Package publication and deployment have not occurred. Main remains unchanged until the owner invokes the push workflow.

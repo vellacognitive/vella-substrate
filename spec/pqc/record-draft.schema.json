@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:vella:pq-review:record:1",
+  "$comment": "Review draft. Byte limits, JSON numeric/Unicode domain, canonical digests and semantic consistency also require the normative validator.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "envelope_id",
+    "request_id",
+    "authority_scope",
+    "policy_version",
+    "intent",
+    "requested_policy_version",
+    "build_hash",
+    "digest_profile",
+    "policy_digest",
+    "evidence_mask",
+    "decision",
+    "reason_code",
+    "timestamp",
+    "action",
+    "action_digest",
+    "evidence",
+    "boundary",
+    "external_effects"
+  ],
+  "properties": {
+    "envelope_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "authority_scope": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "policy_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "intent": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "requested_policy_version": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "build_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "digest_profile": {
+      "const": "sha384-jcs-v1"
+    },
+    "policy_digest": {
+      "type": "string",
+      "pattern": "^sha384:[a-f0-9]{96}$"
+    },
+    "evidence_mask": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "decision": {
+      "enum": [
+        "ALLOWED",
+        "DENIED"
+      ]
+    },
+    "reason_code": {
+      "enum": [
+        "POLICY_SATISFIED",
+        "DENY_FAST",
+        "E_INTENT_REQUIRED",
+        "E_POLICY_VERSION_MISMATCH",
+        "E_EVIDENCE_MISSING",
+        "E_EVIDENCE_INVALID",
+        "E_EVALUATOR_INTERNAL"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d\\.\\d{3}Z$"
+    },
+    "action": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "action_digest": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^sha384:[a-f0-9]{96}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "evidence": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "boundary": {
+      "enum": [
+        "evaluation",
+        "client-dispatch",
+        "server-handler"
+      ]
+    },
+    "external_effects": {
+      "const": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "ALLOWED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reason_code": {
+            "const": "POLICY_SATISFIED"
+          },
+          "intent": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "evidence_mask": {
+            "type": "integer"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "reason_code": {
+            "not": {
+              "const": "POLICY_SATISFIED"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

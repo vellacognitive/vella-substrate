@@ -35,5 +35,5 @@ try {
   run(process.execPath, ["produce.mjs"], join(folder, "rollback"));
   run(process.execPath, [join(root, "verify/verify.js"), retained, publicKey]);
   assert.equal(createHash("sha256").update(readFileSync(retained)).digest("hex"), before);
-  console.log(JSON.stringify({ passed: true, legacyCommit, installedProducers: ["2.0.0", "1.0.3"], retainedV2VerifiedAfterRollback: true, legacyVerifierRejectsV2: true, legacySdkHasNoExecutionGate: true, scope: "SDK producer and retained-proof verification rehearsal; MCP must remain stopped when reverting its required SDK" }));
+  console.log(JSON.stringify({ passed: true, legacyCommit, installedProducers: [JSON.parse(readFileSync(join(root, "sdk/node/package.json"), "utf8")).version, "1.0.3"], retainedV2VerifiedAfterRollback: true, legacyVerifierRejectsV2: true, legacySdkHasNoExecutionGate: true, scope: "SDK producer and retained-proof verification rehearsal; MCP must remain stopped when reverting its required SDK" }));
 } finally { rmSync(folder, { recursive: true, force: true }); }

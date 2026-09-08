@@ -1,5 +1,7 @@
 # vella-sdk
 
+**SDK 2.1.0 candidate (unpublished):** opt-in v3 proofs require both P-256 and ML-DSA-65. Existing defaults remain v2. See the [hybrid migration runbook](https://github.com/vellacognitive/vella-substrate/blob/main/spec/pqc/MIGRATION.md).
+
 Python SDK for deterministic pre-execution adjudication and signed proof-bundle generation.
 
 Evidence conversion now rejects invalid unsigned 32-bit values and unknown symbols with `E_EVIDENCE_INVALID`. Invalid custom policies raise at creation rather than silently weakening rules. See [evidence and policy validation](../../spec/input-validation.md) for accepted forms and compatibility changes.
@@ -138,3 +140,23 @@ See the root repository docs for full protocol details:
 - `spec/proof-v2.md` and `spec/schemas/proof-v2.json`
 - `spec/schemas/proof.json` (legacy)
 - `verify/`
+
+## Opt-in v3 hybrid proofs (2.1.0 candidate)
+
+Use Python 3.12–3.14 with the `pqc` extra, which pins cryptography 50.0.1; rfc8785 remains pinned to 0.1.4. These are qualification targets; consult the acceptance ledger for completed platforms. Install the provided wheel with the extra before running this example. Existing imports remain v2.
+
+```python
+from vella import create_governor
+from vella.pqc import HybridProfile, SUITE, generate_hybrid_keys, verify_proof_v3
+
+pair = generate_hybrid_keys(SUITE)
+governor = create_governor(proof_profile=HybridProfile())
+result = governor.govern(intent="EXECUTE_CHANGE", evidence_mask=1,
+                         proof_signing_key=pair["privateKeys"])
+checked = verify_proof_v3(result["proof_bundle"], pair["publicKeys"], SUITE)
+assert checked["ok"]
+```
+
+The example holds private keys in memory; production custody must be operator-controlled. The local durable key store and MCP execution gate in this reference are Node APIs. Python supports producing and independently verifying proofs; it does not implement a Python MCP execution gate.
+
+Run `vella-verify-v3 PROOF PUBLIC_TRUST KEY_SET_ID p256+ml-dsa-65` or `python -m vella.pqc.verify_cli` with the same arguments for explicit historical verification. Use the Node-generated public registry separately from private key state. A valid archive proof does not grant new execution authority.

@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import {mkdtemp,writeFile,rm} from 'node:fs/promises';
+import {join,resolve} from 'node:path';
+import {tmpdir} from 'node:os';
+import {spawnSync} from 'node:child_process';
+import {generateKeyPairSync} from 'node:crypto';
+const [candidateApp,oldApp,python]=process.argv.slice(2);
+const from=async(app,name)=>import(pathToFileURL(createRequire(join(resolve(app),'package.json')).resolve(name)));
+const current=await from(candidateApp,'@vellacognitive/vella-sdk'), pq=await from(candidateApp,'@vellacognitive/vella-sdk/pqc/index.js');
+const old=await from(oldApp,'@vellacognitive/vella-sdk');
+const root=await mkdtemp(join(tmpdir(),'vella-pq-rollback-'));
+try {
+ const keys=await pq.openLocalKeyStore({directory:join(root,'keys'),initialize:true});
+ await keys.rotate(); const session=keys.capture();
+ const proof=current.createGovernor(undefined,{proofProfile:pq.HYBRID_PROFILE}).govern({intent:'EXECUTE_CHANGE',evidenceMask:1,proof:{signingKey:session.signingKey}}).proofBundle;
+ await keys.rotate(); const registry=keys.status(); keys.close();
+ const classical=generateKeyPairSync('ec',{namedCurve:'prime256v1',privateKeyEncoding:{type:'pkcs8',format:'pem'},publicKeyEncoding:{type:'spki',format:'pem'}});
+ const resumed=old.govern({intent:'EXECUTE_CHANGE',evidenceMask:1,proof:{signingKey:classical.privateKey}}).proofBundle;
+ assert.equal(resumed.kind,'vella_proof_bundle_v2'); assert.equal(old.verifyProofV2(resumed,classical.publicKey).ok,true);
+ assert.equal(old.verifyProofV2(proof,registry.history[0].publicKeys['ecdsa-p256-sha256']).ok,false);
+ assert.equal(pq.verifyProofV3(proof,registry.history[0].publicKeys,pq.SUITE).ok,true);
+ const bundlePath=join(root,'proof.json'),trustPath=join(root,'trust.json');
+ await writeFile(bundlePath,JSON.stringify(proof),{mode:0o600}); await writeFile(trustPath,JSON.stringify(registry),{mode:0o600});
+ const checked=spawnSync(python,['-I','-m','vella.pqc.verify_cli',bundlePath,trustPath,session.keySetId,pq.SUITE],{encoding:'utf8'});
+ assert.equal(checked.status,0,checked.stderr+checked.stdout);
+ assert.equal(JSON.parse(checked.stdout).keyStatus,'retired'); assert.equal(JSON.parse(checked.stdout).trustedForNewExecution,false);
+ console.log(JSON.stringify({kind:'vella-v3-rollback-rehearsal',allPassed:true,candidateSdk:'2.1.0',restoredSdk:'2.0.0',retainedV3Verified:true,oldSdkRejectsV3:true,newClassicalProofVerifies:true,reactivatedRetiredKeys:false,mcpResumed:false}));
+} finally {await rm(root,{recursive:true,force:true});}

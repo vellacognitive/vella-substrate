@@ -17,3 +17,6 @@ __pycache__/
 
 # Misc
 .DS_Store
+
+# Local Python package builds
+/sdk/python/build/

@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod/v4";
-import { createGovernor, createExecutionGate, createLocalProofSink, createOperatorEvidenceProvider, verifyProofV2, type Policy } from "@vellacognitive/vella-sdk";
+import { createGovernor, createExecutionGate, createLocalProofSink, createOperatorEvidenceProvider, verifyProofV2, type Policy, type ProofProfile, type KeyProvider } from "@vellacognitive/vella-sdk";
 import { registerGovernedTool } from "../index.js";
 const policy: Policy = { policyVersion: "test", defaultScope: "test", evidenceBits: { AUTHN: 1 }, scopes: { test: { intents: { RUN: 1 } } } };
 const governor = createGovernor(policy);
@@ -16,3 +16,14 @@ registerGovernedTool(new McpServer({ name: "test", version: "0.0.0" }), {
 });
 // @ts-expect-error unsupported proof boundary must not typecheck
  governor.govern({ boundary: "anywhere" });
+
+declare const profile: ProofProfile;
+declare const keys: KeyProvider;
+const profileGovernor = createGovernor(policy, { proofProfile: profile });
+const profileGate = createExecutionGate({ policy, proofProfile: profile, keyProvider: keys, governor: profileGovernor,
+  evidenceProvider: createOperatorEvidenceProvider({ loadState: () => ({}) }), proofSink: createLocalProofSink({ directory: "/tmp/pq-proofs", proofProfile: profile }) });
+registerGovernedTool(new McpServer({ name: "profile-test", version: "0.0.0" }), {
+  serverId: "test", name: "profileRun", revision: "1", inputSchema: z.object({ id: z.string() }), intent: "RUN", authorityScope: "test", gate: profileGate,
+  resolveAction: args => ({ principal: { id: "test" }, resource: { id: args.id, version: "absent" }, arguments: args }),
+  precondition: () => true, handler: args => ({ content: [{ type: "text", text: args.id }] }),
+});

@@ -1,5 +1,7 @@
 # @vellacognitive/vella-sdk
 
+**SDK 2.1.0 candidate (unpublished):** opt-in v3 proofs require both P-256 and ML-DSA-65. Existing defaults remain v2. See the [hybrid migration runbook](https://github.com/vellacognitive/vella-substrate/blob/main/spec/pqc/MIGRATION.md).
+
 Node.js SDK for deterministic pre-execution adjudication and signed proof-bundle generation.
 
 Evidence conversion now rejects invalid unsigned 32-bit values and unknown symbols with `E_EVIDENCE_INVALID`. See [evidence and policy validation](../../spec/input-validation.md) for accepted convenience forms and compatibility changes.
