@@ -16,7 +16,7 @@ const sink = createLocalProofSink({ directory: config.proofDirectory });
 const evidenceProvider = createOperatorEvidenceProvider({ loadState: async () => JSON.parse(await readFile(config.evidenceStatePath, "utf8")) });
 serveStdio(() => {
   const server = new McpServer({ name: config.serverId, version: "0.0.0" });
-  const gate = createExecutionGate({ policy: reportPolicy, signingKey, publicKey, evidenceProvider, proofSink: sink, timeoutMs: config.timeoutMs ?? 30000 });
+  const gate = createExecutionGate({ policy: reportPolicy, signingKey, publicKey, evidenceProvider, proofSink: sink, buildHash: config.buildHash ?? null, timeoutMs: config.timeoutMs ?? 30000 });
   for (const name of ["exportReport", "ExportReport"]) {
     registerGovernedTool(server, { ...reportRegistration(config.serverId, name), gate,
       resolveAction: args => ({ principal: { id: principalId }, resource: { id: `report:${args.reportId}`, version: "absent" }, arguments: args }),

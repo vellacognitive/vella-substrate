@@ -162,3 +162,20 @@ test("concurrent approved calls cannot overwrite or create more than one report"
   assert.equal((await readdir(f.config.reportDirectory)).length, 1);
   assert.equal(await readFile(join(f.config.reportDirectory, "once.txt"), "utf8"), args.content);
 });
+
+test("one server concurrently executes different reports with exact batch approvals", async t => {
+  const { approveBatch } = await import("../example/local-harness.mjs");
+  const f = await fixture(t); const client = await f.connect();
+  const requests = Array.from({ length: 8 }, (_, i) => ({ reportId: `parallel-${i}`, content: `report ${i}` }));
+  await approveBatch(f.config, requests);
+  const results = await Promise.all(requests.map(args => client.callTool({ name: "exportReport", arguments: args })));
+  for (const [i, result] of results.entries()) {
+    assert.equal(result._meta[META].outcome, "reported_success");
+    assert.equal(result._meta[META].receiptRetained, true);
+    assert.equal(await readFile(join(f.config.reportDirectory, `${requests[i].reportId}.txt`), "utf8"), requests[i].content);
+  }
+  assert.equal((await readdir(f.config.reportDirectory)).length, 8);
+  const changed = await client.callTool({ name: "exportReport", arguments: { ...requests[0], content: "unapproved" } });
+  assert.equal(changed._meta[META].outcome, "not_started");
+  await assert.rejects(approveBatch(f.config, [requests[0], requests[0]]), /duplicate/);
+});

@@ -8,7 +8,10 @@ export function createOperatorEvidenceProvider({ loadState, now = Date.now }) {
     const state = immutableJson(await loadState());
     const time = now();
     const session = state?.session;
-    const approval = state?.approval;
+    if (state?.approvals !== undefined && (state.approval !== undefined || !Array.isArray(state.approvals) || state.approvals.length > 64)) throw new Error("APPROVAL_REJECTED");
+    const approvals = state?.approvals ?? [state?.approval];
+    const matches = approvals.filter(a => a && a.principalId === binding.action.principal.id && a.actionDigest === binding.actionDigest && a.policyDigest === binding.policyDigest);
+    const approval = matches.length === 1 ? matches[0] : null;
     const valid = record => record && record.revoked === false && Number.isSafeInteger(record.expiresAt) && record.expiresAt > time;
     if (!Number.isFinite(time) || !valid(session) || typeof session.id !== "string" || !session.id || session.principalId !== binding.action.principal.id) throw new Error("IDENTITY_REJECTED");
     const permission = Array.isArray(state.permissions) && state.permissions.find(p => typeof p.id === "string" && p.id.length > 0 && p.principalId === session.principalId && p.server === binding.action.server && p.tool === binding.action.tool && p.resourceId === binding.action.resource.id && p.revoked === false && Number.isSafeInteger(p.expiresAt) && p.expiresAt > time);

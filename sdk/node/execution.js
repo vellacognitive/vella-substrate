@@ -36,6 +36,7 @@ export function createExecutionGate({ policy, signingKey, publicKey, evidencePro
   if (typeof policyVersion !== "string" || !/^sha256:[0-9a-f]{64}$/.test(policyDigest)) throw new TypeError("invalid governor identity");
 
   return Object.freeze({ policyVersion, policyDigest, async execute({ action: inputAction, intent, authorityScope, requestId: suppliedRequestId = randomUUID(), signal: callerSignal, precondition, invoke }) {
+    const attemptStart = performance.now();
     const requestId = typeof suppliedRequestId === "string" && suppliedRequestId && Buffer.byteLength(suppliedRequestId) <= 1024 ? suppliedRequestId : randomUUID();
     const attemptId = randomUUID();
     const controller = new AbortController();
@@ -96,7 +97,7 @@ export function createExecutionGate({ policy, signingKey, publicKey, evidencePro
       interrupted(signal);
       eligibility = true;
       reason = "RESULT_UNAVAILABLE";
-      value = await stage("invoke", () => { interrupted(signal); started = true; return invoke(action, { signal, requestId, attemptId }); });
+      value = await stage("invoke", () => { interrupted(signal); started = true; timings.until_dispatch = performance.now() - attemptStart; return invoke(action, { signal, requestId, attemptId }); });
       outcome = value?.isError === true ? "reported_failure" : "reported_success";
       reason = outcome === "reported_failure" ? "HANDLER_REPORTED_FAILURE" : "COMPLETED";
     } catch {
@@ -121,6 +122,7 @@ export function createExecutionGate({ policy, signingKey, publicKey, evidencePro
       } catch { /* Observed outcome survives a receipt-retention failure. */ }
       finally { clearTimeout(receiptTimer); timings.retain_receipt = performance.now() - start; }
     }
+    timings.total = performance.now() - attemptStart;
     const result = { requestId, attemptId, decision, eligible: eligibility, outcome, reason, boundary,
       authorizationRetained: retainedAuthorization, receiptRetained: retainedReceipt, receipt, timings,
       ...(value === undefined ? {} : { value }) };

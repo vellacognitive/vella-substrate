@@ -181,3 +181,23 @@ test("retention cannot mutate the verified authorization and malformed request I
   assert.equal((await f.run({ requestId: () => "not-json" })).outcome, "not_started");
   assert.equal(f.observed.length, 0);
 });
+
+test("bounded approval sets select only one exact live action and reject ambiguous state", async t => {
+  const f = await fixture(t);
+  const original = f.state.approval;
+  delete f.state.approval;
+  f.state.approvals = [{ ...original, id: "other-action", actionDigest: actionDigest({ other: true }) }, original];
+  const success = await f.run({ invoke: () => ({ content: [] }) });
+  assert.equal(success.outcome, "reported_success");
+  assert.ok(success.timings.until_dispatch >= 0);
+  assert.ok(success.timings.total >= success.timings.until_dispatch);
+  for (const approvals of [[original, { ...original, id: "duplicate" }], [{ ...original, revoked: true }], [{ ...original, expiresAt: 0 }], Array(65).fill(original), {}]) {
+    f.state.approvals = approvals;
+    const result = await f.run();
+    assert.equal(result.outcome, "not_started");
+    assert.equal(result.timings.until_dispatch, undefined);
+  }
+  f.state.approvals = [original]; f.state.approval = original;
+  assert.equal((await f.run()).outcome, "not_started");
+  assert.equal(f.observed.length, 0);
+});
