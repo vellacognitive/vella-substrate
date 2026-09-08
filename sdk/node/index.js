@@ -1,56 +1,14 @@
 /* VELLA SDK — MIT License — Copyright (c) 2026 Vella Cognitive, LLC */
+import { createGovernor } from "./governor.js";
+import proofV2 from "./proof-v2.cjs";
 
-import { createEvaluator } from "./evaluator.js";
-import { DEFAULT_POLICY } from "./policy.js";
-import { buildEnvelope, signBundle } from "./proof.js";
-
-const evaluator = createEvaluator(DEFAULT_POLICY);
-
-export function govern({ intent, evidenceMask, authorityScope, policyVersion, proof } = {}) {
-  const start = process.hrtime.bigint();
-
-  try {
-    const result = evaluator.evaluate({
-      intent_id: intent,
-      evidence_mask: evidenceMask,
-      authority_scope_id: authorityScope,
-      policy_version: policyVersion,
-    });
-
-    const latencyUs = Number((process.hrtime.bigint() - start) / 1000n);
-    const output = {
-      decision: result.decision,
-      reasonCode: result.reason_code,
-      latencyUs,
-    };
-
-    if (proof && proof.signingKey) {
-      try {
-        const envelope = buildEnvelope(
-          {
-            intent_id: intent,
-            evidence_mask: evidenceMask,
-            authority_scope_id: authorityScope,
-            policy_version: policyVersion,
-          },
-          result,
-          { policyVersion: evaluator.policyVersion, authorityScope },
-        );
-        output.proofBundle = signBundle(envelope, proof.signingKey);
-      } catch (proofError) {
-        output.proofBundle = null;
-        output.proofError = proofError instanceof Error ? proofError.message : String(proofError);
-      }
-    }
-
-    return output;
-  } catch {
-    return {
-      decision: "DENIED",
-      reasonCode: "E_EVALUATOR_INTERNAL",
-      latencyUs: 0,
-    };
-  }
-}
-
-export { DEFAULT_POLICY };
+const defaultGovernor = createGovernor();
+export const govern = defaultGovernor.govern;
+export const verifyProofV2 = proofV2.verifyV2;
+export const actionDigest = proofV2.digest;
+export { createGovernor };
+export { createEvaluator } from "./evaluator.js";
+export { DEFAULT_POLICY } from "./policy.js";
+export { createExecutionGate } from "./execution.js";
+export { createLocalProofSink } from "./local-proof-sink.js";
+export { createOperatorEvidenceProvider } from "./operator-evidence.js";

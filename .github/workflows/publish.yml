@@ -162,7 +162,7 @@ jobs:
         working-directory: sdk/python
         run: |
           python -m pip install dist/*.whl
-          python -m pip install pytest cryptography
+          python -m pip install pytest cryptography jsonschema
           pytest -q
 
       - name: Publish to PyPI (Trusted Publisher / OIDC)

@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vella://contracts/v2/proof.json.schema.json",
+  "title": "Vella exact-byte authorization proof v2 (unreleased)",
+  "$comment": "contentSchema is an annotation in many validators. Decode and validate the authenticated payload separately. Verifiers also enforce canonical base64, strict UTF-8, duplicate-key rejection, 1 MiB bytes, depth 32, bounded JSON numbers, 1024 UTF-8 bytes for identifiers, real UTC timestamp, action digest and signature/key checks. Schema validation alone is not proof verification.",
+  "type": "object",
+  "required": [
+    "kind",
+    "payload_type",
+    "payload",
+    "signature_alg",
+    "signature",
+    "key_id",
+    "payload_hash"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "vella_proof_bundle_v2"
+    },
+    "payload_type": {
+      "const": "application/vnd.vella.authorization.v2+json"
+    },
+    "payload": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 1398104,
+      "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+      "contentEncoding": "base64",
+      "contentMediaType": "application/json",
+      "contentSchema": {
+        "$ref": "#/$defs/authorizationRecord"
+      }
+    },
+    "signature_alg": {
+      "const": "ecdsa-p256-sha256"
+    },
+    "signature": {
+      "type": "string",
+      "minLength": 88,
+      "maxLength": 88,
+      "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+    },
+    "key_id": {
+      "type": "string",
+      "pattern": "^key_[a-f0-9]{16}$"
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  },
+  "$defs": {
+    "authorizationRecord": {
+      "type": "object",
+      "required": [
+        "envelope_id",
+        "request_id",
+        "intent",
+        "authority_scope",
+        "policy_version",
+        "requested_policy_version",
+        "policy_digest",
+        "evidence_mask",
+        "decision",
+        "reason_code",
+        "timestamp",
+        "action",
+        "action_digest",
+        "evidence",
+        "boundary",
+        "build_hash",
+        "external_effects"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "envelope_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "request_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "intent": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "authority_scope": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "requested_policy_version": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "policy_digest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "evidence_mask": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "decision": {
+          "enum": [
+            "ALLOWED",
+            "DENIED"
+          ]
+        },
+        "reason_code": {
+          "enum": [
+            "POLICY_SATISFIED",
+            "DENY_FAST",
+            "E_INTENT_REQUIRED",
+            "E_POLICY_VERSION_MISMATCH",
+            "E_EVIDENCE_MISSING",
+            "E_EVIDENCE_INVALID",
+            "E_EVALUATOR_INTERNAL"
+          ]
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?!0000)[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+        },
+        "action": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "action_digest": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "boundary": {
+          "enum": [
+            "evaluation",
+            "client-dispatch",
+            "server-handler"
+          ]
+        },
+        "build_hash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "external_effects": {
+          "const": false
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "decision": {
+                "const": "ALLOWED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_code": {
+                "const": "POLICY_SATISFIED"
+              },
+              "intent": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              },
+              "evidence_mask": {
+                "type": "integer"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "reason_code": {
+                "not": {
+                  "const": "POLICY_SATISFIED"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "type": "null"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "action_digest": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "action_digest": {
+                "type": "string",
+                "pattern": "^sha256:[a-f0-9]{64}$"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

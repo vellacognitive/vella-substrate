@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking changes in development
+
+- High-level SDK signing now emits v2 typed exact-byte proofs. Nested action/evidence and loaded policy identity are authenticated; Node and Python expose isolated policy-bound governors and structured v2 verification.
+- Repository verifiers dispatch v2 separately, reject unsupported formats and report legacy v1 protection limits. Historical v1 hash rules remain unchanged. V2 shell verification uses Python structural checks and OpenSSL signatures.
+- This requires a versioned release and migration; published 1.0.3 metadata and existing tags are unchanged. See `docs/remediation/migration.md`.
+
+
+### Added
+
+- Add a mandatory-proof Node execution gate, operator evidence reference, acknowledged local file sink, unsigned correlated receipts and process-interruption tests.
+- Add an unreleased separately packaged MCP server binding with real stdio tests, effective-action approvals, cancellation and concurrency checks, and a runnable report-export example.
+- Add Node declarations, Python typing metadata, clean package-install checks and a single conformance entry point.
+
+- Add shared Node/Python evidence and custom-policy regression vectors.
+- Add a private MCP client/server boundary experiment and experimental cross-language proof-format comparison; these are not a production adapter or a public proof format.
+
 ### Changed
 
 - Update GitHub-owned workflow actions to their current Node 24-backed major versions after live example verification exposed the Node 20 runtime deprecation.
@@ -14,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enable repository release immutability for releases published after `v1.0.3`.
 
 ### Fixed
+
+- Reject malformed evidence values instead of truncating or wrapping them into an allowed mask; report `E_EVIDENCE_INVALID`.
+- Compare Node bit 31 as unsigned and reject invalid policy masks, evidence definitions, default scopes, and normalized-name collisions before activation.
+- Align the normalized request mask limit and signing-failure null response with the interface documentation; distinguish optional signing failure from policy denial.
 
 - Bind every registry publish job to the single commit selected by a validated stable release tag, and bind release-triggered runs to the commit captured by the release event.
 - Keep release inputs out of generated shell source and reject noncanonical tag syntax before checkout.

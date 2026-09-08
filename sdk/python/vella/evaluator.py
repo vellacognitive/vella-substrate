@@ -28,6 +28,27 @@ DECISION_DENIED_INTERNAL: Decision = {
     "decision": "DENIED",
     "reason_code": "E_EVALUATOR_INTERNAL",
 }
+DECISION_DENIED_INVALID_EVIDENCE: Decision = {
+    "decision": "DENIED", "reason_code": "E_EVIDENCE_INVALID",
+}
+MAX_MASK = 0xFFFFFFFF
+# Match ECMAScript String.trim exactly, including BOM but excluding NEL.
+ECMASCRIPT_WHITESPACE = "\u0009\u000a\u000b\u000c\u000d\u0020\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff"
+
+
+class InvalidEvidenceError(ValueError):
+    pass
+
+
+def _is_mask(value: object) -> bool:
+    if isinstance(value, bool):
+        return False
+    if isinstance(value, int):
+        return 0 <= value <= MAX_MASK
+    return (
+        isinstance(value, float) and math.isfinite(value)
+        and value.is_integer() and 0 <= value <= MAX_MASK
+    )
 
 
 @dataclass(frozen=True)
@@ -46,9 +67,9 @@ class CompiledPolicy:
 
 
 def _normalize_id(value: object | None) -> str:
-    if value is None:
+    if not isinstance(value, str):
         return ""
-    return str(value).strip().upper()
+    return value.strip(ECMASCRIPT_WHITESPACE).upper()
 
 
 def _parse_unsigned_int_strict(text: str) -> int:
@@ -60,98 +81,100 @@ def _parse_unsigned_int_strict(text: str) -> int:
         if code < 48 or code > 57:
             return -1
         value = (value * 10) + (code - 48)
-        if not math.isfinite(value):
+        if value > MAX_MASK:
             return -1
-    return value & 0xFFFFFFFF
+    return value
 
 
 def to_evidence_mask(value: object, evidence_bits: Mapping[str, int]) -> int:
-    if isinstance(value, bool):
+    if value is None:
         return 0
 
-    if isinstance(value, int):
-        return value & 0xFFFFFFFF
-
-    if isinstance(value, float) and math.isfinite(value):
-        return int(value) & 0xFFFFFFFF
+    if isinstance(value, (int, float)) and _is_mask(value):
+        return int(value)
 
     if isinstance(value, str):
-        trimmed = value.strip()
+        trimmed = value.strip(ECMASCRIPT_WHITESPACE)
         numeric = _parse_unsigned_int_strict(trimmed)
         if numeric >= 0:
-            return numeric & 0xFFFFFFFF
+            return numeric
         bit = evidence_bits.get(_normalize_id(trimmed))
-        return (bit & 0xFFFFFFFF) if bit is not None else 0
+        if bit is not None and _is_mask(bit):
+            return bit
+        raise InvalidEvidenceError("evidence must be an unsigned 32-bit integer or known symbol")
 
     if isinstance(value, list):
         mask = 0
         for item in value:
-            bit = evidence_bits.get(_normalize_id(item))
-            if bit is not None:
-                mask |= bit
-        return mask & 0xFFFFFFFF
+            bit = evidence_bits.get(_normalize_id(item)) if isinstance(item, str) else None
+            if bit is None or not _is_mask(bit):
+                raise InvalidEvidenceError("every evidence list item must be a known symbol")
+            mask |= bit
+        return mask
 
-    return 0
+    raise InvalidEvidenceError("unsupported evidence value")
 
 
-def _to_int(value: object, default: int = 0) -> int:
-    if isinstance(value, bool):
-        return default
-    if isinstance(value, int):
-        return value
-    if isinstance(value, float) and math.isfinite(value):
-        return int(value)
-    if isinstance(value, str):
-        parsed = _parse_unsigned_int_strict(value.strip())
-        if parsed >= 0:
-            return parsed
-    return default
+def _policy_mask(value: object, label: str) -> int:
+    if not isinstance(value, (int, float)) or not _is_mask(value):
+        raise ValueError(f"{label} must be an unsigned 32-bit integer")
+    return int(value)
+
+
+def _policy_name(value: object, label: str) -> str:
+    if not isinstance(value, str) or not value.strip(ECMASCRIPT_WHITESPACE) or value != value.strip(ECMASCRIPT_WHITESPACE):
+        raise ValueError(f"{label} must be a nonempty string without surrounding whitespace")
+    return value
+
+
+def _policy_object(value: object, label: str) -> Mapping[str, object]:
+    if not isinstance(value, Mapping) or any(not isinstance(k, str) for k in value):
+        raise ValueError(f"{label} must be an object with string keys")
+    return value
 
 
 def compile_policy(policy_input: Mapping[str, object] | None = None) -> CompiledPolicy:
-    policy = policy_input if policy_input is not None else DEFAULT_POLICY
-
-    raw_evidence = policy.get("evidenceBits")
+    policy = _policy_object(policy_input if policy_input is not None else DEFAULT_POLICY, "policy")
+    policy_version = _policy_name(policy.get("policyVersion"), "policyVersion")
+    default_scope = _policy_name(policy.get("defaultScope"), "defaultScope")
+    raw_evidence = _policy_object(policy.get("evidenceBits"), "evidenceBits")
     evidence_bits: dict[str, int] = {}
-    if isinstance(raw_evidence, Mapping):
-        for key, value in raw_evidence.items():
-            if not isinstance(key, str):
-                continue
-            evidence_bits[key] = _to_int(value) & 0xFFFFFFFF
+    used_bits: set[int] = set()
+    for key, value in raw_evidence.items():
+        name = _normalize_id(_policy_name(key, "evidence name"))
+        bit = _policy_mask(value, f"evidenceBits.{key}")
+        if (name.isascii() and name.isdigit()) or name in evidence_bits:
+            raise ValueError(f"ambiguous evidence name: {key}")
+        if bit == 0 or bit & (bit - 1) or bit in used_bits:
+            raise ValueError(f"evidenceBits.{key} must name a unique single bit")
+        evidence_bits[name] = bit
+        used_bits.add(bit)
 
-    raw_scopes = policy.get("scopes")
+    raw_scopes = _policy_object(policy.get("scopes"), "scopes")
     scopes: dict[str, CompiledScope] = {}
-    if isinstance(raw_scopes, Mapping):
-        for scope_name_obj, scope_cfg_obj in raw_scopes.items():
-            if not isinstance(scope_name_obj, str):
-                continue
-            scope_name = scope_name_obj
-            scope_cfg = scope_cfg_obj if isinstance(scope_cfg_obj, Mapping) else {}
+    for scope_name_obj, scope_cfg_obj in raw_scopes.items():
+        scope_name = _policy_name(scope_name_obj, "scope name")
+        scope_cfg = _policy_object(scope_cfg_obj, f"scopes.{scope_name}")
+        raw_intents = _policy_object(scope_cfg.get("intents"), f"scopes.{scope_name}.intents")
+        intent_rules: dict[str, int] = {}
+        for intent_name_obj, intent_mask_obj in raw_intents.items():
+            intent_name = _normalize_id(_policy_name(intent_name_obj, "intent name"))
+            if intent_name in intent_rules:
+                raise ValueError(f"normalized intent collision: {intent_name}")
+            intent_rules[intent_name] = _policy_mask(intent_mask_obj, f"intent {intent_name}")
 
-            raw_intents = scope_cfg.get("intents")
-            intent_rules: dict[str, int] = {}
-            if isinstance(raw_intents, Mapping):
-                for intent_name_obj, intent_mask_obj in raw_intents.items():
-                    if not isinstance(intent_name_obj, str):
-                        continue
-                    intent_name = _normalize_id(intent_name_obj)
-                    if not intent_name:
-                        continue
-                    intent_rules[intent_name] = _to_int(intent_mask_obj) & 0xFFFFFFFF
+        allow_unknown = scope_cfg.get("allowUnknownIntents", False)
+        if not isinstance(allow_unknown, bool):
+            raise TypeError("allowUnknownIntents must be a boolean")
+        default_required = _policy_mask(scope_cfg.get("defaultRequiredMask", 0), "defaultRequiredMask")
+        scopes[scope_name] = CompiledScope(
+            allow_unknown_intents=allow_unknown,
+            default_required_mask=default_required,
+            intent_rules=intent_rules,
+        )
 
-            allow_unknown = bool(scope_cfg.get("allowUnknownIntents") is True)
-            default_required = _to_int(scope_cfg.get("defaultRequiredMask"), 0) & 0xFFFFFFFF
-            scopes[scope_name] = CompiledScope(
-                allow_unknown_intents=allow_unknown,
-                default_required_mask=default_required,
-                intent_rules=intent_rules,
-            )
-
-    default_scope_obj = policy.get("defaultScope")
-    default_scope = str(default_scope_obj) if default_scope_obj is not None else "sdk_v1_default"
-
-    policy_version_obj = policy.get("policyVersion")
-    policy_version = str(policy_version_obj) if policy_version_obj is not None else "min-v1"
+    if default_scope not in scopes:
+        raise ValueError("defaultScope must reference a declared scope")
 
     return CompiledPolicy(
         policy_version=policy_version,
@@ -170,6 +193,8 @@ class Evaluator:
     def evaluate(self, input_dict: Mapping[str, object] | None) -> Decision:
         try:
             return self._evaluate(input_dict)
+        except InvalidEvidenceError:
+            return DECISION_DENIED_INVALID_EVIDENCE.copy()
         except Exception:  # noqa: BLE001 - the public authority boundary must fail closed
             return DECISION_DENIED_INTERNAL.copy()
 
@@ -192,7 +217,9 @@ class Evaluator:
             if scope is None:
                 return DECISION_DENIED_FAST.copy()
         else:
-            scope = self._compiled.scopes.get(str(authority_scope_id))
+            if not isinstance(authority_scope_id, str):
+                return DECISION_DENIED_FAST.copy()
+            scope = self._compiled.scopes.get(authority_scope_id)
             if scope is None:
                 return DECISION_DENIED_FAST.copy()
 
@@ -206,7 +233,7 @@ class Evaluator:
         if (
             requested_policy_version is not None
             and requested_policy_version != ""
-            and str(requested_policy_version) != self._compiled.policy_version
+            and (not isinstance(requested_policy_version, str) or requested_policy_version != self._compiled.policy_version)
         ):
             return DECISION_DENIED_POLICY_VERSION.copy()
 

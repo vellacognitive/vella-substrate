@@ -34,6 +34,7 @@ jobs:
           schema_dir = Path("spec/schemas")
           schema_paths = {
             "proof": schema_dir / "proof.json",
+            "proof_v2": schema_dir / "proof-v2.json",
             "export": schema_dir / "export.json",
             "icd": schema_dir / "icd.json",
           }
@@ -46,6 +47,7 @@ jobs:
 
           validators = {
             "vella_proof_bundle_v1": Draft202012Validator(schemas["proof"]),
+            "vella_proof_bundle_v2": Draft202012Validator(schemas["proof_v2"]),
             "vella_export_evidence_v1": Draft202012Validator(schemas["export"]),
           }
 

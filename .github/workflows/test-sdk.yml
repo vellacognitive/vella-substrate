@@ -28,15 +28,22 @@ jobs:
 
   sdk-tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - node: "18"
+            python: "3.10"
+          - node: "24"
+            python: "3.14"
 
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Setup Node 24
+      - name: Setup Node ${{ matrix.node }}
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: "24"
+          node-version: ${{ matrix.node }}
 
       - name: Verify release metadata consistency
         run: node scripts/check-release-consistency.mjs
@@ -137,10 +144,10 @@ jobs:
           echo "Expected the invalid proof path to fail without emitting a decision"
           exit 1
 
-      - name: Setup Python 3.11
+      - name: Setup Python ${{ matrix.python }}
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python }}
 
       - name: Python SDK tests
         working-directory: sdk/python
@@ -154,3 +161,44 @@ jobs:
         run: |
           ruff check .
           mypy --strict vella/
+
+      - name: Production proof producer and verifier conformance
+        run: node --test scripts/proof-conformance.test.mjs
+
+  mcp-reference:
+    name: Local MCP (${{ matrix.os }}, Node ${{ matrix.node }})
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: ["22", "24"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.14"
+      - name: Install local reference dependencies
+        run: |
+          python -m pip install -e sdk/python setuptools wheel
+          npm ci --ignore-scripts --prefix integrations/mcp-experiment
+          npm ci --ignore-scripts --prefix integrations/mcp-server
+      - name: Client and server comparison
+        working-directory: integrations/mcp-experiment
+        run: |
+          npm test
+          npm run demo
+      - name: Governed server and public types
+        working-directory: integrations/mcp-server
+        run: |
+          npm test
+          npm run typecheck
+          npm run demo
+      - name: Clean candidate package installation
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '24'
+        run: node scripts/check-package-install.mjs

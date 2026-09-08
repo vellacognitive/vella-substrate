@@ -1,5 +1,8 @@
 # Public Roadmap
 
+**Development update:** an unreleased [controlled MCP server reference](integrations/mcp-server/README.md) and reusable mandatory-proof gate now exist. Client dispatch remains a comparison demonstrator. Published-release status below remains separate; see the [acceptance ledger](docs/remediation/acceptance.md).
+
+
 **Last updated:** 2026-09-01
 
 This roadmap tracks the public reference implementation and its adoption surface. It is directional, not a release-date commitment. Items are marked shipped only when public code, documentation, and a verification path exist.

@@ -2,6 +2,10 @@
 
 Node.js SDK for deterministic pre-execution adjudication and signed proof-bundle generation.
 
+Evidence conversion now rejects invalid unsigned 32-bit values and unknown symbols with `E_EVIDENCE_INVALID`. See [evidence and policy validation](../../spec/input-validation.md) for accepted convenience forms and compatibility changes.
+
+**Development status:** the v2 proof and policy-bound signing APIs below are unreleased. Published 1.0.3 packages do not include them. See [migration and legacy limits](../../docs/remediation/migration.md).
+
 ## Install
 
 ```bash
@@ -36,8 +40,32 @@ const result = govern({
   proof: { signingKey },
 });
 
-console.log(result.proofBundle.kind); // vella_proof_bundle_v1
+console.log(result.proofBundle.kind); // vella_proof_bundle_v2
 ```
+
+## Custom policies and verified record access
+
+```js
+import { createGovernor, verifyProofV2 } from "@vellacognitive/vella-sdk";
+
+const governor = createGovernor(applicationPolicy);
+const result = governor.govern({
+  intent: "EXPORT_REPORT",
+  evidenceMask: ["AUTHN", "AUTHZ"],
+  requestId: "request-123",
+  action: { server: "reports", tool: "exportReport", args: { reportId: "report-1" } },
+  evidence: { identityRef: "session-123", approvalRef: "approval-456" },
+  proof: { signingKey },
+});
+if (result.proofBundle) {
+  const checked = verifyProofV2(result.proofBundle, trustedPublicKey);
+  if (checked.ok) console.log(checked.authenticated);
+}
+```
+
+`createGovernor(policy)` snapshots a validated policy and exposes `govern`, `policyVersion` and `policyDigest`. Construct a new instance to change policy. `createEvaluator(policy)` is available for evaluation only. The policy shape and validation rules are defined in [input validation](../../spec/input-validation.md).
+
+The core SDK trusts application-supplied evidence, does not execute actions and does not persist proofs. Optional signing failure preserves the policy result and returns `proofBundle: null` with `proofError`. An integration requiring proof must stop before execution if signing or retention fails. Use the verified `authenticated` record; never interpret unverified decoded payload as authority.
 
 ## When to use this SDK
 
@@ -47,7 +75,7 @@ For enterprise service mesh, polyglot environments (Go, Java, .NET), Kubernetes 
 
 ## API
 
-- `govern({ intent, evidenceMask, authorityScope?, policyVersion?, proof? })`
+- `govern({ intent, evidenceMask, authorityScope?, policyVersion?, proof?, action?, evidence?, requestId?, boundary?, buildHash? })`
   - Returns `{ decision, reasonCode, latencyUs, proofBundle?, proofError? }`
 - `proof.signingKey`
   - PEM-encoded ECDSA-P256 private key (string)
@@ -56,5 +84,12 @@ For enterprise service mesh, polyglot environments (Go, Java, .NET), Kubernetes 
 
 See the root repository docs for full protocol details:
 - `spec/icd.md`
-- `spec/schemas/proof.json`
+- `spec/proof-v2.md` and `spec/schemas/proof-v2.json`
+- `spec/schemas/proof.json` (legacy)
 - `verify/`
+
+## Mandatory execution and local evidence
+
+The unreleased `createExecutionGate` requires a signed v2 authorization, trusted evidence resolution and acknowledged retention before invoking a protected callable. `createLocalProofSink` supplies the documented local fsync acknowledgment; `createOperatorEvidenceProvider` is the fixed-bit local session/permission/approval reference. A proof sink must return the exact proof hash and its promised durability.
+
+Use [the complete local reference](../../integrations/mcp-server/README.md) for registration, evidence-state ownership, receipts, cancellation and recovery semantics. Core `govern` remains a synchronous optional-signing API; execution uses the separate asynchronous gate. Node declarations ship with the package.

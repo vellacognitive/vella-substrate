@@ -1,0 +1,312 @@
+{
+  "description": "Shared acceptance cases for unsigned evidence and normalized policy identifiers. Numeric masks may use bits outside the optional symbolic vocabulary.",
+  "evidence": [
+    {
+      "name": "negative",
+      "value": -1,
+      "reason": "E_EVIDENCE_INVALID"
+    },
+    {
+      "name": "fraction",
+      "value": 1.5,
+      "reason": "E_EVIDENCE_INVALID"
+    },
+    {
+      "name": "overflow",
+      "value": 4294967297,
+      "reason": "E_EVIDENCE_INVALID"
+    },
+    {
+      "name": "overflow decimal",
+      "value": "4294967297",
+      "reason": "E_EVIDENCE_INVALID"
+    },
+    {
+      "name": "boolean",
+      "value": true,
+      "reason": "E_EVIDENCE_INVALID"
+    },
+    {
+      "name": "object",
+      "value": {},
+      "reason": "E_EVIDENCE_INVALID"
+    },
+    {
+      "name": "unknown symbol",
+      "value": "MISSING",
+      "reason": "E_EVIDENCE_INVALID"
+    },
+    {
+      "name": "partially known list",
+      "value": [
+        "AUTHN",
+        "MISSING"
+      ],
+      "reason": "E_EVIDENCE_INVALID"
+    },
+    {
+      "name": "nonstring symbol",
+      "value": [
+        "AUTHN",
+        1
+      ],
+      "reason": "E_EVIDENCE_INVALID"
+    },
+    {
+      "name": "empty string",
+      "value": "",
+      "reason": "E_EVIDENCE_INVALID"
+    },
+    {
+      "name": "zero",
+      "value": 0,
+      "reason": "E_EVIDENCE_MISSING"
+    },
+    {
+      "name": "absent",
+      "value": null,
+      "reason": "E_EVIDENCE_MISSING"
+    },
+    {
+      "name": "empty list",
+      "value": [],
+      "reason": "E_EVIDENCE_MISSING"
+    },
+    {
+      "name": "integer",
+      "value": 1,
+      "reason": "POLICY_SATISFIED"
+    },
+    {
+      "name": "integral float",
+      "value": 1.0,
+      "reason": "POLICY_SATISFIED"
+    },
+    {
+      "name": "decimal",
+      "value": " 001 ",
+      "reason": "POLICY_SATISFIED"
+    },
+    {
+      "name": "symbol",
+      "value": " authn ",
+      "reason": "POLICY_SATISFIED"
+    },
+    {
+      "name": "symbols",
+      "value": [
+        "authn",
+        "AUTHZ"
+      ],
+      "reason": "POLICY_SATISFIED"
+    },
+    {
+      "name": "maximum",
+      "value": 4294967295,
+      "reason": "POLICY_SATISFIED"
+    },
+    {
+      "name": "ECMAScript BOM whitespace",
+      "value": "\ufeff1\ufeff",
+      "reason": "POLICY_SATISFIED"
+    },
+    {
+      "name": "non-trim NEL character",
+      "value": "\u00851\u0085",
+      "reason": "E_EVIDENCE_INVALID"
+    }
+  ],
+  "invalidPolicies": [
+    {
+      "name": "intent collision",
+      "policy": {
+        "policyVersion": "test-v1",
+        "defaultScope": "s",
+        "evidenceBits": {},
+        "scopes": {
+          "s": {
+            "intents": {
+              "read": 1,
+              "READ": 3
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "reverse intent collision",
+      "policy": {
+        "policyVersion": "test-v1",
+        "defaultScope": "s",
+        "evidenceBits": {},
+        "scopes": {
+          "s": {
+            "intents": {
+              "READ": 3,
+              "read": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "symbolic rule mask",
+      "policy": {
+        "policyVersion": "test-v1",
+        "defaultScope": "s",
+        "evidenceBits": {
+          "AUTHN": 1
+        },
+        "scopes": {
+          "s": {
+            "intents": {
+              "READ": "AUTHN"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "negative rule",
+      "policy": {
+        "policyVersion": "test-v1",
+        "defaultScope": "s",
+        "evidenceBits": {},
+        "scopes": {
+          "s": {
+            "intents": {
+              "READ": -1
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "overflow default",
+      "policy": {
+        "policyVersion": "test-v1",
+        "defaultScope": "s",
+        "evidenceBits": {},
+        "scopes": {
+          "s": {
+            "allowUnknownIntents": true,
+            "defaultRequiredMask": 4294967296,
+            "intents": {}
+          }
+        }
+      }
+    },
+    {
+      "name": "missing default scope",
+      "policy": {
+        "policyVersion": "test-v1",
+        "defaultScope": "missing",
+        "evidenceBits": {},
+        "scopes": {
+          "s": {
+            "intents": {}
+          }
+        }
+      }
+    },
+    {
+      "name": "evidence name collision",
+      "policy": {
+        "policyVersion": "test-v1",
+        "defaultScope": "s",
+        "evidenceBits": {
+          "authn": 1,
+          "AUTHN": 2
+        },
+        "scopes": {
+          "s": {
+            "intents": {}
+          }
+        }
+      }
+    },
+    {
+      "name": "multibit definition",
+      "policy": {
+        "policyVersion": "test-v1",
+        "defaultScope": "s",
+        "evidenceBits": {
+          "AUTHN": 3
+        },
+        "scopes": {
+          "s": {
+            "intents": {}
+          }
+        }
+      }
+    },
+    {
+      "name": "duplicate evidence bit",
+      "policy": {
+        "policyVersion": "test-v1",
+        "defaultScope": "s",
+        "evidenceBits": {
+          "AUTHN": 1,
+          "AUTHZ": 1
+        },
+        "scopes": {
+          "s": {
+            "intents": {}
+          }
+        }
+      }
+    },
+    {
+      "name": "boolean rule mask",
+      "policy": {
+        "policyVersion": "test-v1",
+        "defaultScope": "s",
+        "evidenceBits": {},
+        "scopes": {
+          "s": {
+            "intents": {
+              "READ": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "nonboolean unknown mode",
+      "policy": {
+        "policyVersion": "test-v1",
+        "defaultScope": "s",
+        "evidenceBits": {},
+        "scopes": {
+          "s": {
+            "allowUnknownIntents": "false",
+            "intents": {}
+          }
+        }
+      }
+    },
+    {
+      "name": "nonobject scope",
+      "policy": {
+        "policyVersion": "test-v1",
+        "defaultScope": "s",
+        "evidenceBits": {},
+        "scopes": {
+          "s": null
+        }
+      }
+    },
+    {
+      "name": "missing version",
+      "policy": {
+        "defaultScope": "s",
+        "evidenceBits": {},
+        "scopes": {
+          "s": {
+            "intents": {}
+          }
+        }
+      }
+    }
+  ]
+}

@@ -12,6 +12,8 @@
 
 **An agent can propose the action. VELLA decides whether it has authority to happen and leaves proof of the decision.**
 
+**Unreleased development:** the remediation branch adds [v2 proofs](spec/proof-v2.md), a mandatory execution gate and a [local MCP server binding](integrations/mcp-server/README.md). Published 1.0.3 does not contain these changes. See [migration](docs/remediation/migration.md) and the [acceptance ledger](docs/remediation/acceptance.md).
+
 **Install:** `npm install @vellacognitive/vella-sdk` or `pip install vella-sdk` · [Run the two-minute example](#quick-example)
 
 <p align="center">
@@ -24,7 +26,7 @@
 
 **VELLA is the decision layer between an AI agent or autonomous system proposing an action and that action being taken.** It sits where alignment, input safety, and IAM don't: at the specific moment an autonomous system is about to act, under a specific policy, with specific evidence in hand.
 
-Given a proposed action and an evidence mask, VELLA returns `ALLOWED` or `DENIED` deterministically and emits a cryptographically signed proof bundle. The bundle can be verified offline by any third party with only the bundle and a public key. No access to VELLA, the agent, or the originating system is required.
+Given an intent and an evidence mask, VELLA returns `ALLOWED` or `DENIED` deterministically and can emit a signed proof when optional signing succeeds. Applications supply the effective action context; the mandatory gate additionally requires trusted evidence and acknowledged proof retention before dispatch. The bundle can be verified offline by any third party with only the bundle and a public key. No access to VELLA, the agent, or the originating system is required.
 
 This is a reference implementation, MIT-licensed. It's designed to be the primitive that agent frameworks, audit pipelines, and compliance systems build on.
 
@@ -49,6 +51,7 @@ The SDK is designed for in-process, low-latency adjudication; the authority deci
 - [Quickstart](#quick-example): Node or Python SDK, working example in 2 minutes
 - [GitHub Actions authority gate](integrations/github-action/README.md): block a protected workflow step on `DENIED`
 - [Runnable protected deployment](examples/github-actions-protected-deploy/README.md): exercise both the allowed and denied paths and verify the signed proof
+- [Local MCP server reference](integrations/mcp-server/README.md): unreleased, guarded report export with exact-action approval
 - [Integration map](INTEGRATIONS.md): shipped surfaces, compatible hook points, and planned adapters
 - [Use-case registry](USE_CASES.md): concrete consequence boundaries and deny-path obligations
 - [Public roadmap](ROADMAP.md): shipped, next, and exploratory work
@@ -76,6 +79,7 @@ The useful combination is **minimal + embedded + evidence-conditioned + determin
 | Node.js and Python SDKs | **Shipped** | In-process action gates with no network dependency |
 | GitHub Actions authority gate | **Shipped reference adapter** | Protected deployment, release, or change-control jobs |
 | Generic tool-dispatch hook | **Documented pattern** | Agent harnesses that expose a pre-tool-call interception point |
+| Controlled MCP server, local stdio | **Unreleased implementation; local tests** | Exact-action approval, retained v2 authorization and observed receipt |
 | Claude Code / Claude Agent SDK, MCP client dispatch, LangGraph, OpenAI Agents | **Compatible insertion points; dedicated adapters planned** | Framework-native distribution without coupling the substrate to a framework |
 | HTTP, gRPC, sidecar, and Kubernetes surfaces | **Commercial components; not published here** | Polyglot, network-boundary, and multi-tenant enforcement |
 
