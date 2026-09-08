@@ -1,4 +1,4 @@
-import type {AuthorizationRecord, Json, JsonObject, KeyProvider, KeySession, ProofProfile} from '../index.js';
+import type {AuthorizationRecord, Json, JsonObject, KeyProvider, KeySession, Policy, ProofProfile} from '../index.js';
 export type HybridSuite = 'p256+ml-dsa-65';
 export const SUITE: HybridSuite;
 export interface HybridPublicKeys { 'ecdsa-p256-sha256': string; 'ml-dsa-65': string }
@@ -43,4 +43,4 @@ export interface LocalHybridKeyStore extends KeyProvider {
 }
 export function openLocalKeyStore(options: {directory: string; initialize?: boolean; now?: () => number}): Promise<LocalHybridKeyStore>;
 export function recoverLocalKeyLock(options: {directory: string; expectedPid: number; expectedRevision: number; confirmStopped: true}): Promise<void>;
-export function retainVerificationMaterial(options: {directory: string; policy: JsonObject; keyStore: LocalHybridKeyStore; profile: ProofProfile}): Promise<unknown>;
+export function retainVerificationMaterial(options: {directory: string; policy: Policy | JsonObject; keyStore: LocalHybridKeyStore; profile: ProofProfile}): Promise<unknown>;

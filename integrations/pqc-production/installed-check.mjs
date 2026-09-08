@@ -42,7 +42,7 @@ try {
   assert.equal(pyCheck.status, 0, pyCheck.stderr + pyCheck.stdout);
   const shellCheck = spawnSync('/bin/sh', [new URL('../../verify/verify-v3.sh', import.meta.url).pathname, ...args], {encoding:'utf8', env:{...env, VELLA_PYTHON:python}});
   assert.equal(shellCheck.status, 0, shellCheck.stderr + shellCheck.stdout);
-  const pyGenerate = spawnSync(python, ['-I', '-c', `import json, vella\nfrom vella.pqc import *\npair=generate_hybrid_keys(SUITE)\nr=vella.create_governor(proof_profile=HybridProfile()).govern(intent='EXECUTE_CHANGE', evidence_mask=1, proof_signing_key=pair['privateKeys'])\nprint(json.dumps({'bundle':r['proof_bundle'],'publicKeys':pair['publicKeys'],'version':vella.__version__,'module':vella.__file__}))`], {encoding: 'utf8', env});
+  const pyGenerate = spawnSync(python, ['-I', '-c', `import json, vella, platform, cryptography, importlib.metadata\nfrom cryptography.hazmat.backends.openssl.backend import backend\nfrom vella.pqc import *\npair=generate_hybrid_keys(SUITE)\nr=vella.create_governor(proof_profile=HybridProfile()).govern(intent='EXECUTE_CHANGE', evidence_mask=1, proof_signing_key=pair['privateKeys'])\nprint(json.dumps({'bundle':r['proof_bundle'],'publicKeys':pair['publicKeys'],'version':vella.__version__,'module':vella.__file__,'python':platform.python_version(),'cryptography':cryptography.__version__,'openssl':backend.openssl_version_text(),'rfc8785':importlib.metadata.version('rfc8785')}))`], {encoding: 'utf8', env});
   assert.equal(pyGenerate.status, 0, pyGenerate.stderr);
   const produced = JSON.parse(pyGenerate.stdout);
   assert.equal(produced.version, '2.1.0');
@@ -59,6 +59,6 @@ try {
   await writeFile(bundlePath, JSON.stringify(draft));
   const pyReject = spawnSync(python, ['-I','-m','vella.pqc.verify_cli',...args], {encoding:'utf8',env});
   assert.equal(pyReject.status, 1);
-  console.log(JSON.stringify({kind:'vella-installed-v3-checks',allPassed:true,node:process.version,sdk:'2.1.0',mcp:'1.1.0',pythonSDK:produced.version,
+  console.log(JSON.stringify({kind:'vella-installed-v3-checks',allPassed:true,node:process.version,nodeOpenSSL:process.versions.openssl,pythonRuntime:produced.python,pythonCryptography:produced.cryptography,pythonOpenSSL:produced.openssl,rfc8785:produced.rfc8785,sdk:'2.1.0',mcp:'1.1.0',pythonSDK:produced.version,
     checks:['both native MCP routes','Node-produced archive verified by installed Node/Python CLIs','installed Python-produced proof verified by Node','v2 default retained','mixed-format/draft rejection'],sourceCheckoutUsed:false},null,2));
 } finally { await client?.close(); await rm(root, {recursive:true,force:true}); }

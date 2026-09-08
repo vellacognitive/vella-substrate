@@ -24,6 +24,11 @@ if (profile === 'classical') {
   const failure = () => { throw new Error('injected dependency failure'); };
   const reference = await createLocalHybridReference(config, {
     ...(mode === 'signing' ? {keyProvider: () => ({capture: failure})} : {}),
+    ...(mode === 'pressure' ? {proofSink: sink => ({...sink, async retainAuthorization(value) {
+      const ack = await sink.retainAuthorization(value);
+      while (!fs.existsSync(config.pressureReleasePath)) await new Promise(resolve => setTimeout(resolve, 10));
+      return ack;
+    }})} : {}),
     ...(['authorization-storage','receipt-storage'].includes(mode) ? {proofSink: sink => ({...sink, [mode === 'authorization-storage' ? 'retainAuthorization' : 'retainReceipt']: failure})} : {}),
   });
   process.once('exit', () => { try { reference.close(); } catch { /* stale lock remains explicit */ } });

@@ -251,3 +251,55 @@ test('retained policy material snapshots its input before asynchronous storage',
   const name = `policy.${ack.policyDigest.slice('sha384:'.length)}.json`;
   assert.deepEqual(JSON.parse(await fs.promises.readFile(join(ack.directory, name), 'utf8')), expected);
 });
+
+test('hybrid cancellation during authorization acknowledgment leaves a verifiable unused proof and no effect', async t => {
+  const f = await fixture(t); await f.store.rotate();
+  const controller = new AbortController(), sink = createLocalProofSink({directory:f.proofs, proofProfile:HYBRID_PROFILE});
+  let effects = 0;
+  const boundary = gate(f, {proofSink:{...sink, async retainAuthorization(value) {
+    const ack = await sink.retainAuthorization(value); controller.abort(); return ack;
+  }}});
+  const result = await boundary.execute({action:action(), intent:'EXPORT_REPORT', signal:controller.signal,
+    precondition:()=>true, invoke:()=>{ effects++; }});
+  assert.equal(result.outcome,'not_started'); assert.equal(result.eligible,false); assert.equal(effects,0);
+  const file = (await fs.promises.readdir(f.proofs)).find(name=>name.endsWith('.authorization.json'));
+  const bundle = JSON.parse(await fs.promises.readFile(join(f.proofs,file),'utf8'));
+  assert.equal(f.store.capture().publicKey.verify(bundle).ok,true);
+  assert.equal(result.authorizationRetained,false, 'cancelled acknowledgment does not claim confirmed retention');
+});
+
+test('hybrid cancellation after dispatch retains an unknown-outcome receipt without replay', async t => {
+  const f = await fixture(t); await f.store.rotate();
+  const controller = new AbortController(); let effects = 0;
+  const result = await gate(f).execute({action:action(), intent:'EXPORT_REPORT', signal:controller.signal,
+    precondition:()=>true, invoke:()=>{ effects++; controller.abort(); return new Promise(()=>{}); }});
+  assert.equal(result.outcome,'unknown'); assert.equal(result.reason,'CANCELLED_AFTER_DISPATCH');
+  assert.equal(result.authorizationRetained,true); assert.equal(result.receiptRetained,true); assert.equal(effects,1);
+  assert.equal(result.receipt.kind,'vella_execution_receipt_v2'); assert.equal(result.receipt.signed,false);
+  const bundle = JSON.parse(await fs.promises.readFile(join(f.proofs,`${result.attemptId}.authorization.json`),'utf8'));
+  assert.equal(f.store.capture().publicKey.verify(bundle).ok,true);
+  assert.equal(result.receipt.authorization_hash,bundle.payload_hash);
+});
+
+test('eight concurrent captured key revisions stop after rotation or revocation; fresh keys recover', async t => {
+  const f = await fixture(t); await f.store.rotate(); let effects = 0;
+  const boundary = gate(f, {evidenceProvider:{resolve:()=>({mask:15,references:{provider:'concurrency-fixture'}})}});
+  for (const mutation of ['rotate','revoke']) {
+    let entered = 0, release, ready;
+    const barrier = new Promise(resolve=>{ release=resolve; });
+    const allEntered = new Promise(resolve=>{ ready=resolve; });
+    const pending = Array.from({length:8},(_,i)=>boundary.execute({action:action(`${mutation}-${i}`),intent:'EXPORT_REPORT',
+      precondition:()=>{ if(++entered===8) ready(); return barrier; },invoke:()=>{ effects++; }}));
+    await allEntered;
+    if(mutation==='rotate') await f.store.rotate(); else await f.store.revoke(f.store.status().activeId);
+    release(true);
+    const results = await Promise.all(pending);
+    assert.ok(results.every(result=>result.outcome==='not_started' && result.reason==='KEYS_CHANGED' && result.authorizationRetained));
+    assert.equal(effects,0);
+  }
+  const stopped = await boundary.execute({action:action('no-active-key'),intent:'EXPORT_REPORT',precondition:()=>true,invoke:()=>{effects++;}});
+  assert.equal(stopped.reason,'SIGNING_UNAVAILABLE'); assert.equal(effects,0);
+  await f.store.rotate();
+  const recovered = await boundary.execute({action:action('recovered'),intent:'EXPORT_REPORT',precondition:()=>true,invoke:()=>{effects++;}});
+  assert.equal(recovered.outcome,'reported_success'); assert.equal(effects,1);
+});
