@@ -1,0 +1,8 @@
+{
+  "name": "vella-pqc-production-review",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node conformance.mjs" },
+  "engines": { "node": ">=24.20.0 <25" }
+}

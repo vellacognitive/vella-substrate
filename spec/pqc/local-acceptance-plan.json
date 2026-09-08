@@ -1,0 +1,35 @@
+{
+  "kind": "vella-local-operational-plan-v1",
+  "durationSeconds": 180,
+  "concurrency": [
+    1,
+    4,
+    8
+  ],
+  "contentBytes": [
+    1024,
+    4096
+  ],
+  "warmupBatches": 5,
+  "faultDurationSeconds": 30,
+  "faultConcurrency": 8,
+  "faultCallsPerSecondLimit": 100,
+  "thresholds": {
+    "singleP95Ms": 100,
+    "concurrentP95Ms": 250,
+    "p99Ms": 500,
+    "unexpectedFailures": 0,
+    "prerequisiteFailureEffects": 0
+  },
+  "model": "One native MCP stdio server and client per scenario; concurrent waves of different exact-approved actions; no retries or unbounded admission queue. Operator state replaced atomically only after the prior wave settles.",
+  "timing": "Client call through response, excluding operator approval preparation. Scenario throughput includes preparation and all waves. Gate reports time until dispatch and total time separately. Artifact correctness and signature verification run after each scenario, outside latency timing.",
+  "faults": [
+    "mixed-evidence",
+    "signing",
+    "authorization-storage",
+    "receipt-storage"
+  ],
+  "recovery": "Restore healthy dependencies, restart where startup-loaded keys require it, and verify two successful waves after each fault scenario.",
+  "scope": "Local reference only. Closed-loop concurrency, not an open-loop rate SLA; no remote filesystem, hardware power-loss, replication, external IAM, or network transport claim.",
+  "ownerAccepted": "2026-09-08: owner selected the proposed local-reference latency, failure, duration and concurrency limits before the sustained run."
+}
