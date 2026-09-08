@@ -1,12 +1,12 @@
 # VELLA Interface Control Document
 
-**Version:** v1.3
-**Status:** Published v1 contract with unreleased v2 development amendments
+**Version:** v1.4 (candidate amendment)
+**Status:** Published v1/v2 interfaces with an unpublished opt-in v3 amendment
 **Issuer:** Vella Cognitive, LLC
 **Contact:** agent@vellacognitive.com
 **Repository:** github.com/vellacognitive/vella-substrate
 
-**Development amendment:** current source emits the owner-selected v2 proof when high-level signing is enabled. The [v2 proof contract](proof-v2.md) governs that format; [migration notes](../docs/remediation/migration.md) describe its breaking release requirements and retained v1 limits. No new version has been published.
+**Format and release status:** SDK 2.0.0 publishes the [v2 proof contract](proof-v2.md) as its default signing format. SDK 2.1.0 and MCP 1.1.0 are unpublished candidates adding an explicitly selected [v3 hybrid contract](pqc/PROOF-CONTRACT.md). V3 requires both P-256 and ML-DSA-65 with SHA-384 bindings; it does not change existing v1/v2 verification meanings or default selection. See [hybrid migration](pqc/MIGRATION.md) and [candidate acceptance](pqc/ACCEPTANCE.md). The legacy/default JSON companion schema does not describe operator-owned provider functions or the v3 envelope; the separate v3 schemas and public package types govern those additions.
 
 ---
 
@@ -32,7 +32,7 @@ This document defines the canonical interface between the VELLA embedded SDK and
 
 **SDK vs. commercial runtime.** VELLA exists in two deployment forms. The embedded SDK in this repository runs in-process, as a library imported into a Node.js or Python application. The commercial runtime (not published here) runs as a standalone service with HTTP and gRPC surfaces, persistence, and multi-tenant operation. Compatibility of a commercial producer with the new v2 format must be established separately; this repository does not test that implementation. The interface defined in this ICD applies to the SDK. See `DEPLOYMENT.md` for guidance on when each form is appropriate.
 
-**Policy instances.** The default governor compiles `min-v1` at module initialization. It supports `EXECUTE_CHANGE`, `ESCALATE_PRIVILEGE`, and `DATA_EXPORT`. The unreleased `createGovernor` (Node) and `create_governor` (Python) APIs snapshot a validated custom policy and provide evaluation with optional signing. `createEvaluator` / `create_evaluator` remain evaluation-only. A new instance activates a new policy; no mutable global reload is introduced.
+**Policy instances.** The default governor compiles `min-v1` at module initialization. It supports `EXECUTE_CHANGE`, `ESCALATE_PRIVILEGE`, and `DATA_EXPORT`. The `createGovernor` (Node) and `create_governor` (Python) APIs snapshot a validated custom policy and provide evaluation with optional signing. `createEvaluator` / `create_evaluator` remain evaluation-only. A new instance activates a new policy; no mutable global reload is introduced.
 
 ---
 
@@ -44,7 +44,8 @@ This document defines the canonical interface between the VELLA embedded SDK and
 | v1.0 | Superseded | Initial authoritative release. |
 | v1.1 | Superseded | Added error semantics and proof retrieval specification. |
 | v1.2 | Superseded | DecisionResponse fields aligned with current implementation. |
-| v1.3 | **Current — Authoritative** | Scoped to the embedded SDK interface. Runtime-specific sections moved to the commercial-runtime documentation set. All production SDK integrations target v1. |
+| v1.3 | Prior document revision | Scoped the embedded SDK interface; legacy interface commitments remain preserved. |
+| v1.4 | Candidate amendment | Records published v2 status and additive, explicitly selected v3 providers, verifiers and local MCP integration. |
 
 The `$id` field in `spec/schemas/icd.json` is canonicalized to v1 as of this release. Any prior reference to `vella://contracts/v0/...` schema identifiers should be treated as pre-release and non-binding.
 
@@ -207,7 +208,7 @@ The SDK is a synchronous function call. It does not throw exceptions across the 
 
 ### 6.2 Performance Reference
 
-Historical benchmark figures from the published SDK, not acceptance measurements for v2 or MCP:
+Historical benchmark figures from the published SDK, not acceptance measurements for v2, v3 or MCP:
 
 | Measurement | Observed Latency |
 |---|---|
@@ -216,6 +217,8 @@ Historical benchmark figures from the published SDK, not acceptance measurements
 | With proof bundle generation | ~250 µs end-to-end |
 
 Figures reflect in-process SDK invocation. They do not apply to the commercial runtime, which operates over a network or IPC boundary and has a different latency profile.
+
+The approximately 250-microsecond figure is historical and must not be used as hybrid proof latency. Candidate hybrid timings, including complete MCP call tails and outliers, are reported separately in [the qualification record](pqc/QUALIFICATION.md). Policy evaluation, native signing/key import, verification, durable retention and complete client-call latency are distinct measurements. The application boundary is not a hard real-time guarantee.
 
 ### 6.3 Retry and Idempotency
 
@@ -227,7 +230,7 @@ Do not implement retry-on-`DENIED` logic. A `DENIED` outcome is a policy decisio
 
 ## 7. Verification Procedure
 
-The `verify/verify.js`, `verify/verify.py`, and `verify/verify.sh` scripts are normative verification procedures for proof bundle authenticity. They are not test artifacts — they are specified interface commitments. Integrators in regulated and defense environments must run one of these procedures as part of their audit workflow.
+The `verify/verify.js`, `verify/verify.py`, and `verify/verify.sh` scripts preserve the existing v1/v2 verification procedures. They are not test artifacts — they are specified interface commitments. Integrators in regulated and defense environments must run one of these procedures as part of their audit workflow.
 
 **Node.js verifier** (built-in crypto; keep the repository modules available):
 
@@ -255,6 +258,14 @@ verify/verify.sh <bundle.json> <public-key.pem>
 4. V2 checks the declared format/algorithm, key identity, encodings, typed-message hash, signature over exact bytes, and authenticated record structure and action digest. V1 uses separate historical hash/signature rules and emits limitation warnings.
 5. Successful verification identifies the format and its claim. V2 authenticates the interpreted record under the supplied key. Neither format proves evidence truth, authority of the signer or external execution. V1 success must not be described as protection of all visible or nested fields.
 **Verification failure** means the proof bundle cannot be relied upon. Do not treat an unverified proof bundle as an authoritative audit record.
+
+### Explicit v3 verification (candidate)
+
+Install a qualified SDK candidate and use `vella-verify-v3 PROOF PUBLIC_TRUST KEY_SET_ID p256+ml-dsa-65` from the selected Node or Python environment. The Python module form is `python -m vella.pqc.verify_cli`; `verify/verify-v3.sh` delegates explicitly to that installed Python backend. The Node library entry is `@vellacognitive/vella-sdk/pqc/index.js`; the Python entry is `vella.pqc`.
+
+A v3 verifier requires both signatures and an independently supplied trusted key pair. It returns an authenticated record only after exact-byte signature, descriptor, digest and semantic checks succeed. The archive commands require an operator-owned public registry, explicitly selected key-set ID and required suite. A successful archive check reports the supplied trust state; it never grants fresh execution authority or proves trusted signing time. Private draft/feasibility formats are not aliases. Existing verifier routes reject v3 and remain available for old archives.
+
+The controlled local Node MCP reference selects one trusted profile for approval/action digests, governor, key provider, gate and proof sink. After proof retention and the awaited action precondition, it rechecks evidence expiry and the captured key revision synchronously before dispatch. Cancellation after possible dispatch remains an unknown outcome without automatic replay. See the [migration/runbook](pqc/MIGRATION.md) for custody, retention, rollback and required runtime/dependency choices.
 
 ### Cross-form compatibility
 
@@ -302,7 +313,7 @@ The following are non-breaking and may occur within v1:
 | Schema File | `$id` | Description |
 |---|---|---|
 | `spec/schemas/icd.json` | `vella://contracts/v1/icd.json.schema.json` | Canonical interface contract |
-| `spec/schemas/proof-v2.json` | `vella://contracts/v2/proof.json.schema.json` | Unreleased exact-byte proof structure and decoded record |
+| `spec/schemas/proof-v2.json` | `vella://contracts/v2/proof.json.schema.json` | Published v2 exact-byte proof structure and decoded record |
 | `spec/schemas/proof.json` | `vella://contracts/v1/proof.json.schema.json` | Proof bundle structure |
 | `spec/schemas/export.json` | `vella://contracts/v1/export.json.schema.json` | Export evidence record |
 | `spec/threat-model.md` | — | Threat model and protection scope |
@@ -333,7 +344,7 @@ Examples are non-normative. In any conflict between an example and this document
 
 ## 11. Normative Precedence
 
-For v2 proof interpretation, `spec/proof-v2.md` and its schema govern. Published v1 interface commitments and legacy interpretation remain separate. For the remaining interface, in descending order of authority:
+For v3 interpretation, `spec/pqc/PROOF-CONTRACT.md` and its v3 schemas govern the explicitly selected candidate profile. For v2 proof interpretation, `spec/proof-v2.md` and its schema govern. Published v1 interface commitments and legacy interpretation remain separate. For the remaining interface, in descending order of authority:
 
 1. This document (ICD.md, v1)
 2. `spec/schemas/icd.json` (machine-readable schema)

@@ -1,6 +1,6 @@
 # Independent protocol review brief
 
-Prepared for Mike Wilson, the selected reviewer and acceptance owner; not sent externally. This is not a request to approve a released product.
+Historical M1 review brief prepared for Mike Wilson. He reviewed and authorized the contract on 2026-09-08; see OWNER-REVIEW.md and REVIEW-DISPOSITION.md. Final release acceptance remains separate.
 
 ## Decision requested at M1
 

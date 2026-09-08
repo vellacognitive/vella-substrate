@@ -1,7 +1,7 @@
 {
-  "$schema": "https://json-schema.org/v3/2020-12/schema",
-  "$id": "urn:vella:pq-review:envelope:1",
-  "$comment": "Review v3. Exact Base64 decoding, key identity, signatures, payload domain and total byte limits require the normative verifier.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:vella:v3:envelope",
+  "$comment": "Frozen v3 contract. Exact Base64 decoding, key identity, signatures, payload domain and total byte limits require the normative verifier.",
   "type": "object",
   "additionalProperties": false,
   "required": [

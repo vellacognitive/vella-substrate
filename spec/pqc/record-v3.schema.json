@@ -1,7 +1,7 @@
 {
-  "$schema": "https://json-schema.org/v3/2020-12/schema",
-  "$id": "urn:vella:pq-review:record:1",
-  "$comment": "Review v3. Byte limits, JSON numeric/Unicode domain, canonical digests and semantic consistency also require the normative validator.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:vella:v3:record",
+  "$comment": "Frozen v3 contract. Byte limits, JSON numeric/Unicode domain, canonical digests and semantic consistency also require the normative validator.",
   "type": "object",
   "additionalProperties": false,
   "required": [

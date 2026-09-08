@@ -46,8 +46,8 @@ SHA-384 improves the new external digest bindings but does not turn P-256 into a
 
 Upgrade verifiers and trust configuration before enabling new producers/routes. New-profile approvals must be generated from new-profile actions/policies. Separate legacy and new profiles can coexist; do not negotiate downward per request. Rollback must leave new-format verification available and disable any hybrid-required route that the rolled-back process cannot enforce. Existing tags and package files are immutable.
 
-## Standards comparison requiring review
+## Standards comparison — owner contract accepted
 
-FIPS 204 supplies ML-DSA, not this application envelope. The prototype's double PAE gives exact-byte typing but is not the DSSE envelope schema. IETF Composite ML-DSA draft 19 addresses X.509 keys/signatures with its own algorithm combinations, domain handling and ASN.1 encoding. Reusing that name or OID for a different envelope would be incorrect. The first review must decide whether this application-specific two-signature contract is appropriate or whether an existing composition should replace it. Any replacement requires new cross-language vectors and latency qualification.
+FIPS 204 supplies ML-DSA, not this application envelope. The prototype's double PAE gives exact-byte typing but is not the DSSE envelope schema. IETF Composite ML-DSA draft 19 addresses X.509 keys/signatures with its own algorithm combinations, domain handling and ASN.1 encoding. Reusing that name or OID for a different envelope would be incorrect. The M1 owner review accepted this application-specific two-signature contract. Any replacement requires new cross-language vectors and latency qualification.
 
 The draft does include an ML-DSA-65/P-256 combination. It uses a SHA-512 prehash and its own message representative; its classical component uses ECDSA with SHA-256. Sharing component algorithms therefore does not make Vella's raw typed-message construction interoperable with that draft. [Algorithm definition](https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-sigs-19#section-6).
