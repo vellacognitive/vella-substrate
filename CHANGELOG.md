@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - Unreleased
+
+- Add opt-in v3 authorization proofs requiring both P-256 and ML-DSA-65, with exact signed payload bytes, a signed format/key descriptor, bounded parsing and SHA-384 action/policy bindings.
+- Add explicit Node/Python proof providers, packaged v3 archive verifiers, and a protected local Node key store with durable rotation/revocation, annual active-key expiry and retained public history.
+- Prepare MCP 1.1.0 with a hybrid local stdio reference and operator-side setup/approvals. The exact SDK peer is 2.1.0. Existing v2 defaults and legacy verification meanings remain unchanged.
+- Recheck evidence expiry and captured key revision synchronously before dispatch. Preserve observed effects when post-execution receipt storage fails.
+- Add migration/rollback guidance and candidate qualification tooling. These versions remain unpublished; see `spec/pqc/ACCEPTANCE.md` for completed and outstanding checks.
+
 ## [2.0.0] - 2026-09-08
 
 ### Breaking changes

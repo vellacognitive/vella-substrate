@@ -1,0 +1,64 @@
+name: PQ candidate qualification
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [codex/pqc-production]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  hybrid:
+    name: Hybrid (${{ matrix.os }}, Python ${{ matrix.python }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ['3.12', '3.13', '3.14']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24.20.0'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Prepare qualification dependencies
+        run: |
+          python -m pip install -e 'sdk/python[pqc,dev]' setuptools wheel
+          npm ci --ignore-scripts --prefix integrations/mcp-server
+          mkdir -p "$RUNNER_TEMP/pq/packages" "$RUNNER_TEMP/pq/app"
+      - name: Verify contract and regressions
+        env:
+          PQC_PUBLIC_VECTORS: ${{ runner.temp }}/pq/public-vectors.json
+        run: |
+          node scripts/check-release-consistency.mjs
+          node integrations/pqc-production/conformance.mjs > "$RUNNER_TEMP/pq/conformance.json"
+          python integrations/pqc-production/schema_check.py "$PQC_PUBLIC_VECTORS" > "$RUNNER_TEMP/pq/schemas.json"
+          node --test integrations/pqc-production/*.test.mjs
+          node --test sdk/node/test/*.test.js
+          python -m pytest sdk/python/tests -q
+          ruff check sdk/python/vella integrations/pqc-production
+          mypy sdk/python/vella --strict
+          npm run typecheck --prefix integrations/mcp-server
+          npm test --prefix integrations/mcp-server
+      - name: Build isolated candidate installations
+        run: |
+          (cd sdk/node && npm pack --json --pack-destination "$RUNNER_TEMP/pq/packages") > "$RUNNER_TEMP/pq/node-pack.json"
+          (cd integrations/mcp-server && npm pack --json --pack-destination "$RUNNER_TEMP/pq/packages") > "$RUNNER_TEMP/pq/mcp-pack.json"
+          python -m pip wheel ./sdk/python --no-deps --no-build-isolation --wheel-dir "$RUNNER_TEMP/pq/packages"
+          npm install --prefix "$RUNNER_TEMP/pq/app" --ignore-scripts "$RUNNER_TEMP/pq/packages/vellacognitive-vella-sdk-2.1.0.tgz" "$RUNNER_TEMP/pq/packages/vellacognitive-vella-mcp-server-1.1.0.tgz"
+          python -m venv "$RUNNER_TEMP/pq/python"
+          "$RUNNER_TEMP/pq/python/bin/python" -m pip install "$RUNNER_TEMP/pq/packages/vella_sdk-2.1.0-py3-none-any.whl[pqc]"
+      - name: Installed interoperability and local operational smoke
+        run: |
+          node integrations/pqc-production/installed-check.mjs "$RUNNER_TEMP/pq/app" "$RUNNER_TEMP/pq/python/bin/python" > "$RUNNER_TEMP/pq/installed.json"
+          node integrations/pqc-production/operational/run.mjs --smoke --app "$RUNNER_TEMP/pq/app" --output "$RUNNER_TEMP/pq/operational.json"
+      - name: Retain candidate evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: pq-${{ matrix.os }}-python-${{ matrix.python }}-${{ github.sha }}
+          path: ${{ runner.temp }}/pq/*.json
+          if-no-files-found: error

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vella-sdk"
-version = "2.0.0"
+version = "2.1.0"
 description = "VELLA — deterministic pre-execution governance substrate. SDK for producing signed decision records."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -34,7 +34,11 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules"
 ]
 
+[project.scripts]
+vella-verify-v3 = "vella.pqc.verify_cli:main"
+
 [project.optional-dependencies]
+pqc = ["cryptography==50.0.1"]
 dev = ["ruff", "mypy", "pytest", "jsonschema"]
 
 [project.urls]

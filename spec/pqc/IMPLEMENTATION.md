@@ -24,7 +24,7 @@ Annual algorithm/dependency review and annual signing-key rotation are operating
 
 Mike Wilson will perform and record owner review of the implementation contract. No external firm is required by this selection and no independent specialist certification is claimed. M1 review and public format freeze remain pending. Reversible SDK/key/gate integration proceeds on the development branch to make the review concrete.
 
-Final proof identifiers and package versions remain pending that review. New providers, key storage, gate and MCP paths currently use the explicit draft identifier. Existing v1/v2 format semantics remain fixed; shared SDK implementation now has an explicit profile boundary and is regression-tested.
+Mike Wilson accepted and authorized M1 on 2026-09-08. The final v3 identifiers are frozen in PROOF-CONTRACT.md. Candidate versions are SDK 2.1.0 (Node/Python) and MCP 1.1.0, additive opt-in releases, unpublished pending qualification and a separate publication decision. Existing v1/v2 format semantics remain fixed; shared SDK implementation now has an explicit profile boundary and is regression-tested.
 
 ## Delivery planning estimate
 

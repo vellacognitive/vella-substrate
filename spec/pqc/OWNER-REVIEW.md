@@ -1,6 +1,6 @@
-# Owner contract review — ready for Mike Wilson
+# Owner contract review — accepted by Mike Wilson
 
-Status: review requested, not approved. This is the SOW's M1 contract review. Mike is the selected reviewer and acceptance owner; this record will describe owner review, not external specialist certification. Full release acceptance and publication are later decisions.
+Status: accepted and authorized by Mike Wilson on 2026-09-08. This is the SOW's M1 contract review. Mike is the selected reviewer and acceptance owner; this record will describe owner review, not external specialist certification. Full release acceptance and publication are later decisions.
 
 ## What the build now does
 
@@ -16,11 +16,11 @@ The private file uses OS ownership and mode-0600 protection in a mode-0700 direc
 
 Keep each proof and its verification material for seven years after creation. Key history covers at least seven years after that key's last permitted signing date. The reference retains public trust snapshots and policy artifacts separately from private keys. There is no automatic deletion, seven-year security guarantee, trusted timestamp service, or proof that a record predates compromise. Annual security review and key rotation are the accepted operating policy.
 
-## Proposed public format freeze
+## Approved public format freeze
 
-The executable review files deliberately retain draft identifiers. On approval, use:
+The reviewed implementation retained draft identifiers. Approval authorizes the following final identifiers:
 
-| Element | Proposed final identifier / rule |
+| Element | Final identifier / rule |
 |---|---|
 | Authorization envelope | `vella_proof_bundle_v3` |
 | Authorization media type | `application/vnd.vella.authorization.v3+json` |
@@ -38,3 +38,7 @@ Changing these identifiers changes the signed bytes. Final vectors, migration te
 Review the format/claim boundary, portable local key handling, revocation/rollback semantics and the evidence in `ACCEPTANCE.md`. Record **accepted**, **changes requested**, or **not assessed** for the contract. Include any specific concern or requested change. Acceptance does not certify the cryptographic primitives or close the remaining resource, platform, packaging or rollout requirements.
 
 Known work still ahead: move the reviewed hybrid modules into supported package entry points, finalize package versions/dependencies, qualify all public verifier routes and installed artifacts, run the matched sustained tests and 30-minute soak/resource plan, complete the hosted platform matrix, and deliver migration/rollback and release evidence.
+
+## Completed review record
+
+Mike Wilson: **accepted**. User instruction: “Reviewed and authorized.” Recorded 2026-09-08. M1 is closed; continuation through the remaining SOW work is authorized. The review is owner acceptance, not external specialist certification. Candidate release acceptance and package publication remain separate.

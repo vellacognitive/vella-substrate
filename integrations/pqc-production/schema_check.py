@@ -1,4 +1,4 @@
-"""Validate generated public vectors against draft schemas and negative controls."""
+"""Validate generated public vectors against v3 schemas and negative controls."""
 import base64
 import copy
 import json
@@ -9,7 +9,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 root = Path(__file__).resolve().parents[2]
 validators = [Draft202012Validator(json.loads((root / 'spec/pqc' / name).read_text()), format_checker=FormatChecker())
-              for name in ('envelope-draft.schema.json', 'record-draft.schema.json')]
+              for name in ('envelope-v3.schema.json', 'record-v3.schema.json')]
 for validator in validators:
     Draft202012Validator.check_schema(validator.schema)
 count = 0
@@ -28,4 +28,4 @@ for vector in json.loads(Path(sys.argv[1]).read_text())['vectors']:
             del missing[field]
             assert not validator.is_valid(missing), field
             count += 1
-print(json.dumps({'kind': 'pqc-draft-schema-checks', 'assertions': count, 'allPassed': True}))
+print(json.dumps({'kind': 'pqc-v3-schema-checks', 'assertions': count, 'allPassed': True}))

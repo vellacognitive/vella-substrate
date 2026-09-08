@@ -1,6 +1,6 @@
 {
   "name": "@vellacognitive/vella-sdk",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "VELLA \u2014 deterministic pre-execution governance substrate. SDK for producing signed decision records.",
   "license": "MIT",
   "type": "module",
@@ -18,7 +18,8 @@
     "local-proof-sink.js",
     "operator-evidence.js",
     "index.d.ts",
-    "proof-profile.js"
+    "proof-profile.js",
+    "pqc"
   ],
   "engines": {
     "node": ">=18"
@@ -46,5 +47,8 @@
     "audit",
     "proof-bundle"
   ],
-  "types": "index.d.ts"
+  "types": "index.d.ts",
+  "bin": {
+    "vella-verify-v3": "pqc/verify-cli.mjs"
+  }
 }

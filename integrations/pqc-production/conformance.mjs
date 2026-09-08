@@ -50,8 +50,8 @@ for (const [origin, keys] of origins.entries()) {
     vectors.push({origin: origin ? 'python' : 'node', producer: producer ? 'python' : 'node', bundle, publicKeys: keys.publicKeys});
     check(proof.verify(bundle, keys.publicKeys, proof.SUITE).ok, 'Node accepts valid proof');
     check(py([{op: 'verify', bundle, keys: keys.publicKeys, suite: proof.SUITE}])[0].ok, 'Python accepts valid proof');
-    check(!v2.verifyV2(bundle, keys.publicKeys['ecdsa-p256-sha256']).ok, 'legacy v2 rejects draft');
-    const negatives = [];
+    check(!v2.verifyV2(bundle, keys.publicKeys['ecdsa-p256-sha256']).ok, 'legacy v2 rejects v3');
+    const negatives = [{...structuredClone(bundle), kind: 'vella_proof_bundle_pq_draft1'}, {...structuredClone(bundle), payload_type: 'application/vnd.vella.authorization.pq-draft1+json'}, {...structuredClone(bundle), kind: 'vella_proof_bundle_pq_experiment_v1'}];
     for (const field of ['kind', 'payload_type', 'suite', 'digest_profile', 'payload', 'payload_hash']) {
       negatives.push({...structuredClone(bundle), [field]: bundle[field] + 'changed'});
     }
@@ -145,4 +145,4 @@ assert.throws(() => bounded.parse('['.repeat(10000) + '0' + ']'.repeat(10000)));
 check(!py([{op: 'digest', text: '['.repeat(10000) + '0' + ']'.repeat(10000)}])[0].ok, 'Python depth preflight');
 if (process.env.PQC_PUBLIC_VECTORS) writeFileSync(process.env.PQC_PUBLIC_VECTORS, JSON.stringify({kind: 'pqc-production-review-vectors', vectors}, null, 2) + '\n');
 console.log(JSON.stringify({kind: 'pqc-production-contract-checks', assertions, publicVectors: vectors.length, allPassed: true,
-  node: process.version, scope: 'Draft SDK-provider/proof/domain/key interoperability; gate/CLI tests are separate; owner review pending'}, null, 2));
+  node: process.version, scope: 'v3 SDK-provider/proof/domain/key interoperability; gate/CLI tests are separate; owner contract accepted'}, null, 2));
