@@ -54,6 +54,7 @@ jobs:
       - name: Installed interoperability and local operational smoke
         run: |
           node integrations/pqc-production/installed-check.mjs "$RUNNER_TEMP/pq/app" "$RUNNER_TEMP/pq/python/bin/python" > "$RUNNER_TEMP/pq/installed.json"
+          node integrations/pqc-production/operational/crash.mjs "$RUNNER_TEMP/pq/app" > "$RUNNER_TEMP/pq/crash.json"
           node integrations/pqc-production/operational/pressure.mjs "$RUNNER_TEMP/pq/app" > "$RUNNER_TEMP/pq/pressure.json"
           node integrations/pqc-production/operational/run.mjs --smoke --app "$RUNNER_TEMP/pq/app" --output "$RUNNER_TEMP/pq/operational.json"
       - name: Retain candidate evidence

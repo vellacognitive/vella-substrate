@@ -26,6 +26,7 @@ if (profile === 'classical') {
     ...(mode === 'signing' ? {keyProvider: () => ({capture: failure})} : {}),
     ...(mode === 'pressure' ? {proofSink: sink => ({...sink, async retainAuthorization(value) {
       const ack = await sink.retainAuthorization(value);
+      if (config.pressureReadyPath) fs.appendFileSync(config.pressureReadyPath, value.attemptId+'\n', {mode:0o600});
       while (!fs.existsSync(config.pressureReleasePath)) await new Promise(resolve => setTimeout(resolve, 10));
       return ack;
     }})} : {}),
