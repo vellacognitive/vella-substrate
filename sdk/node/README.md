@@ -4,7 +4,7 @@ Node.js SDK for deterministic pre-execution adjudication and signed proof-bundle
 
 Evidence conversion now rejects invalid unsigned 32-bit values and unknown symbols with `E_EVIDENCE_INVALID`. See [evidence and policy validation](../../spec/input-validation.md) for accepted convenience forms and compatibility changes.
 
-**Development status:** the v2 proof and policy-bound signing APIs below are unreleased. Published 1.0.3 packages do not include them. See [migration and legacy limits](../../docs/remediation/migration.md).
+**Version 2.0.0:** the v2 proof and policy-bound signing APIs below introduce breaking changes from SDK 1.0.3. See [migration and legacy limits](../../docs/remediation/migration.md).
 
 ## Install
 
@@ -90,6 +90,6 @@ See the root repository docs for full protocol details:
 
 ## Mandatory execution and local evidence
 
-The unreleased `createExecutionGate` requires a signed v2 authorization, trusted evidence resolution and acknowledged retention before invoking a protected callable. `createLocalProofSink` supplies the documented local fsync acknowledgment; `createOperatorEvidenceProvider` is the fixed-bit local session/permission/approval reference. A proof sink must return the exact proof hash and its promised durability.
+The `createExecutionGate` requires a signed v2 authorization, trusted evidence resolution and acknowledged retention before invoking a protected callable. `createLocalProofSink` supplies the documented local fsync acknowledgment; `createOperatorEvidenceProvider` is the fixed-bit local session/permission/approval reference. A proof sink must return the exact proof hash and its promised durability.
 
 Use [the complete local reference](../../integrations/mcp-server/README.md) for registration, evidence-state ownership, receipts, cancellation and recovery semantics. Core `govern` remains a synchronous optional-signing API; execution uses the separate asynchronous gate. Node declarations ship with the package.

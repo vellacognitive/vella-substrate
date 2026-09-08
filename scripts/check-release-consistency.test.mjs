@@ -166,3 +166,15 @@ test("rejects mismatched MCP package versions", t => {
   assert.equal(result.status, 1);
   assert.match(result.stderr, /MCP package and lockfile/);
 });
+
+
+test("refuses release publication when the MCP package is private", (t) => {
+  const fixtureRoot = createTaggedRepository(t);
+  const path = join(fixtureRoot, "integrations/mcp-server/package.json");
+  const pkg = JSON.parse(readFileSync(path, "utf8"));
+  pkg.private = true;
+  writeFileSync(path, JSON.stringify(pkg));
+  const result = checkRelease(fixtureRoot, "--require-released");
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /must permit public publication/);
+});

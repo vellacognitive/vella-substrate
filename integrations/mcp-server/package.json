@@ -1,9 +1,8 @@
 {
   "name": "@vellacognitive/vella-mcp-server",
   "version": "1.0.0",
-  "private": true,
   "type": "module",
-  "description": "Unreleased Vella governed MCP server binding for local stdio tools",
+  "description": "Vella governed MCP server binding for local stdio tools",
   "license": "MIT",
   "main": "index.js",
   "types": "index.d.ts",
@@ -17,7 +16,8 @@
     "index.js",
     "index.d.ts",
     "README.md",
-    "example"
+    "example",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=22"
@@ -39,5 +39,17 @@
     "test": "node --test test/*.test.mjs",
     "demo": "node example/demo.mjs",
     "typecheck": "tsc -p tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vellacognitive/vella-substrate.git",
+    "directory": "integrations/mcp-server"
+  },
+  "homepage": "https://github.com/vellacognitive/vella-substrate/tree/main/integrations/mcp-server",
+  "bugs": {
+    "url": "https://github.com/vellacognitive/vella-substrate/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

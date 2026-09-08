@@ -1,4 +1,4 @@
-name: Publish SDKs
+name: Publish SDKs and MCP
 
 # Triggers on a published GitHub Release. Tag the release `vX.Y.Z` and the
 # version across packages, citation metadata, and changelog must match. Both jobs use OIDC
@@ -20,7 +20,7 @@ on:
         description: "Tag to verify (must match every release surface, e.g. v1.0.3)"
         required: true
       registry:
-        description: "Registry publish target"
+        description: "Publish target (both = SDK npm and PyPI; mcp = adapter only)"
         required: true
         default: both
         type: choice
@@ -28,6 +28,7 @@ on:
           - both
           - npm
           - pypi
+          - mcp
 
 permissions:
   contents: read
@@ -169,3 +170,38 @@ jobs:
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
         with:
           packages-dir: sdk/python/dist/
+
+  # Bootstrap MCP 1.0.0 through an authenticated maintainer first, then configure
+  # its own npm trusted publisher. Adapter publication is an explicit dispatch
+  # because its version is independent from the SDK release tag.
+  publish-mcp:
+    name: Publish @vellacognitive/vella-mcp-server to npm
+    needs: verify-versions
+    if: github.event_name == 'workflow_dispatch' && inputs.registry == 'mcp'
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: integrations/mcp-server
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.verify-versions.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+          package-manager-cache: false
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Test public adapter contract
+        run: |
+          npm test
+          npm run typecheck
+          npm run demo
+      - name: Publish (Trusted Publisher OIDC + provenance)
+        run: npm publish --provenance --access public

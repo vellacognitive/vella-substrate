@@ -1,6 +1,6 @@
 # Integration Map
 
-**Development update:** an unreleased [controlled MCP server reference](integrations/mcp-server/README.md) and reusable mandatory-proof gate now exist. Client dispatch remains a comparison demonstrator. Published-release status below remains separate; see the [acceptance ledger](docs/remediation/acceptance.md).
+**SDK 2.0.0 / MCP 1.0.0:** the [controlled MCP server reference](integrations/mcp-server/README.md) and reusable mandatory-proof gate have completed local acceptance and Linux/macOS CI. Client dispatch remains a comparison demonstrator. See the [release and migration guide](docs/remediation/release-candidate.md).
 
 
 VELLA belongs immediately before a consequential action becomes reachable. The open-source SDK is deliberately framework-neutral; adapters are distribution surfaces, not architectural dependencies.
@@ -24,6 +24,7 @@ VELLA belongs immediately before a consequential action becomes reachable. The o
 | Generic agent or tool dispatcher | **Documented pattern** | Wrap the dispatcher before the tool handler is invoked | Agent harness |
 | Claude Code `PreToolUse` | **Documented pattern** | Map the proposed tool call to a VELLA intent before returning hook permission | Hook implementation |
 | Claude Agent SDK `canUseTool` | **Documented pattern** | Call VELLA inside the permission callback | Agent application |
+| Controlled MCP server, local stdio | **Shipped reference adapter** | Wrap registered server handlers with the mandatory-proof gate | Operator-controlled server |
 | MCP client dispatch | **Documented pattern** | Gate the client-side call before transport to the MCP server | MCP client or host |
 | LangGraph / LangChain / LlamaIndex | **Documented pattern** | Gate the framework's tool-execution middleware | Framework application |
 | OpenAI Agents | **Planned adapter** | Wrap tool execution at the framework's tool boundary | Framework application |
