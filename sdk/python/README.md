@@ -1,6 +1,6 @@
 # vella-sdk
 
-**SDK 2.1.0 candidate (unpublished):** opt-in v3 proofs require both P-256 and ML-DSA-65. Existing defaults remain v2. See the [hybrid migration runbook](https://github.com/vellacognitive/vella-substrate/blob/main/spec/pqc/MIGRATION.md).
+**SDK 2.1.0:** opt-in v3 proofs require both P-256 and ML-DSA-65. Existing defaults remain v2. See the [hybrid migration runbook](https://github.com/vellacognitive/vella-substrate/blob/main/spec/pqc/MIGRATION.md).
 
 Python SDK for deterministic pre-execution adjudication and signed proof-bundle generation.
 
@@ -141,7 +141,7 @@ See the root repository docs for full protocol details:
 - `spec/schemas/proof.json` (legacy)
 - `verify/`
 
-## Opt-in v3 hybrid proofs (2.1.0 candidate)
+## Opt-in v3 hybrid proofs (2.1.0)
 
 Use Python 3.12–3.14 with the `pqc` extra, which pins cryptography 50.0.1; rfc8785 remains pinned to 0.1.4. These are qualification targets; consult the acceptance ledger for completed platforms. Install the provided wheel with the extra before running this example. Existing imports remain v2.
 

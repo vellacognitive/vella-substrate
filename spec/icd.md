@@ -1,12 +1,12 @@
 # VELLA Interface Control Document
 
-**Version:** v1.4 (candidate amendment)
-**Status:** Published v1/v2 interfaces with an unpublished opt-in v3 amendment
+**Version:** v1.4
+**Status:** v1/v2 interfaces with an owner-approved opt-in v3 amendment
 **Issuer:** Vella Cognitive, LLC
 **Contact:** agent@vellacognitive.com
 **Repository:** github.com/vellacognitive/vella-substrate
 
-**Format and release status:** SDK 2.0.0 publishes the [v2 proof contract](proof-v2.md) as its default signing format. SDK 2.1.0 and MCP 1.1.0 are unpublished candidates adding an explicitly selected [v3 hybrid contract](pqc/PROOF-CONTRACT.md). V3 requires both P-256 and ML-DSA-65 with SHA-384 bindings; it does not change existing v1/v2 verification meanings or default selection. See [hybrid migration](pqc/MIGRATION.md) and [candidate acceptance](pqc/ACCEPTANCE.md). The legacy/default JSON companion schema does not describe operator-owned provider functions or the v3 envelope; the separate v3 schemas and public package types govern those additions.
+**Format and release status:** SDK 2.0.0 publishes the [v2 proof contract](proof-v2.md) as its default signing format. SDK 2.1.0 and MCP 1.1.0 add an explicitly selected [v3 hybrid contract](pqc/PROOF-CONTRACT.md). V3 requires both P-256 and ML-DSA-65 with SHA-384 bindings; it does not change existing v1/v2 verification meanings or default selection. See [hybrid migration](pqc/MIGRATION.md) and [acceptance ledger](pqc/ACCEPTANCE.md). The legacy/default JSON companion schema does not describe operator-owned provider functions or the v3 envelope; the separate v3 schemas and public package types govern those additions.
 
 ---
 
@@ -259,9 +259,9 @@ verify/verify.sh <bundle.json> <public-key.pem>
 5. Successful verification identifies the format and its claim. V2 authenticates the interpreted record under the supplied key. Neither format proves evidence truth, authority of the signer or external execution. V1 success must not be described as protection of all visible or nested fields.
 **Verification failure** means the proof bundle cannot be relied upon. Do not treat an unverified proof bundle as an authoritative audit record.
 
-### Explicit v3 verification (candidate)
+### Explicit v3 verification
 
-Install a qualified SDK candidate and use `vella-verify-v3 PROOF PUBLIC_TRUST KEY_SET_ID p256+ml-dsa-65` from the selected Node or Python environment. The Python module form is `python -m vella.pqc.verify_cli`; `verify/verify-v3.sh` delegates explicitly to that installed Python backend. The Node library entry is `@vellacognitive/vella-sdk/pqc/index.js`; the Python entry is `vella.pqc`.
+Install a qualified SDK and use `vella-verify-v3 PROOF PUBLIC_TRUST KEY_SET_ID p256+ml-dsa-65` from the selected Node or Python environment. The Python module form is `python -m vella.pqc.verify_cli`; `verify/verify-v3.sh` delegates explicitly to that installed Python backend. The Node library entry is `@vellacognitive/vella-sdk/pqc/index.js`; the Python entry is `vella.pqc`.
 
 A v3 verifier requires both signatures and an independently supplied trusted key pair. It returns an authenticated record only after exact-byte signature, descriptor, digest and semantic checks succeed. The archive commands require an operator-owned public registry, explicitly selected key-set ID and required suite. A successful archive check reports the supplied trust state; it never grants fresh execution authority or proves trusted signing time. Private draft/feasibility formats are not aliases. Existing verifier routes reject v3 and remain available for old archives.
 
@@ -344,7 +344,7 @@ Examples are non-normative. In any conflict between an example and this document
 
 ## 11. Normative Precedence
 
-For v3 interpretation, `spec/pqc/PROOF-CONTRACT.md` and its v3 schemas govern the explicitly selected candidate profile. For v2 proof interpretation, `spec/proof-v2.md` and its schema govern. Published v1 interface commitments and legacy interpretation remain separate. For the remaining interface, in descending order of authority:
+For v3 interpretation, `spec/pqc/PROOF-CONTRACT.md` and its v3 schemas govern the explicitly selected profile. For v2 proof interpretation, `spec/proof-v2.md` and its schema govern. Published v1 interface commitments and legacy interpretation remain separate. For the remaining interface, in descending order of authority:
 
 1. This document (ICD.md, v1)
 2. `spec/schemas/icd.json` (machine-readable schema)

@@ -1,6 +1,6 @@
-# Opt-in v3 hybrid proofs — SDK 2.1.0 candidate
+# Opt-in v3 hybrid proofs — SDK 2.1.0
 
-Unpublished release candidate. Target runtime: Node 24.20+ within 24.x on Linux/macOS. Native ML-DSA support is required; unsupported runtimes reject the hybrid operation. Default SDK imports and v2 behavior retain their existing runtime requirements.
+Target runtime: Node 24.20+ within 24.x on Linux/macOS. Native ML-DSA support is required; unsupported runtimes reject the hybrid operation. Default SDK imports and v2 behavior retain their existing runtime requirements.
 
 ```js
 import {createGovernor} from '@vellacognitive/vella-sdk';
