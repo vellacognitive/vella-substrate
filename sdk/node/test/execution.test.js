@@ -128,10 +128,29 @@ test("cancellation and thrown error after possible dispatch remain unknown witho
 });
 
 test("deadline after dispatch returns unknown for a hung handler", async t => {
+  // Trigger the registered deadline only once dispatch starts. Real fsync can
+  // exceed 150 ms on CI, correctly cancelling before dispatch instead.
+  const deadlines = [];
+  t.mock.method(globalThis, "setTimeout", (callback, delay) => {
+    const handle = { callback, delay, cleared: false };
+    deadlines.push(handle);
+    return handle;
+  });
+  t.mock.method(globalThis, "clearTimeout", handle => { handle.cleared = true; });
   const f = await fixture(t, { timeoutMs: 150 });
-  const result = await f.run({ invoke() { f.observed.push(1); return new Promise(() => {}); } });
+  const result = await f.run({ invoke() {
+    f.observed.push(1);
+    assert.equal(deadlines[0].delay, 150);
+    deadlines[0].callback();
+    return new Promise(() => {});
+  } });
   assert.equal(result.outcome, "unknown");
+  assert.equal(result.reason, "CANCELLED_AFTER_DISPATCH");
+  assert.equal(result.authorizationRetained, true);
+  assert.equal(result.receiptRetained, true);
   assert.equal(f.observed.length, 1);
+  assert.equal(deadlines.length, 2);
+  assert.ok(deadlines.every(handle => handle.cleared));
 });
 
 test("receipt-storage fault preserves observed success and reports missing receipt", async t => {
