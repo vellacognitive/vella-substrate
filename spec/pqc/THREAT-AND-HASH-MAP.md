@@ -1,6 +1,6 @@
 # Threat, claim and migration map
 
-Draft for independent review. Scope: current authorization of local protected report calls. Lifetime/preservation requirement remains open. This is an engineering threat analysis, not an independent security review.
+Draft for independent review. Scope: current authorization of local protected report calls. Seven-year retention/verification target accepted, subject to continued cryptographic assurance and operator custody; no fixed-years security guarantee. This is an engineering threat analysis, not an independent security review.
 
 ## Trust boundary
 

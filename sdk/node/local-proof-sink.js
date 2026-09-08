@@ -2,10 +2,11 @@
 import { constants } from "node:fs";
 import { lstat, open } from "node:fs/promises";
 import { resolve, dirname, join } from "node:path";
-import proofV2 from "./proof-v2.cjs";
+import { snapshotProofProfile } from "./proof-profile.js";
 
 /** Existing operator-owned directory on a local POSIX filesystem. */
-export function createLocalProofSink({ directory }) {
+export function createLocalProofSink({ directory, proofProfile }) {
+  const profile = snapshotProofProfile(proofProfile);
   const root = resolve(directory);
   async function retain(attemptId, suffix, value) {
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(attemptId)) throw new TypeError("invalid attempt ID");
@@ -24,11 +25,12 @@ export function createLocalProofSink({ directory }) {
     return { path, durability: "file-and-directory-fsync" };
   }
   return Object.freeze({
+    proofProfileId: profile.id,
     async retainAuthorization({ attemptId, bundle }) {
       return { ...await retain(attemptId, "authorization", bundle), payloadHash: bundle.payload_hash };
     },
     async retainReceipt({ attemptId, receipt }) {
-      return { ...await retain(attemptId, "receipt", receipt), receiptDigest: proofV2.digest(receipt) };
+      return { ...await retain(attemptId, "receipt", receipt), receiptDigest: profile.digest(receipt) };
     },
   });
 }

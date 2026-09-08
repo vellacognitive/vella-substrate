@@ -1,6 +1,6 @@
 # Independent protocol review brief
 
-Prepared for reviewer selection; not sent externally. Owner and reviewer must agree access, confidentiality, fees, and timing. This is not a request to approve a released product.
+Prepared for Mike Wilson, the selected reviewer and acceptance owner; not sent externally. This is not a request to approve a released product.
 
 ## Decision requested at M1
 
@@ -12,7 +12,7 @@ Read `PROOF-CONTRACT-DRAFT.md`, `THREAT-AND-HASH-MAP.md`, `IMPLEMENTATION.md`, b
 
 1. Does requiring both signatures over the same exact typed message and protected key/suite descriptor achieve the intended composition property under the selected trust assumptions? Examine chosen-message, substitution, cross-protocol and downgrade cases; do not treat test success as a cryptographic argument.
 2. Should Vella adopt an existing composite-signature construction instead? Compare the actual message representative and encoding, not just the component algorithm names. Check current FIPS 204 potential errata against selected provider versions.
-3. Do SHA-384 canonical action/policy/definition bindings and the new proof identifiers support the proposed claim? Identify any external reference or retained legacy hash that narrows it. Evidence lifetime remains an owner input.
+3. Do SHA-384 canonical action/policy/definition bindings and the new proof identifiers support the proposed claim? Identify any external reference or retained legacy hash that narrows it. The owner selected a seven-year retention/verification target, with annual review and key rotation.
 4. Are payload semantics, exact bytes, Unicode/numeric handling, duplicate-key rules, byte/depth/node limits and object-API constraints adequate? Review positive controls for adversarial signed-record fixtures.
 5. Is local portable seed custody appropriate for the selected deployment? Evaluate directory/file ownership, symlink handling, permissions, atomic activation, key-pair consistency, backup, exposure and compromise handling. At-rest encryption and external services are not implemented by the seed interchange format.
 6. Is the proposed single-process immutable trust revision plus synchronous final validity check sufficient for the stated rotation/revocation boundary? Identify remaining clock, process and filesystem assumptions.
@@ -32,4 +32,8 @@ Historical verification receives an explicit archival trust policy, separate fro
 
 An attributable report tied to an immutable source/package manifest, findings with concrete failure paths and severity, requested contract changes, and a disposition on the stated scope. Track each fix and retest. No unresolved issue permitting signature substitution, downgrade, unauthorized dispatch, or an invalid security claim may be closed as an accepted production pass. The report must state which cryptographic, implementation, custody and platform questions it did not assess.
 
-The implementation author cannot self-sign this independent-review requirement. No reviewer has been appointed and no independent approval is claimed.
+The implementation author cannot self-sign this independent-review requirement. Mike Wilson is the selected owner reviewer; review completion and approval are not yet recorded. No specialist certification is claimed.
+
+## Implemented recovery and custody controls
+
+The current integration includes an exclusive writer lock shared across cooperating processes. A live writer cannot have its lock recovered; crash recovery requires the expected PID and durable revision, checks that the process has exited, and never silently chooses an older revision. Persistence failure after rename invalidates in-process snapshots until reopening reconciles durable state. Closed handles cannot release a newer live handle. Key reuse across recorded sets is rejected. These controls do not detect an operator restoring an entire old filesystem without an external monotonic anchor.

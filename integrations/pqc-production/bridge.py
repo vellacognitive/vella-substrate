@@ -9,6 +9,13 @@ import record
 
 def run(request):
     op = request['op']
+    if op == 'govern':
+        from hybrid_profile import HybridProfile
+        from vella import create_governor
+
+        governor = create_governor(request['policy'], proof_profile=HybridProfile())
+        result = governor.govern(**request['input'], proof_signing_key=request['keys'])
+        return {'result': result, 'policyDigest': governor.policy_digest, 'profileId': governor.proof_profile_id}
     if op == 'generate':
         return proof.generate_keys(request['suite'])
     if op == 'sign':

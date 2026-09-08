@@ -8,6 +8,8 @@ import proof from './proof.cjs';
 import contract from './record.cjs';
 import bounded from './bounded-json.cjs';
 import v2 from '../../sdk/node/proof-v2.cjs';
+import {createGovernor} from '../../sdk/node/governor.js';
+import {HYBRID_PROFILE} from './profile.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const python = process.env.PQC_PYTHON ?? 'python3';
@@ -19,7 +21,7 @@ function py(requests) {
 }
 let assertions = 0;
 function check(ok, label) { assert.equal(ok, true, label); assertions++; }
-const policy = {policyVersion: 'pq-review-1', intents: {EXPORT_REPORT: 15}};
+const policy = {policyVersion: 'pq-review-1', defaultScope: 'reports', evidenceBits: {AUTHN: 1, AUTHZ: 2, FRESHNESS: 4, APPROVAL: 8}, scopes: {reports: {intents: {EXPORT_REPORT: 15}}}};
 const action = {server: 'local-reports', tool: 'exportReport', definition_digest: contract.digest({revision: '1'}),
   principal: {id: 'operator'}, resource: {id: 'report:review', version: 'absent'},
   arguments: {content: 'café 😀', values: [1, 0.000001, null, true], nested: {'10': 10, '2': 2}}};
@@ -31,6 +33,18 @@ const record = {envelope_id: 'env_review', request_id: 'req_review', intent: 'EX
 const origins = [proof.generateKeys(proof.SUITE), py([{op: 'generate', suite: proof.SUITE}])[0]];
 const vectors = [];
 for (const [origin, keys] of origins.entries()) {
+  const governor = createGovernor(policy, {proofProfile: HYBRID_PROFILE});
+  const input = {intent: 'EXPORT_REPORT', evidenceMask: 15, action, authorityScope: 'reports', proof: {signingKey: {sign: record => proof.sign(record, keys.privateKeys, proof.SUITE)}}};
+  const nodeGoverned = governor.govern(input);
+  const pythonGoverned = py([{op: 'govern', policy, keys: keys.privateKeys, input: {intent: input.intent, evidence_mask: 15, action, authority_scope: 'reports'}}])[0];
+  check(nodeGoverned.decision === 'ALLOWED' && pythonGoverned.result.decision === 'ALLOWED', 'actual SDK provider decisions');
+  check(governor.policyDigest === pythonGoverned.policyDigest && governor.policyDigest === contract.digest(policy), 'actual SDK provider policy identity');
+  for (const bundle of [nodeGoverned.proofBundle, pythonGoverned.result.proof_bundle]) {
+    check(proof.verify(bundle, keys.publicKeys, proof.SUITE).ok, 'actual governor proof verifies in Node');
+    check(py([{op: 'verify', bundle, keys: keys.publicKeys, suite: proof.SUITE}])[0].ok, 'actual governor proof verifies in Python');
+  }
+  const failure = py([{op: 'govern', policy, keys: {}, input: {intent: input.intent, evidence_mask: 15}}])[0].result;
+  check(failure.decision === 'ALLOWED' && failure.proof_bundle === null, 'Python signing failure preserves decision');
   const producers = [proof.sign(record, keys.privateKeys, proof.SUITE), py([{op: 'sign', record, keys: keys.privateKeys, suite: proof.SUITE}])[0]];
   for (const [producer, bundle] of producers.entries()) {
     vectors.push({origin: origin ? 'python' : 'node', producer: producer ? 'python' : 'node', bundle, publicKeys: keys.publicKeys});
@@ -131,4 +145,4 @@ assert.throws(() => bounded.parse('['.repeat(10000) + '0' + ']'.repeat(10000)));
 check(!py([{op: 'digest', text: '['.repeat(10000) + '0' + ']'.repeat(10000)}])[0].ok, 'Python depth preflight');
 if (process.env.PQC_PUBLIC_VECTORS) writeFileSync(process.env.PQC_PUBLIC_VECTORS, JSON.stringify({kind: 'pqc-production-review-vectors', vectors}, null, 2) + '\n');
 console.log(JSON.stringify({kind: 'pqc-production-contract-checks', assertions, publicVectors: vectors.length, allPassed: true,
-  node: process.version, scope: 'Draft proof/domain/key interoperability only; no production gate or independent review'}, null, 2));
+  node: process.version, scope: 'Draft SDK-provider/proof/domain/key interoperability; gate/CLI tests are separate; owner review pending'}, null, 2));

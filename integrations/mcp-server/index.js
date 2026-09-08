@@ -5,11 +5,11 @@ import { z } from "zod/v4";
 const registrations = new WeakMap();
 const META = "com.vellacognitive/governance";
 
-export function describeGovernedTool({ serverId, name, revision, inputSchema, intent, authorityScope }) {
+export function describeGovernedTool({ serverId, name, revision, inputSchema, intent, authorityScope, digest = actionDigest }) {
   if (![serverId, name, revision, intent, authorityScope].every(value => typeof value === "string" && value.length > 0 && Buffer.byteLength(value) <= 1024)) throw new TypeError("explicit tool, server, revision, intent and scope are required");
   const definition = { server: serverId, tool: name, revision, intent, authority_scope: authorityScope,
     input_schema: JSON.parse(JSON.stringify(z.toJSONSchema(inputSchema, { io: "input" }))) };
-  return Object.freeze({ definitionDigest: actionDigest(definition), definition });
+  return Object.freeze({ definitionDigest: digest(definition), definition });
 }
 
 /** All protected registrations use one final handler gate. No mutable SDK handle is exposed. */
@@ -19,7 +19,7 @@ export function registerGovernedTool(server, options) {
   let registry = registrations.get(server);
   if (!registry) { registry = new Map(); registrations.set(server, registry); }
   if (registry.has(name)) throw new TypeError("duplicate protected tool registration");
-  const descriptor = () => describeGovernedTool({ serverId, name, revision, inputSchema, intent, authorityScope });
+  const descriptor = () => describeGovernedTool({ serverId, name, revision, inputSchema, intent, authorityScope, digest: gate.actionDigest ?? actionDigest });
   const definitionDigest = descriptor().definitionDigest;
   const currentDefinition = () => { try { return descriptor().definitionDigest === definitionDigest; } catch { return false; } };
   registry.set(name, definitionDigest);

@@ -10,17 +10,32 @@ from typing import Any
 
 from .evaluator import Evaluator, _normalize_id, compile_policy, to_evidence_mask
 from .policy import DEFAULT_POLICY
-from .proof_v2 import assert_json, digest, sign_v2
+from .proof_profile import ProofProfile, V2Profile
+from .proof_v2 import assert_json
 
 
 class Governor:
-    def __init__(self, policy: Mapping[str, object] | None = None) -> None:
+    def __init__(self, policy: Mapping[str, object] | None = None, *, proof_profile: ProofProfile | None = None) -> None:
+        profile = V2Profile() if proof_profile is None else proof_profile
+        if not isinstance(profile.id, str) or not profile.id:
+            raise TypeError("invalid operator-owned proof profile")
+        self._profile_id = profile.id
+        self._digest = profile.digest
+        self._sign = profile.sign
+        self._assert_json = profile.assert_json
+        assert_json(profile.record_fields)
+        self._record_fields = copy.deepcopy(dict(profile.record_fields))
         source = DEFAULT_POLICY if policy is None else policy
+        self._assert_json(source)
         assert_json(source)
         snapshot = copy.deepcopy(dict(source))
         self._compiled = compile_policy(snapshot)
         self._evaluator = Evaluator(self._compiled)
-        self._policy_digest = digest(snapshot)
+        self._policy_digest = self._digest(snapshot)
+
+    @property
+    def proof_profile_id(self) -> str:
+        return self._profile_id
 
     @property
     def policy_version(self) -> str:
@@ -36,7 +51,7 @@ class Governor:
         evidence_mask: object,
         authority_scope: str | None = None,
         policy_version: str | None = None,
-        proof_signing_key: str | bytes | None = None,
+        proof_signing_key: object = None,
         *,
         action: dict[str, Any] | None = None,
         evidence: dict[str, Any] | None = None,
@@ -61,8 +76,8 @@ class Governor:
                         normalized_mask = to_evidence_mask(evidence_mask, self._compiled.evidence_bits)
                     except (ValueError, TypeError):
                         normalized_mask = None
-                    assert_json(action)
-                    assert_json(evidence)
+                    self._assert_json(action)
+                    self._assert_json(evidence)
                     action_snapshot = copy.deepcopy(action)
                     record = {
                         "envelope_id": f"env_{uuid.uuid4()}", "request_id": request_id if request_id is not None else f"req_{uuid.uuid4()}",
@@ -72,11 +87,13 @@ class Governor:
                         "policy_digest": self.policy_digest, "evidence_mask": normalized_mask,
                         "decision": result["decision"], "reason_code": result["reason_code"],
                         "timestamp": datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z"),
-                        "action": action_snapshot, "action_digest": digest(action_snapshot) if action_snapshot is not None else None,
+                        "action": action_snapshot, "action_digest": self._digest(action_snapshot) if action_snapshot is not None else None,
                         "evidence": copy.deepcopy(evidence), "boundary": boundary,
                         "build_hash": build_hash, "external_effects": False,
                     }
-                    output["proof_bundle"] = sign_v2(record, proof_signing_key)
+                    if set(record) & set(self._record_fields):
+                        raise ValueError("profile must not override authorization fields")
+                    output["proof_bundle"] = self._sign({**record, **self._record_fields}, proof_signing_key)
                 except Exception as error:  # noqa: BLE001 - optional proof errors do not rewrite policy decisions
                     output["proof_bundle"] = None
                     output["proof_error"] = str(error)
@@ -85,5 +102,5 @@ class Governor:
             return {"decision": "DENIED", "reason_code": "E_EVALUATOR_INTERNAL", "latency_us": 0}
 
 
-def create_governor(policy: Mapping[str, object] | None = None) -> Governor:
-    return Governor(policy)
+def create_governor(policy: Mapping[str, object] | None = None, *, proof_profile: ProofProfile | None = None) -> Governor:
+    return Governor(policy, proof_profile=proof_profile)

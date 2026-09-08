@@ -34,10 +34,25 @@ export interface GovernInput {
   requestId?: string; boundary?: Boundary; buildHash?: string | null;
 }
 export interface GovernResult { decision: Decision; reasonCode: string; latencyUs: number; proofBundle?: ProofBundleV2 | null; proofError?: string }
-export interface Governor { readonly policyVersion: string; readonly policyDigest: string; govern(input?: GovernInput): GovernResult }
+export interface Governor { readonly policyVersion: string; readonly policyDigest: string; readonly proofProfileId?: string; govern(input?: GovernInput): GovernResult }
+/** Operator-owned extension; the untrusted envelope must not select this dependency. */
+export interface ProofProfile {
+  readonly id: string; readonly receiptKind: string; readonly recordFields: JsonObject;
+  assertJson(value: unknown): void;
+  digest(value: Json): string;
+  isDigest(value: unknown): boolean;
+  sign(record: AuthorizationRecord & JsonObject, signingKey: unknown): unknown;
+  verify(bundle: unknown, publicKey: unknown): { ok: boolean; authenticated?: AuthorizationRecord; errors?: string[]; warnings?: string[] };
+}
+export interface ProfileGovernInput extends Omit<GovernInput, "proof"> { proof?: { signingKey: unknown } }
+export interface ProfileGovernResult extends Omit<GovernResult, "proofBundle"> { proofBundle?: unknown }
+export interface ProfileGovernor { readonly policyVersion: string; readonly policyDigest: string; readonly proofProfileId: string; govern(input?: ProfileGovernInput): ProfileGovernResult }
+export interface KeySession { readonly signingKey: unknown; readonly publicKey: unknown; readonly audit?: JsonObject; assertCurrent(): void | true }
+export interface KeyProvider { capture(): KeySession }
 export const DEFAULT_POLICY: Readonly<Policy>;
 export function govern(input?: GovernInput): GovernResult;
 export function createGovernor(policy?: Policy): Governor;
+export function createGovernor(policy: Policy | undefined, options: { proofProfile: ProofProfile }): ProfileGovernor;
 export function createEvaluator(policy?: Policy): { readonly policyVersion: string; evaluate(input?: { intent_id?: string; intent?: string; evidence_mask?: EvidenceMask; authority_scope_id?: string; policy_version?: string }): { decision: Decision; reason_code: string } };
 export function actionDigest(value: Json): string;
 export function verifyProofV2(bundle: unknown, publicKey: string): VerificationResult;
@@ -51,7 +66,7 @@ export interface EvidenceBinding {
   policyVersion: string; policyDigest: string; intent: string; authorityScope: string | null;
 }
 export interface ResolvedEvidence { mask: number; references: JsonObject }
-export interface EvidenceProvider { resolve(binding: EvidenceBinding): ResolvedEvidence | Promise<ResolvedEvidence> }
+export interface EvidenceProvider { resolve(binding: EvidenceBinding): ResolvedEvidence | Promise<ResolvedEvidence>; assertCurrent?(binding: EvidenceBinding, evidence: ResolvedEvidence): void | true }
 export type Outcome = "not_started" | "reported_success" | "reported_failure" | "unknown";
 export interface ExecutionReceipt {
   kind: "vella_execution_receipt_v1"; request_id: string; attempt_id: string; authorization_id: string | null;
@@ -60,6 +75,7 @@ export interface ExecutionReceipt {
 }
 export interface RetentionAck { durability: "file-and-directory-fsync"; path?: string }
 export interface ProofSink {
+  readonly proofProfileId?: string;
   retainAuthorization(input: { attemptId: string; bundle: ProofBundleV2 }): Promise<RetentionAck & { payloadHash: string }>;
   retainReceipt(input: { attemptId: string; receipt: ExecutionReceipt }): Promise<RetentionAck & { receiptDigest: string }>;
 }
@@ -71,6 +87,7 @@ export interface ExecutionResult<T = unknown> {
 }
 export interface ExecutionGate {
   readonly policyVersion: string; readonly policyDigest: string;
+  readonly proofProfileId?: string; readonly actionDigest?: (value: Json) => string;
   execute<T>(input: { action: EffectiveAction; intent: string; authorityScope?: string; requestId?: string; signal?: AbortSignal;
     precondition(action: EffectiveAction): boolean | Promise<boolean>;
     invoke(action: EffectiveAction, context: ExecutionContext): T | Promise<T> }): Promise<ExecutionResult<T>>;
@@ -80,5 +97,19 @@ export function createExecutionGate(options: {
   boundary?: "client-dispatch" | "server-handler"; buildHash?: string | null; timeoutMs?: number; governor?: Governor;
   observe?: (event: { attemptId: string; decision: Decision | null; outcome: Outcome; reason: string; timings: Readonly<Record<string, number>>; receiptRetained: boolean }) => void;
 }): ExecutionGate;
+export interface ProfileProofSink {
+  readonly proofProfileId?: string;
+  retainAuthorization(input: { attemptId: string; bundle: unknown }): Promise<RetentionAck & { payloadHash: string }>;
+  retainReceipt(input: { attemptId: string; receipt: Omit<ExecutionReceipt, "kind"> & { kind: string } }): Promise<RetentionAck & { receiptDigest: string }>;
+}
+export function createExecutionGate(options: {
+  policy?: Policy; proofProfile: ProofProfile; keyProvider: KeyProvider; evidenceProvider: EvidenceProvider; proofSink: ProfileProofSink;
+  boundary?: "client-dispatch" | "server-handler"; buildHash?: string | null; timeoutMs?: number; governor?: ProfileGovernor;
+  observe?: (event: { attemptId: string; decision: Decision | null; outcome: Outcome; reason: string; timings: Readonly<Record<string, number>>; receiptRetained: boolean }) => void;
+}): ProfileExecutionGate;
+export interface ProfileExecutionGate extends Omit<ExecutionGate, "execute"> {
+  execute<T>(input: Parameters<ExecutionGate["execute"]>[0] & { invoke(action: EffectiveAction, context: ExecutionContext): T | Promise<T> }): Promise<Omit<ExecutionResult<T>, "receipt"> & { receipt: Omit<ExecutionReceipt, "kind"> & { kind: string } }>;
+}
 export function createLocalProofSink(options: { directory: string }): ProofSink;
+export function createLocalProofSink(options: { directory: string; proofProfile: ProofProfile }): ProfileProofSink;
 export function createOperatorEvidenceProvider(options: { loadState(): JsonObject | Promise<JsonObject>; now?: () => number }): EvidenceProvider;

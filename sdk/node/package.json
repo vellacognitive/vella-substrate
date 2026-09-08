@@ -17,7 +17,8 @@
     "execution.js",
     "local-proof-sink.js",
     "operator-evidence.js",
-    "index.d.ts"
+    "index.d.ts",
+    "proof-profile.js"
   ],
   "engines": {
     "node": ">=18"

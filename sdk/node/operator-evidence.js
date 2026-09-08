@@ -4,7 +4,13 @@ import { immutableJson } from "./execution.js";
 /** Local reference provider: state must be controlled by the operator. */
 export function createOperatorEvidenceProvider({ loadState, now = Date.now }) {
   if (typeof loadState !== "function") throw new TypeError("loadState is required");
-  return Object.freeze({ async resolve(binding) {
+  return Object.freeze({
+    assertCurrent(_binding, evidence) {
+      const time = now();
+      const refs = evidence?.references;
+      if (!Number.isFinite(time) || ![refs?.session_expires_at, refs?.permission_expires_at, refs?.approval_expires_at].every(expiry => Number.isSafeInteger(expiry) && expiry > time)) throw new Error("EVIDENCE_EXPIRED");
+    },
+    async resolve(binding) {
     const state = immutableJson(await loadState());
     const time = now();
     const session = state?.session;
