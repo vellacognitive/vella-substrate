@@ -4,6 +4,7 @@ import {randomUUID, createPublicKey, createHash} from 'node:crypto';
 import proof from './proof.cjs';
 import contract from './record.cjs';
 import bounded from './bounded-json.cjs';
+import {matchesArchiveContext} from './archive-trust.cjs';
 
 const stores = new Set();
 const ALGS = ['ecdsa-p256-sha256', 'ml-dsa-65'];
@@ -185,6 +186,7 @@ export async function openLocalKeyStore({directory, initialize = false, now = Da
       const entry = state.history.find(e => e.id === keySetId);
       if (!entry) return {ok: false, errors: ['UNKNOWN_ARCHIVE_KEY'], warnings: []};
       const result = proof.verify(bundle, entry.publicKeys, proof.SUITE);
+      if (result.ok && !matchesArchiveContext(result.authenticated, entry.id, state.revision)) return {ok: false, errors: ['E_PQ_TRUST_BINDING'], warnings: [], trustedForNewExecution: false};
       return {...result, keyStatus: entry.status === 'active' && currentTime() >= entry.notAfter ? 'expired' : entry.status, trustedForNewExecution: false,
         warnings: [...result.warnings, 'Signature validity does not prove signing time or pre-compromise existence; no execution authority']};
     },

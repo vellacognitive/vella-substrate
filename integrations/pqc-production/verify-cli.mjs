@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import {TextDecoder} from 'node:util';
 import bounded from './bounded-json.cjs';
 import proof from './proof.cjs';
+import {matchesArchiveContext} from './archive-trust.cjs';
 async function read(path, max, trusted = false) {
   const file = await fs.promises.open(path, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW);
   try {
@@ -28,6 +29,7 @@ try {
   const matches = trust.history.filter(entry => entry.id === id);
   if (matches.length !== 1 || !['active', 'retired', 'revoked'].includes(matches[0].status)) throw new Error('unrecognized historical key');
   const entry = matches[0], result = proof.verify(bundle, entry.publicKeys, suite);
+  if (result.ok && !matchesArchiveContext(result.authenticated, id, trust.revision)) throw new Error('historical trust binding mismatch');
   const output = {...result, keySetId: id, keyStatus: entry.status, trustRevision: trust.revision, trustedForNewExecution: false,
     warnings: [...result.warnings, 'Reports the supplied trust snapshot; no trusted signing time or pre-compromise assurance']};
   process.stdout.write(JSON.stringify(output) + '\n'); process.exitCode = result.ok ? 0 : 1;
