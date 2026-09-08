@@ -1,12 +1,12 @@
 # Remediation contract and feasibility decisions
 
-Status: initial implementation batch, September 8, 2026. Based on the remediation and MCP SOW and reviewed commit `7af5a878ed002271f74a0c1d1a0b3071d7e66985`. Remote main was refreshed and still matched that commit. This document records proposed production behavior and separately identifies implemented experiments.
+Status: release preparation, September 8, 2026. The initial implementation and hosted matrix passed through PRs #15/#16. This document distinguishes the retained feasibility experiment from the selected local server reference; final candidate evidence accompanies handoff.
 
 ## Reference workflow
 
-The owner-selected local reference workflow exports a report into a harness-owned temporary folder. A controlled MCP server exposes case-distinct `exportReport` and `ExportReport` tools. The first requires authenticated identity plus permission; the second is a less restricted control. The tool accepts a bounded report identifier, content, and a defaulted text format. The consequence is a new local file, created exclusively to prevent silent overwrite.
+The owner-selected local reference workflow exports a report into a harness-owned temporary folder. A controlled MCP server exposes case-distinct `exportReport` and `ExportReport` tools. The retained private experiment uses a less restricted case-distinct control. In the selected server reference, both case-distinct tools require all four checks: identity, permission, freshness and exact-action approval. The tool accepts a bounded report identifier, content, and a defaulted text format. The consequence is a new local file, created exclusively to prevent silent overwrite.
 
-The runtime is Node, the protocol dependencies are official MCP client/server 2.0.0, and the experiment uses stdio at protocol revision 2026-07-28. This is an experiment support matrix, not a production support commitment. The owner subsequently selected the local reference setup. Its concrete operating choices are recorded in [local-reference.md](local-reference.md); measured workload acceptance, release versioning and hosted matrix verification remain open.
+The runtime is Node, the protocol dependencies are official MCP client/server 2.0.0, and the experiment uses stdio at protocol revision 2026-07-28. This is an experiment support matrix, not a production support commitment. The owner subsequently selected the local reference setup. Its concrete operating choices are recorded in [local-reference.md](local-reference.md); the owner has selected SDK 2.0.0 / MCP 1.0.0 and the local workload limits; sustained measurements and final candidate validation are recorded separately.
 
 ## Enforcement decision
 
@@ -37,7 +37,7 @@ Both private candidates protect nested content and authenticated payload type in
 | Implementation burden | Every producer must implement the same canonicalization/value domain | Verifiers authenticate bytes, then parse and validate that verified payload |
 | Remaining work | Normative domain, parser validation, schema/versioning, trust rules, migration | The same contract work; stable action digests still need a defined canonical representation |
 
-**Owner-approved selection (September 8, 2026):** use a new versioned envelope that authenticates exact payload bytes and their interpretation; use a separate defined canonical action representation where equivalent-action digests are required. Keep legacy v1 verification explicitly separate and disclose its protection limits. Do not rewrite stored v1 records or claim that omitted historical fields were authenticated. The new format is implemented as v2 with P-256/SHA-256 and a typed exact-byte payload. Package release version, rollout date and notice remain pending; no release tag or publication has changed.
+**Owner-approved selection (September 8, 2026):** use a new versioned envelope that authenticates exact payload bytes and their interpretation; use a separate defined canonical action representation where equivalent-action digests are required. Keep legacy v1 verification explicitly separate and disclose its protection limits. Do not rewrite stored v1 records or claim that omitted historical fields were authenticated. The new format is implemented as v2 with P-256/SHA-256 and a typed exact-byte payload. SDK 2.0.0 and MCP 1.0.0 are selected as unreleased candidate versions. Rollout date and notice remain pending; no release tag or publication has changed.
 
 The experiment remains comparative code. Production format behavior is now defined separately in [the v2 contract](../../spec/proof-v2.md); its use of DSSE pre-authentication encoding does not claim full DSSE envelope conformance. Production verification must reject unsupported types/algorithms, validate structure and encodings, establish signer trust, and parse only authenticated content.
 
@@ -51,8 +51,8 @@ The checked-in shared regression family failed 26 Node and 24 Python tests befor
 
 ## Milestone status and next dependencies
 
-M0 has executable client/server experiments, owner-selected proof format and local workflow, and a concrete reference evidence/retention contract. Final supported-runtime acceptance, workload thresholds, release migration details and delivery constraints remain open. M1 input/policy corrections, v2 proofs and policy-bound signing are implemented with regression and producer/verifier checks. Acceptance is subject to review of the unreleased changes and compatibility plan. M2/M3 reference implementations are under local verification. M4 and production acceptance remain open. R1 release preparation remains an independent later step.
+M0 has executable client/server experiments, owner-selected proof format and local workflow, and a concrete reference evidence/retention contract. Final supported-runtime acceptance, workload thresholds, release migration details and delivery constraints remain open. M1 input/policy corrections, v2 proofs and policy-bound signing are implemented with regression and producer/verifier checks. Acceptance is subject to review of the unreleased changes and compatibility plan. M2/M3 reference implementations passed local and hosted functional verification. M4 and production acceptance remain open. R1 release preparation remains an independent later step.
 
-Next, reconcile the local test and package evidence, run hosted CI on a reviewable commit, and agree the operating thresholds and release migration plan.
+Next, complete the owner-approved sustained workload, candidate package checks, migration/rollback rehearsal and hosted checks on the final candidate. See [release-candidate.md](release-candidate.md).
 
 A staffing-based delivery estimate cannot be defensibly fixed while the actual integration and retention obligations are unknown. The current implementation is performed within the owner's authorized development task; no external fee, staffing commitment, deadline, or production acceptance is inferred.

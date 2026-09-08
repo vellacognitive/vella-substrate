@@ -5,7 +5,7 @@ from .policy import DEFAULT_POLICY
 from .proof_v2 import digest as action_digest
 from .proof_v2 import verify_v2 as verify_proof_v2
 
-__version__ = "1.0.3"
+__version__ = "2.0.0"
 _GOVERNOR = create_governor()
 govern = _GOVERNOR.govern
 

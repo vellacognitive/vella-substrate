@@ -1,6 +1,6 @@
 {
   "name": "@vellacognitive/vella-sdk",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "VELLA \u2014 deterministic pre-execution governance substrate. SDK for producing signed decision records.",
   "license": "MIT",
   "type": "module",

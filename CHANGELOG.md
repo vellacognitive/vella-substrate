@@ -7,11 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - Unreleased
+
 ### Breaking changes in development
 
 - High-level SDK signing now emits v2 typed exact-byte proofs. Nested action/evidence and loaded policy identity are authenticated; Node and Python expose isolated policy-bound governors and structured v2 verification.
 - Repository verifiers dispatch v2 separately, reject unsupported formats and report legacy v1 protection limits. Historical v1 hash rules remain unchanged. V2 shell verification uses Python structural checks and OpenSSL signatures.
-- This requires a versioned release and migration; published 1.0.3 metadata and existing tags are unchanged. See `docs/remediation/migration.md`.
+- This requires a versioned release and migration; published 1.0.3 packages and existing tags are unchanged. See `docs/remediation/migration.md`.
 
 
 ### Added

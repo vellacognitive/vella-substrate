@@ -17,6 +17,7 @@ const checks = [
   ["python-types", python, ["-m", "mypy", "--strict", "vella/"], "sdk/python"],
   ["action", process.execPath, ["--test", "integrations/github-action/gate.test.mjs"], "."],
   ["release-tests", process.execPath, ["--test", "scripts/check-release-consistency.test.mjs"], "."],
+  ["migration-rollback", process.execPath, ["scripts/check-migration.mjs"], "."],
   ["release-metadata", process.execPath, ["scripts/check-release-consistency.mjs"], "."],
   ["production-proofs", process.execPath, ["--test", "scripts/proof-conformance.test.mjs"], "."],
   ["mcp-experiment", "npm", ["test"], "integrations/mcp-experiment"],
@@ -46,7 +47,7 @@ for (const family of ["valid", "tampered"]) for (const file of readdirSync(join(
 results.push({ name: "legacy-vectors", passed: legacy.every(row => row.passed), cases: legacy.length });
 console.log(`${legacy.every(row => row.passed) ? "PASS" : "FAIL"} legacy-vectors (${legacy.length})`);
 const git = args => spawnSync("git", args, { cwd: root, encoding: "utf8" }).stdout.trim();
-const report = { baseCommit: git(["rev-parse", "HEAD"]), branch: git(["branch", "--show-current"]), workingTree: "uncommitted candidate; not an immutable release", node: process.version,
+const report = { baseCommit: git(["rev-parse", "HEAD"]), branch: git(["branch", "--show-current"]), workingTree: git(["status", "--porcelain"]) ? "uncommitted candidate; not an immutable release" : "clean committed candidate; not a published release", node: process.version,
   python: spawnSync(python, ["--version"], { encoding: "utf8" }).stdout.trim(), generatedAt: new Date().toISOString(), checks: results, legacy,
   allPassed: results.every(row => row.passed) };
 if (reportPath) writeFileSync(reportPath, JSON.stringify(report, null, 2) + "\n");

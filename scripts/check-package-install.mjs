@@ -1,11 +1,15 @@
 import assert from "node:assert/strict";
-import { cpSync, mkdtempSync, mkdirSync, readdirSync, writeFileSync, rmSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { createHash } from "node:crypto";
+import { cpSync, copyFileSync, readFileSync, mkdtempSync, mkdirSync, readdirSync, writeFileSync, rmSync } from "node:fs";
+import { basename, dirname, join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const python = process.env.VELLA_VERIFY_PYTHON || "python3";
+const artifactIndex = process.argv.indexOf("--artifacts");
+if (artifactIndex >= 0 && !process.argv[artifactIndex + 1]) throw new Error("--artifacts requires an output directory");
+const artifactFolder = artifactIndex < 0 ? null : resolve(process.argv[artifactIndex + 1]);
 const folder = mkdtempSync(join(tmpdir(), "vella-package-check-"));
 function run(command, args, cwd = folder) {
   const result = spawnSync(command, args, { cwd, encoding: "utf8", env: { ...process.env, PYTHONPATH: "", PYTHONHOME: "" }, maxBuffer: 8 * 1024 * 1024 });
@@ -13,6 +17,7 @@ function run(command, args, cwd = folder) {
   return result.stdout;
 }
 try {
+  if (artifactFolder) assert.equal(run("git", ["status", "--porcelain"], root).trim(), "", "export artifacts only from an immutable clean candidate");
   const tarballs = [];
   for (const dir of ["sdk/node", "integrations/mcp-server"]) {
     const packed = JSON.parse(run("npm", ["pack", "--json", "--ignore-scripts", "--pack-destination", folder], join(root, dir)))[0];
@@ -63,5 +68,18 @@ print('Installed Python wheel verifies v2 and includes typing metadata')
 `;
   writeFileSync(join(folder, "consumer.py"), pyConsumer);
   process.stdout.write(run(isolatedPython, [join(folder, "consumer.py")]));
+  if (artifactFolder) {
+    mkdirSync(artifactFolder, { recursive: true });
+    const artifacts = [...tarballs, wheel].map(path => {
+      const filename = basename(path); copyFileSync(path, join(artifactFolder, filename));
+      const bytes = readFileSync(path); return { filename, sha256: createHash("sha256").update(bytes).digest("hex"), bytes: bytes.length };
+    });
+    const manifest = { candidateCommit: run("git", ["rev-parse", "HEAD"], root).trim(), createdAt: new Date().toISOString(), artifacts,
+      testedFromTheseArtifacts: true, node: process.version,
+      pythonDependencies: JSON.parse(run(isolatedPython, ["-m", "pip", "list", "--format=json", "--disable-pip-version-check"])),
+      checks: ["installed Node v2 verification and gate API", "installed MCP report consequence", "installed TypeScript declarations", "installed isolated Python v2 verification and py.typed"],
+      publicationPerformed: false };
+    writeFileSync(join(artifactFolder, "package-manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
+  }
   console.log("Package installation, installed demonstration and declaration checks passed");
 } finally { rmSync(folder, { recursive: true, force: true }); }

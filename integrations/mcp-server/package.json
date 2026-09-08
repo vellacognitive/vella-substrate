@@ -1,6 +1,6 @@
 {
   "name": "@vellacognitive/vella-mcp-server",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "Unreleased Vella governed MCP server binding for local stdio tools",
@@ -23,7 +23,7 @@
     "node": ">=22"
   },
   "peerDependencies": {
-    "@vellacognitive/vella-sdk": "*"
+    "@vellacognitive/vella-sdk": "2.0.0"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.0.0",

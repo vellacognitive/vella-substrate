@@ -1,5 +1,5 @@
-import { generateKeyPairSync } from "node:crypto";
-import { mkdir, writeFile, readFile } from "node:fs/promises";
+import { generateKeyPairSync, randomUUID } from "node:crypto";
+import { mkdir, writeFile, readFile, rename } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Client } from "@modelcontextprotocol/client";
@@ -39,3 +39,18 @@ export async function connect(configPath, serverPath = fileURLToPath(new URL("./
   return client;
 }
 export async function readState(config) { return JSON.parse(await readFile(config.evidenceStatePath, "utf8")); }
+
+/** Operator-side atomic update; wait for the prior batch to settle before replacement. */
+export async function approveBatch(config, requests) {
+  if (!Array.isArray(requests) || requests.length < 1 || requests.length > 64) throw new TypeError("approve 1..64 exact actions per batch");
+  const principalId = `local-uid:${config.operatorUid}`, expiresAt = Date.now() + 60000;
+  const actions = requests.map(args => reportAction({ serverId: config.serverId, principalId, arguments: args }));
+  if (new Set(actions.map(actionDigest)).size !== actions.length) throw new TypeError("duplicate action approval");
+  const state = { session: { id: "local-session", principalId, expiresAt, revoked: false },
+    permissions: actions.map((action, i) => ({ id: `permission-${i}`, principalId, server: config.serverId, tool: action.tool, resourceId: action.resource.id, expiresAt, revoked: false })),
+    approvals: actions.map(action => ({ id: `approval-${action.arguments.reportId}`, principalId, actionDigest: actionDigest(action), policyDigest: actionDigest(reportPolicy), expiresAt, revoked: false })) };
+  const temporary = `${config.evidenceStatePath}.${randomUUID()}.tmp`;
+  await writeFile(temporary, JSON.stringify(state), { mode: 0o600, flag: "wx" });
+  await rename(temporary, config.evidenceStatePath);
+  return state;
+}
