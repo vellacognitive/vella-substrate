@@ -1,0 +1,43 @@
+{
+  "name": "@vellacognitive/vella-mcp-server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Unreleased Vella governed MCP server binding for local stdio tools",
+  "license": "MIT",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md",
+    "example"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "peerDependencies": {
+    "@vellacognitive/vella-sdk": "*"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.0.0",
+    "zod": "4.5.4",
+    "@modelcontextprotocol/client": "2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.1",
+    "@vellacognitive/vella-sdk": "file:../../sdk/node",
+    "typescript": "7.0.2"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "demo": "node example/demo.mjs",
+    "typecheck": "tsc -p tsconfig.json"
+  }
+}

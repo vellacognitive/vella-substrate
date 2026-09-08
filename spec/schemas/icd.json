@@ -2,12 +2,12 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "vella://contracts/v1/icd.json.schema.json",
   "title": "VELLA SDK Interface Control Document v1",
-  "description": "Describes the embedded-SDK interface as specified in spec/icd.md §4.1 and §4.2. The schema describes the canonical Node/JSON form (camelCase keys). The Python SDK accepts and returns equivalent snake_case keys: intent, evidence_mask, authority_scope, policy_version, proof_signing_key for the request; decision, reason_code, latency_us, proof_bundle, proof_error for the response. Both key forms describe the same interface.",
+  "description": "Describes the embedded-SDK interface as specified in spec/icd.md \u00a74.1 and \u00a74.2. The schema describes the canonical Node/JSON form (camelCase keys). The Python SDK accepts and returns equivalent snake_case keys: intent, evidence_mask, authority_scope, policy_version, proof_signing_key for the request; decision, reason_code, latency_us, proof_bundle, proof_error for the response. Both key forms describe the same interface.",
   "type": "object",
   "definitions": {
     "IntentParams": {
       "type": "object",
-      "description": "Parameters supplied to the SDK's govern(...) call. See spec/icd.md §4.1.",
+      "description": "Normalized numeric form of the parameters supplied to govern(...). Resolve SDK symbolic/decimal convenience forms against the active policy before applying this schema. See spec/icd.md \u00a74.1 and spec/input-validation.md.",
       "required": [
         "intent",
         "evidenceMask"
@@ -20,7 +20,8 @@
         "evidenceMask": {
           "type": "integer",
           "minimum": 0,
-          "description": "Bitmask asserting which evidence classes the calling application has satisfied. See spec/icd.md §4.4."
+          "maximum": 4294967295,
+          "description": "Normalized unsigned 32-bit evidence mask. SDK decimal and symbolic convenience forms must be resolved against the active policy before validating this representation. See spec/input-validation.md."
         },
         "authorityScope": {
           "type": "string",
@@ -39,12 +40,44 @@
               "description": "PEM-encoded private key. If provided, a signed proof bundle is included in the response."
             }
           }
+        },
+        "action": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Application-supplied effective action context; default null."
+        },
+        "evidence": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Application-supplied evidence context; default null."
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "boundary": {
+          "enum": [
+            "evaluation",
+            "client-dispatch",
+            "server-handler"
+          ]
+        },
+        "buildHash": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
     "DecisionResponse": {
       "type": "object",
-      "description": "The decision result returned synchronously by the SDK. See spec/icd.md §4.2.",
+      "description": "The decision result returned synchronously by the SDK. See spec/icd.md \u00a74.2.",
       "required": [
         "decision",
         "reasonCode",
@@ -61,15 +94,25 @@
         },
         "reasonCode": {
           "type": "string",
-          "description": "Machine-readable reason for the decision (see spec/icd.md §5.2)."
+          "description": "Machine-readable reason for the decision (see spec/icd.md \u00a75.2)."
         },
         "latencyUs": {
           "type": "number",
-          "description": "Microsecond latency of the govern(...) call."
+          "description": "Microsecond elapsed time through evaluation, before optional signing."
         },
         "proofBundle": {
-          "$ref": "proof.json",
-          "description": "Signed proof bundle; present when a signing key was provided and signing succeeded."
+          "anyOf": [
+            {
+              "$ref": "proof.json"
+            },
+            {
+              "$ref": "proof-v2.json"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Signed proof bundle when signing succeeds; null when requested signing fails."
         },
         "proofError": {
           "type": "string",

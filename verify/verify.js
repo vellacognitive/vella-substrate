@@ -3,6 +3,8 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const proofV2 = require("../sdk/node/proof-v2.cjs");
+const LEGACY_WARNING = "Legacy v1 verifies its historical subset only; metadata and some nested Node fields were not authenticated. It does not establish exact action binding or execution.";
 
 const SIGNING_EXCLUDED_FIELDS = new Set([
   "envelope_hash",
@@ -19,7 +21,7 @@ function deriveKeyIdFromPub(publicKeyPem) {
   return `key_${crypto.createHash("sha256").update(publicKeyDer).digest("hex").slice(0, 16)}`;
 }
 
-function verify(bundle, publicKeyPem) {
+function verifyLegacy(bundle, publicKeyPem) {
   const errors = [];
 
   if (!bundle || typeof bundle !== "object") {
@@ -106,6 +108,13 @@ function verify(bundle, publicKeyPem) {
   };
 }
 
+function verify(bundle, publicKeyPem) {
+  if (bundle?.kind === proofV2.KIND || bundle?.payload_type !== undefined) return proofV2.verifyV2(bundle, publicKeyPem);
+  if (bundle?.kind !== undefined && bundle.kind !== "vella_proof_bundle_v1") return { ok: false, format: "unknown", errors: ["unsupported proof format"], warnings: [] };
+  try { return { ...verifyLegacy(bundle, publicKeyPem), format: "v1", warnings: [LEGACY_WARNING] }; }
+  catch (error) { return { ok: false, format: "v1", errors: [String(error)], warnings: [LEGACY_WARNING] }; }
+}
+
 function main() {
   const [bundlePath, keyPath] = process.argv.slice(2);
   if (!bundlePath || !keyPath) {
@@ -117,7 +126,9 @@ function main() {
   let publicKeyPem;
 
   try {
-    bundle = JSON.parse(fs.readFileSync(path.resolve(bundlePath), "utf8"));
+    const raw = fs.readFileSync(path.resolve(bundlePath), "utf8");
+    bundle = JSON.parse(raw);
+    if (bundle?.kind === proofV2.KIND || bundle?.payload_type !== undefined) bundle = proofV2.parseJson(raw);
   } catch (error) {
     console.error(`ERROR: cannot read bundle: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);
@@ -133,6 +144,8 @@ function main() {
   const result = verify(bundle, publicKeyPem);
 
   if (result.ok) {
+    for (const warning of result.warnings || []) console.error(`WARNING: ${warning}`);
+    if (result.format === "v2") console.error("FORMAT v2: authenticated authorization record under supplied key; evidence truth and execution are not established.");
     console.log("VERIFIED");
     process.exit(0);
   }
@@ -148,4 +161,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { verify };
+module.exports = { verify, verifyLegacy };

@@ -1,5 +1,8 @@
 # Integration Map
 
+**Development update:** an unreleased [controlled MCP server reference](integrations/mcp-server/README.md) and reusable mandatory-proof gate now exist. Client dispatch remains a comparison demonstrator. Published-release status below remains separate; see the [acceptance ledger](docs/remediation/acceptance.md).
+
+
 VELLA belongs immediately before a consequential action becomes reachable. The open-source SDK is deliberately framework-neutral; adapters are distribution surfaces, not architectural dependencies.
 
 ## Status definitions

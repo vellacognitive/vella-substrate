@@ -7,6 +7,7 @@ import argparse
 import base64
 import hashlib
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -34,7 +35,7 @@ def derive_key_id_from_pub(public_key_pem: str) -> str:
     return f"key_{hashlib.sha256(public_der).hexdigest()[:16]}"
 
 
-def verify(bundle: dict[str, Any], public_key_pem: str) -> tuple[bool, list[str]]:
+def verify_legacy(bundle: dict[str, Any], public_key_pem: str) -> tuple[bool, list[str]]:
     errors: list[str] = []
 
     required_fields = [
@@ -96,6 +97,20 @@ def verify(bundle: dict[str, Any], public_key_pem: str) -> tuple[bool, list[str]
     return (len(errors) == 0, errors)
 
 
+def verify(bundle: dict[str, Any], public_key_pem: str) -> tuple[bool, list[str]]:
+    if bundle.get("kind") == "vella_proof_bundle_v2" or "payload_type" in bundle:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "sdk/python"))
+        from vella.proof_v2 import verify_v2
+        result = verify_v2(bundle, public_key_pem)
+        return bool(result["ok"]), result["errors"]
+    if bundle.get("kind") not in (None, "vella_proof_bundle_v1"):
+        return False, ["unsupported proof format"]
+    try:
+        return verify_legacy(bundle, public_key_pem)
+    except Exception as error:  # noqa: BLE001
+        return False, [str(error)]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Verify a VELLA proof bundle")
     parser.add_argument("bundle", help="Path to proof bundle JSON")
@@ -103,8 +118,13 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        bundle = json.loads(Path(args.bundle).read_text(encoding="utf-8"))
+        raw = Path(args.bundle).read_text(encoding="utf-8")
+        bundle = json.loads(raw)
         assert isinstance(bundle, dict)
+        if bundle.get("kind") == "vella_proof_bundle_v2" or "payload_type" in bundle:
+            sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "sdk/python"))
+            from vella.proof_v2 import parse_json
+            bundle = parse_json(raw)
     except Exception as exc:  # noqa: BLE001
         print(f"ERROR: cannot read bundle: {exc}")
         return 1
@@ -117,6 +137,10 @@ def main() -> int:
 
     ok, errors = verify(bundle, public_key_pem)
     if ok:
+        if bundle.get("kind") != "vella_proof_bundle_v2":
+            print("WARNING: Legacy v1 authenticates its historical subset, not all metadata or nested Node fields; it does not establish exact action binding or execution.", file=sys.stderr)
+        else:
+            print("FORMAT v2: authenticated authorization record under supplied key; evidence truth and execution are not established.", file=sys.stderr)
         print("VERIFIED")
         return 0
 

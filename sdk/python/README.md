@@ -2,6 +2,10 @@
 
 Python SDK for deterministic pre-execution adjudication and signed proof-bundle generation.
 
+Evidence conversion now rejects invalid unsigned 32-bit values and unknown symbols with `E_EVIDENCE_INVALID`. Invalid custom policies raise at creation rather than silently weakening rules. See [evidence and policy validation](../../spec/input-validation.md) for accepted forms and compatibility changes.
+
+**Development status:** the v2 proof and policy-bound signing APIs below are unreleased. Published 1.0.3 packages do not include them. See [migration and legacy limits](../../docs/remediation/migration.md).
+
 ## Install
 
 ```bash
@@ -47,7 +51,7 @@ result = govern(
     proof_signing_key=signing_key,
 )
 
-print(result["proof_bundle"]["kind"])  # vella_proof_bundle_v1
+print(result["proof_bundle"]["kind"])  # vella_proof_bundle_v2
 ```
 
 ## Custom policy evaluators
@@ -88,7 +92,28 @@ The policy uses the same `policyVersion`, `defaultScope`, `evidenceBits`, and `s
 
 `create_evaluator(...)` returns a policy-bound evaluator whose `evaluate(...)` method returns `decision` and `reason_code`. Missing inputs, unknown intents or scopes, insufficient evidence, policy-version mismatches, and unexpected evaluator errors all return `DENIED`.
 
-Use `govern(...)` for the built-in default policy and the high-level response fields `latency_us`, `proof_bundle`, and `proof_error`. Custom evaluators perform deterministic policy adjudication only; they do not sign or persist proof bundles.
+Use `govern(...)` for the built-in default policy. For custom-policy signing use a governor:
+
+```python
+from vella import create_governor, verify_proof_v2
+
+governor = create_governor(policy)
+result = governor.govern(
+    "GENERATION_CONTEXT", 1,
+    request_id="request-123",
+    action={"tool": "generate", "args": {"document": "draft-1"}},
+    evidence={"identityRef": "session-123"},
+    proof_signing_key=signing_key,
+)
+if result.get("proof_bundle"):
+    checked = verify_proof_v2(result["proof_bundle"], trusted_public_key)
+    if checked["ok"]:
+        print(checked["authenticated"])
+```
+
+A governor snapshots its validated policy and exposes `policy_version` and `policy_digest`. Construct a new instance to activate a different policy. Custom evaluators remain evaluation-only.
+
+The core SDK trusts application-supplied evidence, does not execute actions and does not persist proofs. Optional signing failure preserves the policy result and returns `proof_bundle: None` with `proof_error`. An integration requiring proof must stop before execution if signing or retention fails. Use the verified `authenticated` record, not an unverified decoded payload.
 
 ## When to use this SDK
 
@@ -100,6 +125,9 @@ For enterprise service mesh, polyglot environments (Go, Java, .NET), Kubernetes 
 
 - `govern(intent, evidence_mask, authority_scope=None, policy_version=None, proof_signing_key=None)`
   - Returns a dict with `decision`, `reason_code`, `latency_us`, and optional `proof_bundle`/`proof_error`
+- `create_governor(policy=None)` exposes the same `govern` inputs plus keyword-only `action`, `evidence`, `request_id`, `boundary`, and `build_hash`
+- `verify_proof_v2(bundle, public_key)` returns a structured verification result
+- `action_digest(value)` returns a stable canonical JSON digest
 - `create_evaluator(policy=None)`
   - Returns a policy-bound evaluator with `evaluate(input_dict)`, which returns `decision` and `reason_code`
 
@@ -107,5 +135,6 @@ For enterprise service mesh, polyglot environments (Go, Java, .NET), Kubernetes 
 
 See the root repository docs for full protocol details:
 - `spec/icd.md`
-- `spec/schemas/proof.json`
+- `spec/proof-v2.md` and `spec/schemas/proof-v2.json`
+- `spec/schemas/proof.json` (legacy)
 - `verify/`

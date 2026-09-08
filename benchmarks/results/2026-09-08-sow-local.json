@@ -1,0 +1,1048 @@
+{
+  "generatedAt": "2026-09-08T16:08:17.041292+00:00",
+  "baseCommit": "7af5a878ed002271f74a0c1d1a0b3071d7e66985",
+  "originalAndCurrentBenchmarkHarnessIdentical": true,
+  "results": {
+    "supplement-base-python": {
+      "firstCallNs": 3708,
+      "results": [
+        {
+          "scenario": "mixed-decisions",
+          "iterationsPerPass": 50000,
+          "passes": 5,
+          "percentilesNs": {
+            "p50": 583,
+            "p95": 667,
+            "p99": 833
+          },
+          "runs": [
+            {
+              "p50": 583,
+              "p95": 625,
+              "p99": 792
+            },
+            {
+              "p50": 583,
+              "p95": 666,
+              "p99": 833
+            },
+            {
+              "p50": 583,
+              "p95": 708,
+              "p99": 833
+            },
+            {
+              "p50": 583,
+              "p95": 667,
+              "p99": 833
+            },
+            {
+              "p50": 583,
+              "p95": 709,
+              "p99": 833
+            }
+          ]
+        }
+      ],
+      "coldFreshProcessFirstCallNs": [
+        3625,
+        3584,
+        3459,
+        3667,
+        4917,
+        3625,
+        3500,
+        3375,
+        3625,
+        3584,
+        4125,
+        3917,
+        3583,
+        3292,
+        3625,
+        3958,
+        3833,
+        3583,
+        3416,
+        3667,
+        3334
+      ]
+    },
+    "base-python": {
+      "runtime": "python",
+      "fingerprint": {
+        "machine": "arm64",
+        "processor": "arm",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "python_version": "3.12.14",
+        "python_implementation": "CPython",
+        "quick": false,
+        "timestamp": "2026-09-08T16:02:40.704793+00:00"
+      },
+      "results": [
+        {
+          "label": "decision-only",
+          "runs": 11,
+          "warmup": 10000,
+          "iterations_per_run": 100000,
+          "median_of_medians_ns": {
+            "p50": 541.0,
+            "p95": 667.0,
+            "p99": 750.0
+          },
+          "sample_run_ns": {
+            "min": 416.0,
+            "p50": 541.0,
+            "p95": 667.0,
+            "p99": 750.0,
+            "max": 38875.0,
+            "mean": 541.34869
+          }
+        },
+        {
+          "label": "with-proof",
+          "runs": 11,
+          "warmup": 2000,
+          "iterations_per_run": 10000,
+          "median_of_medians_ns": {
+            "p50": 85417.0,
+            "p95": 104375.0,
+            "p99": 114917.0
+          },
+          "sample_run_ns": {
+            "min": 83875.0,
+            "p50": 85000.0,
+            "p95": 104208.0,
+            "p99": 113166.0,
+            "max": 236167.0,
+            "mean": 88124.1009
+          }
+        }
+      ]
+    },
+    "current-node": {
+      "runtime": "node",
+      "fingerprint": {
+        "cpu_model": "Apple M3 Ultra",
+        "cpu_count": 32,
+        "arch": "arm64",
+        "platform": "darwin",
+        "release": "25.6.0",
+        "node_version": "v22.22.3",
+        "gc_exposed": true,
+        "quick": false,
+        "timestamp": "2026-09-08T16:02:11.884Z"
+      },
+      "results": [
+        {
+          "label": "decision-only",
+          "runs": 11,
+          "warmup": 10000,
+          "iterations_per_run": 100000,
+          "median_of_medians_ns": {
+            "p50": 83,
+            "p95": 84,
+            "p99": 125
+          },
+          "sample_run_ns": {
+            "min": 0,
+            "p50": 83,
+            "p95": 125,
+            "p99": 125,
+            "max": 76750,
+            "mean": 85.26144
+          }
+        },
+        {
+          "label": "with-proof",
+          "runs": 11,
+          "warmup": 2000,
+          "iterations_per_run": 10000,
+          "median_of_medians_ns": {
+            "p50": 72208,
+            "p95": 88000,
+            "p99": 100250
+          },
+          "sample_run_ns": {
+            "min": 70417,
+            "p50": 72292,
+            "p95": 89125,
+            "p99": 104625,
+            "max": 656625,
+            "mean": 76556.5731
+          }
+        }
+      ]
+    },
+    "supplement-current-python": {
+      "firstCallNs": 4417,
+      "results": [
+        {
+          "scenario": "mixed-decisions",
+          "iterationsPerPass": 50000,
+          "passes": 5,
+          "percentilesNs": {
+            "p50": 708,
+            "p95": 792,
+            "p99": 1000
+          },
+          "runs": [
+            {
+              "p50": 709,
+              "p95": 792,
+              "p99": 1000
+            },
+            {
+              "p50": 708,
+              "p95": 834,
+              "p99": 1000
+            },
+            {
+              "p50": 708,
+              "p95": 792,
+              "p99": 1000
+            },
+            {
+              "p50": 708,
+              "p95": 750,
+              "p99": 959
+            },
+            {
+              "p50": 709,
+              "p95": 792,
+              "p99": 1000
+            }
+          ]
+        },
+        {
+          "scenario": "bound-proof-1024",
+          "iterationsPerPass": 5000,
+          "passes": 5,
+          "percentilesNs": {
+            "p50": 130583,
+            "p95": 154000,
+            "p99": 168125
+          },
+          "runs": [
+            {
+              "p50": 131041,
+              "p95": 156625,
+              "p99": 178833
+            },
+            {
+              "p50": 131500,
+              "p95": 157250,
+              "p99": 180167
+            },
+            {
+              "p50": 130583,
+              "p95": 154000,
+              "p99": 168125
+            },
+            {
+              "p50": 130125,
+              "p95": 151833,
+              "p99": 165417
+            },
+            {
+              "p50": 129792,
+              "p95": 152375,
+              "p99": 166125
+            }
+          ]
+        },
+        {
+          "scenario": "bound-proof-4096",
+          "iterationsPerPass": 5000,
+          "passes": 5,
+          "percentilesNs": {
+            "p50": 155291,
+            "p95": 181166,
+            "p99": 199417
+          },
+          "runs": [
+            {
+              "p50": 154584,
+              "p95": 179625,
+              "p99": 194875
+            },
+            {
+              "p50": 155667,
+              "p95": 184292,
+              "p99": 211916
+            },
+            {
+              "p50": 155208,
+              "p95": 181166,
+              "p99": 199417
+            },
+            {
+              "p50": 155291,
+              "p95": 180334,
+              "p99": 197375
+            },
+            {
+              "p50": 155292,
+              "p95": 183333,
+              "p99": 200625
+            }
+          ]
+        }
+      ],
+      "coldFreshProcessFirstCallNs": [
+        4250,
+        4291,
+        4208,
+        4292,
+        4417,
+        4292,
+        4500,
+        4291,
+        4708,
+        4458,
+        4292,
+        4208,
+        4750,
+        4333,
+        4416,
+        4333,
+        4042,
+        4750,
+        4625,
+        4541,
+        4500
+      ]
+    },
+    "supplement-base-node": {
+      "firstCallNs": 79167,
+      "results": [
+        {
+          "scenario": "mixed-decisions",
+          "iterationsPerPass": 50000,
+          "passes": 5,
+          "percentilesNs": {
+            "p50": 83,
+            "p95": 125,
+            "p99": 125
+          },
+          "runs": [
+            {
+              "p50": 84,
+              "p95": 250,
+              "p99": 333
+            },
+            {
+              "p50": 83,
+              "p95": 84,
+              "p99": 125
+            },
+            {
+              "p50": 83,
+              "p95": 125,
+              "p99": 125
+            },
+            {
+              "p50": 83,
+              "p95": 125,
+              "p99": 125
+            },
+            {
+              "p50": 83,
+              "p95": 84,
+              "p99": 125
+            }
+          ]
+        }
+      ],
+      "coldFreshProcessFirstCallNs": [
+        82541,
+        79833,
+        71166,
+        88625,
+        78166,
+        71875,
+        71375,
+        71042,
+        76416,
+        74375,
+        88459,
+        70917,
+        70042,
+        78000,
+        70458,
+        70000,
+        84583,
+        71208,
+        86125,
+        71875,
+        70166
+      ]
+    },
+    "base-node": {
+      "runtime": "node",
+      "fingerprint": {
+        "cpu_model": "Apple M3 Ultra",
+        "cpu_count": 32,
+        "arch": "arm64",
+        "platform": "darwin",
+        "release": "25.6.0",
+        "node_version": "v22.22.3",
+        "gc_exposed": true,
+        "quick": false,
+        "timestamp": "2026-09-08T16:02:00.786Z"
+      },
+      "results": [
+        {
+          "label": "decision-only",
+          "runs": 11,
+          "warmup": 10000,
+          "iterations_per_run": 100000,
+          "median_of_medians_ns": {
+            "p50": 83,
+            "p95": 84,
+            "p99": 125
+          },
+          "sample_run_ns": {
+            "min": 0,
+            "p50": 83,
+            "p95": 84,
+            "p99": 125,
+            "max": 67375,
+            "mean": 77.97586
+          }
+        },
+        {
+          "label": "with-proof",
+          "runs": 11,
+          "warmup": 2000,
+          "iterations_per_run": 10000,
+          "median_of_medians_ns": {
+            "p50": 92000,
+            "p95": 111250,
+            "p99": 124125
+          },
+          "sample_run_ns": {
+            "min": 89958,
+            "p50": 92250,
+            "p95": 113500,
+            "p99": 188292,
+            "max": 500958,
+            "mean": 97930.4936
+          }
+        }
+      ]
+    },
+    "current-python": {
+      "runtime": "python",
+      "fingerprint": {
+        "machine": "arm64",
+        "processor": "arm",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "python_version": "3.12.14",
+        "python_implementation": "CPython",
+        "quick": false,
+        "timestamp": "2026-09-08T16:02:30.008558+00:00"
+      },
+      "results": [
+        {
+          "label": "decision-only",
+          "runs": 11,
+          "warmup": 10000,
+          "iterations_per_run": 100000,
+          "median_of_medians_ns": {
+            "p50": 667.0,
+            "p95": 833.0,
+            "p99": 958.0
+          },
+          "sample_run_ns": {
+            "min": 542.0,
+            "p50": 667.0,
+            "p95": 833.0,
+            "p99": 958.0,
+            "max": 45750.0,
+            "mean": 685.99186
+          }
+        },
+        {
+          "label": "with-proof",
+          "runs": 11,
+          "warmup": 2000,
+          "iterations_per_run": 10000,
+          "median_of_medians_ns": {
+            "p50": 73000.0,
+            "p95": 89166.0,
+            "p99": 99125.0
+          },
+          "sample_run_ns": {
+            "min": 71458.0,
+            "p50": 72583.0,
+            "p95": 87834.0,
+            "p99": 96834.0,
+            "max": 199583.0,
+            "mean": 74916.1845
+          }
+        }
+      ]
+    },
+    "mcp": {
+      "started": "2026-09-08T16:04:04.658Z",
+      "finished": "2026-09-08T16:04:25.996Z",
+      "plan": {
+        "passes": 3,
+        "samplesPerPass": 100,
+        "warmupPerProcess": 10,
+        "concurrency": 1,
+        "payloadBytes": [
+          1024,
+          4096
+        ],
+        "transport": "native MCP stdio",
+        "approvalPreparation": "outside timing; operator file written before each allowed call",
+        "endToEnd": "client.callTool through response, includes local report file fsync and governance receipt fsync",
+        "controls": "same MCP SDK, schema, exclusive report write + file fsync; governance omitted in disposable control only",
+        "acceptanceSLO": null
+      },
+      "status": "complete",
+      "summaries": [
+        {
+          "kind": "control",
+          "bytes": 1024,
+          "endToEndMs": {
+            "samples": 300,
+            "p50": 5.552958000000217,
+            "p95": 6.622042000000874,
+            "p99": 7.344583000000057,
+            "max": 11.572832999999946,
+            "mean": 5.615021099999959
+          },
+          "stagesMs": {}
+        },
+        {
+          "kind": "control",
+          "bytes": 4096,
+          "endToEndMs": {
+            "samples": 300,
+            "p50": 5.6287499999998545,
+            "p95": 6.582999999999629,
+            "p99": 6.998792000000321,
+            "max": 7.266708000002836,
+            "mean": 5.642655723333287
+          },
+          "stagesMs": {}
+        },
+        {
+          "kind": "governed",
+          "bytes": 1024,
+          "endToEndMs": {
+            "samples": 300,
+            "p50": 18.907666000000063,
+            "p95": 21.607332999999926,
+            "p99": 27.660291000000143,
+            "max": 32.52858399999968,
+            "mean": 19.048732340000043
+          },
+          "stagesMs": {
+            "evidence": {
+              "samples": 300,
+              "p50": 0.1826669999998103,
+              "p95": 0.26191700000026685,
+              "p99": 0.4222909999999729,
+              "max": 0.5036669999999503,
+              "mean": 0.1856101400000021
+            },
+            "evaluate": {
+              "samples": 300,
+              "p50": 0.005,
+              "p95": 0.008,
+              "p99": 0.011,
+              "max": 0.012,
+              "mean": 0.005356666666666658
+            },
+            "prepare_and_sign": {
+              "samples": 300,
+              "p50": 0.4396249999999736,
+              "p95": 0.5343330000001224,
+              "p99": 0.5997090000000662,
+              "max": 0.6822909999999356,
+              "mean": 0.42776213000000013
+            },
+            "verify": {
+              "samples": 300,
+              "p50": 0.4014159999999265,
+              "p95": 0.4829170000000431,
+              "p99": 0.5357499999997799,
+              "max": 0.6394999999999982,
+              "mean": 0.3960458433333309
+            },
+            "retain_authorization": {
+              "samples": 300,
+              "p50": 5.379500000000007,
+              "p95": 6.249125000000049,
+              "p99": 9.006665999999996,
+              "max": 17.570832999999993,
+              "mean": 5.453385419999996
+            },
+            "revalidate_evidence": {
+              "samples": 300,
+              "p50": 0.15475000000014916,
+              "p95": 0.21887500000002547,
+              "p99": 0.4497920000000022,
+              "max": 0.5780419999998685,
+              "mean": 0.15947137333334127
+            },
+            "precondition": {
+              "samples": 300,
+              "p50": 0.20479199999999764,
+              "p95": 0.29624999999987267,
+              "p99": 0.5562919999999849,
+              "max": 0.701958999999988,
+              "mean": 0.21057552999998905
+            },
+            "invoke": {
+              "samples": 300,
+              "p50": 5.206916999999976,
+              "p95": 5.741875000000164,
+              "p99": 5.960708000000068,
+              "max": 6.4947910000000775,
+              "mean": 5.157687073333327
+            },
+            "retain_receipt": {
+              "samples": 300,
+              "p50": 5.4680830000000356,
+              "p95": 6.658791000000065,
+              "p99": 15.001250000000027,
+              "max": 16.352041999999983,
+              "mean": 5.769725853333336
+            }
+          }
+        },
+        {
+          "kind": "governed",
+          "bytes": 4096,
+          "endToEndMs": {
+            "samples": 300,
+            "p50": 19.979457999999795,
+            "p95": 38.61725000000297,
+            "p99": 56.45850000000064,
+            "max": 63.51695800000016,
+            "mean": 21.693225943333307
+          },
+          "stagesMs": {
+            "evidence": {
+              "samples": 300,
+              "p50": 0.1892920000000231,
+              "p95": 0.46775000000002365,
+              "p99": 0.65887500000008,
+              "max": 1.0527910000000702,
+              "mean": 0.22103191999999788
+            },
+            "evaluate": {
+              "samples": 300,
+              "p50": 0.006,
+              "p95": 0.009,
+              "p99": 0.013,
+              "max": 0.014,
+              "mean": 0.005873333333333316
+            },
+            "prepare_and_sign": {
+              "samples": 300,
+              "p50": 0.5682500000001673,
+              "p95": 0.7301249999998545,
+              "p99": 1.1337089999998116,
+              "max": 1.2450000000000145,
+              "mean": 0.577195986666661
+            },
+            "verify": {
+              "samples": 300,
+              "p50": 0.4989999999997963,
+              "p95": 0.6317500000000109,
+              "p99": 0.9420829999999114,
+              "max": 1.1993750000001455,
+              "mean": 0.5141323300000005
+            },
+            "retain_authorization": {
+              "samples": 300,
+              "p50": 5.636124999999993,
+              "p95": 15.586166999999932,
+              "p99": 21.820834000000104,
+              "max": 34.51137499999959,
+              "mean": 6.538194876666654
+            },
+            "revalidate_evidence": {
+              "samples": 300,
+              "p50": 0.1592080000000351,
+              "p95": 0.35141699999985576,
+              "p99": 0.57549999999992,
+              "max": 0.7974170000002232,
+              "mean": 0.17939731666666792
+            },
+            "precondition": {
+              "samples": 300,
+              "p50": 0.209041999999954,
+              "p95": 0.34791599999994105,
+              "p99": 0.5319159999999101,
+              "max": 0.5947909999999865,
+              "mean": 0.22504958333331956
+            },
+            "invoke": {
+              "samples": 300,
+              "p50": 5.419541999999865,
+              "p95": 6.160249999999905,
+              "p99": 7.149834000000283,
+              "max": 8.196791000000303,
+              "mean": 5.376787223333336
+            },
+            "retain_receipt": {
+              "samples": 300,
+              "p50": 5.737582999999631,
+              "p95": 15.500584000000117,
+              "p99": 20.43012499999986,
+              "max": 23.878749999999854,
+              "mean": 6.546019886666667
+            }
+          }
+        },
+        {
+          "kind": "missing-evidence",
+          "bytes": 1024,
+          "endToEndMs": {
+            "samples": 100,
+            "p50": 0.349833000000217,
+            "p95": 0.49012500000026193,
+            "p99": 0.6087919999990845,
+            "max": 0.6087919999990845,
+            "mean": 0.36605080999972417
+          },
+          "stagesMs": {
+            "evidence": {
+              "samples": 100,
+              "p50": 0.07237499999999386,
+              "p95": 0.10466699999999207,
+              "p99": 0.25362499999999955,
+              "max": 0.25362499999999955,
+              "mean": 0.07853462000000036
+            }
+          }
+        }
+      ],
+      "perPassSummaries": [
+        {
+          "pass": 0,
+          "bytes": 1024,
+          "kind": "control",
+          "startupMs": 173.066917,
+          "summary": {
+            "samples": 100,
+            "p50": 5.483749999999986,
+            "p95": 6.540708999999993,
+            "p99": 11.572832999999946,
+            "max": 11.572832999999946,
+            "mean": 5.517334579999993
+          }
+        },
+        {
+          "pass": 0,
+          "bytes": 1024,
+          "kind": "governed",
+          "startupMs": 180.75316699999985,
+          "summary": {
+            "samples": 100,
+            "p50": 19.215291999999863,
+            "p95": 23.34329200000002,
+            "p99": 30.209666000000198,
+            "max": 30.209666000000198,
+            "mean": 19.482562050000027
+          }
+        },
+        {
+          "pass": 0,
+          "bytes": 4096,
+          "kind": "control",
+          "startupMs": 164.03004099999998,
+          "summary": {
+            "samples": 100,
+            "p50": 5.643540999999914,
+            "p95": 6.546207999999751,
+            "p99": 6.946542000000591,
+            "max": 6.946542000000591,
+            "mean": 5.653846719999997
+          }
+        },
+        {
+          "pass": 0,
+          "bytes": 4096,
+          "kind": "governed",
+          "startupMs": 180.97437499999978,
+          "summary": {
+            "samples": 100,
+            "p50": 19.84704099999999,
+            "p95": 21.83929100000023,
+            "p99": 22.816459000000577,
+            "max": 22.816459000000577,
+            "mean": 19.759693270000017
+          }
+        },
+        {
+          "pass": 1,
+          "bytes": 1024,
+          "kind": "governed",
+          "startupMs": 163.81683299999986,
+          "summary": {
+            "samples": 100,
+            "p50": 18.946500000000015,
+            "p95": 21.015542000001005,
+            "p99": 26.95983299999898,
+            "max": 26.95983299999898,
+            "mean": 18.892965829999977
+          }
+        },
+        {
+          "pass": 1,
+          "bytes": 1024,
+          "kind": "control",
+          "startupMs": 167.916792,
+          "summary": {
+            "samples": 100,
+            "p50": 5.518082999999024,
+            "p95": 6.678208000001177,
+            "p99": 7.036667000000307,
+            "max": 7.036667000000307,
+            "mean": 5.570682519999901
+          }
+        },
+        {
+          "pass": 1,
+          "bytes": 4096,
+          "kind": "governed",
+          "startupMs": 179.79366599999958,
+          "summary": {
+            "samples": 100,
+            "p50": 19.636583999999857,
+            "p95": 21.607374999999593,
+            "p99": 25.99029200000041,
+            "max": 25.99029200000041,
+            "mean": 19.633234589999994
+          }
+        },
+        {
+          "pass": 1,
+          "bytes": 4096,
+          "kind": "control",
+          "startupMs": 163.55754100000013,
+          "summary": {
+            "samples": 100,
+            "p50": 5.572041999999783,
+            "p95": 6.386207999999897,
+            "p99": 6.998792000000321,
+            "max": 6.998792000000321,
+            "mean": 5.571258799999851
+          }
+        },
+        {
+          "pass": 2,
+          "bytes": 1024,
+          "kind": "control",
+          "startupMs": 177.8677090000001,
+          "summary": {
+            "samples": 100,
+            "p50": 5.746375000000626,
+            "p95": 6.646791000001031,
+            "p99": 8.54345899999862,
+            "max": 8.54345899999862,
+            "mean": 5.757046199999986
+          }
+        },
+        {
+          "pass": 2,
+          "bytes": 1024,
+          "kind": "governed",
+          "startupMs": 180.42799999999988,
+          "summary": {
+            "samples": 100,
+            "p50": 18.72833399999945,
+            "p95": 21.38691700000345,
+            "p99": 32.52858399999968,
+            "max": 32.52858399999968,
+            "mean": 18.77066914000012
+          }
+        },
+        {
+          "pass": 2,
+          "bytes": 4096,
+          "kind": "control",
+          "startupMs": 164.95208300000013,
+          "summary": {
+            "samples": 100,
+            "p50": 5.746125000001484,
+            "p95": 6.681082999999489,
+            "p99": 7.266708000002836,
+            "max": 7.266708000002836,
+            "mean": 5.702861650000013
+          }
+        },
+        {
+          "pass": 2,
+          "bytes": 4096,
+          "kind": "governed",
+          "startupMs": 183.390707999999,
+          "summary": {
+            "samples": 100,
+            "p50": 20.950125000003027,
+            "p95": 50.04595799999879,
+            "p99": 63.51695800000016,
+            "max": 63.51695800000016,
+            "mean": 25.68674996999991
+          }
+        }
+      ]
+    },
+    "supplement-current-node": {
+      "firstCallNs": 101583,
+      "results": [
+        {
+          "scenario": "mixed-decisions",
+          "iterationsPerPass": 50000,
+          "passes": 5,
+          "percentilesNs": {
+            "p50": 83,
+            "p95": 84,
+            "p99": 125
+          },
+          "runs": [
+            {
+              "p50": 84,
+              "p95": 250,
+              "p99": 292
+            },
+            {
+              "p50": 83,
+              "p95": 84,
+              "p99": 125
+            },
+            {
+              "p50": 83,
+              "p95": 125,
+              "p99": 125
+            },
+            {
+              "p50": 83,
+              "p95": 84,
+              "p99": 125
+            },
+            {
+              "p50": 83,
+              "p95": 84,
+              "p99": 84
+            }
+          ]
+        },
+        {
+          "scenario": "bound-proof-1024",
+          "iterationsPerPass": 5000,
+          "passes": 5,
+          "percentilesNs": {
+            "p50": 96834,
+            "p95": 115292,
+            "p99": 273166
+          },
+          "runs": [
+            {
+              "p50": 98458,
+              "p95": 121000,
+              "p99": 279333
+            },
+            {
+              "p50": 96709,
+              "p95": 115292,
+              "p99": 273166
+            },
+            {
+              "p50": 96667,
+              "p95": 115084,
+              "p99": 274875
+            },
+            {
+              "p50": 96834,
+              "p95": 115292,
+              "p99": 135541
+            },
+            {
+              "p50": 97041,
+              "p95": 116042,
+              "p99": 130875
+            }
+          ]
+        },
+        {
+          "scenario": "bound-proof-4096",
+          "iterationsPerPass": 5000,
+          "passes": 5,
+          "percentilesNs": {
+            "p50": 139000,
+            "p95": 164667,
+            "p99": 341000
+          },
+          "runs": [
+            {
+              "p50": 139708,
+              "p95": 169041,
+              "p99": 357583
+            },
+            {
+              "p50": 139209,
+              "p95": 165250,
+              "p99": 341459
+            },
+            {
+              "p50": 139000,
+              "p95": 164667,
+              "p99": 340792
+            },
+            {
+              "p50": 138666,
+              "p95": 162583,
+              "p99": 341000
+            },
+            {
+              "p50": 138916,
+              "p95": 163625,
+              "p99": 340792
+            }
+          ]
+        }
+      ],
+      "coldFreshProcessFirstCallNs": [
+        114000,
+        97958,
+        98458,
+        104333,
+        99916,
+        109625,
+        115292,
+        100375,
+        102417,
+        117250,
+        102458,
+        109958,
+        103250,
+        101833,
+        117000,
+        105958,
+        99209,
+        102375,
+        105500,
+        213208,
+        104250
+      ]
+    }
+  },
+  "limits": [
+    "One Apple M3 Ultra development machine; no isolated-host or thermal-control claim.",
+    "No benchmark workloads run concurrently with one another; normal desktop activity was not excluded.",
+    "MCP concurrency one, three short passes; no sustained or deployment acceptance claim.",
+    "Operator approval preparation and MCP startup excluded from per-call timings.",
+    "Cold first call excludes module import and process startup.",
+    "Historical references are observations, not formal latency SLOs."
+  ],
+  "rawSamples": "Per-call samples retained in the local vella-latency-evidence.json handoff artifact; this file contains aggregated measurements."
+}

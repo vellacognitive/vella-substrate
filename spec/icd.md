@@ -1,10 +1,12 @@
 # VELLA Interface Control Document
 
 **Version:** v1.3
-**Status:** Authoritative
+**Status:** Published v1 contract with unreleased v2 development amendments
 **Issuer:** Vella Cognitive, LLC
 **Contact:** agent@vellacognitive.com
 **Repository:** github.com/vellacognitive/vella-substrate
+
+**Development amendment:** current source emits the owner-selected v2 proof when high-level signing is enabled. The [v2 proof contract](proof-v2.md) governs that format; [migration notes](../docs/remediation/migration.md) describe its breaking release requirements and retained v1 limits. No new version has been published.
 
 ---
 
@@ -28,9 +30,9 @@ This document defines the canonical interface between the VELLA embedded SDK and
 - Calling-application mission logic or action execution
 - Policy authoring or scenario configuration
 
-**SDK vs. commercial runtime.** VELLA exists in two deployment forms. The embedded SDK in this repository runs in-process, as a library imported into a Node.js or Python application. The commercial runtime (not published here) runs as a standalone service with HTTP and gRPC surfaces, persistence, and multi-tenant operation. Both forms produce and accept the same proof bundle format, verifiable with the same tools in `verify/`. The interface defined in this ICD applies to the SDK. See `DEPLOYMENT.md` for guidance on when each form is appropriate.
+**SDK vs. commercial runtime.** VELLA exists in two deployment forms. The embedded SDK in this repository runs in-process, as a library imported into a Node.js or Python application. The commercial runtime (not published here) runs as a standalone service with HTTP and gRPC surfaces, persistence, and multi-tenant operation. Compatibility of a commercial producer with the new v2 format must be established separately; this repository does not test that implementation. The interface defined in this ICD applies to the SDK. See `DEPLOYMENT.md` for guidance on when each form is appropriate.
 
-**v1 Policy Note.** In v1, the SDK compiles its decision policy at module initialization. The default policy (`min-v1`) supports three intents: `EXECUTE_CHANGE`, `ESCALATE_PRIVILEGE`, and `DATA_EXPORT`. Python applications deploy custom policy sets through the public `from vella import create_evaluator` API with an application-supplied policy object. The returned evaluator accepts the mapping-based request fields defined in §4.1 and returns `decision` and `reason_code`; unexpected evaluator failures return `DENIED` with `E_EVALUATOR_INTERNAL`. A runtime policy-reload mechanism is planned for a future version.
+**Policy instances.** The default governor compiles `min-v1` at module initialization. It supports `EXECUTE_CHANGE`, `ESCALATE_PRIVILEGE`, and `DATA_EXPORT`. The unreleased `createGovernor` (Node) and `create_governor` (Python) APIs snapshot a validated custom policy and provide evaluation with optional signing. `createEvaluator` / `create_evaluator` remain evaluation-only. A new instance activates a new policy; no mutable global reload is introduced.
 
 ---
 
@@ -71,7 +73,7 @@ A `DENIED` outcome is a mandatory halt. The calling application must not execute
 **Enforcement obligation — `ALLOWED`:**
 An `ALLOWED` outcome is an authorization finding, not a command. VELLA authorizes; the calling application decides whether to proceed. The calling application owns execution.
 
-This boundary is the foundation of VELLA's audit model: every action taken under VELLA's authority is traceable to a specific decision, and every denial is enforceable by inspection of the proof record.
+Traceability requires the application to bind the effective action and retain the decision. A proof record cannot enforce a denial by itself; the controlled execution boundary must prevent dispatch.
 
 ---
 
@@ -108,7 +110,12 @@ Parameters supplied to the SDK's `govern(...)` call.
 | Evidence mask | `evidenceMask` / `evidence_mask` | Yes | Bitmask asserting which evidence types the application has satisfied. See §4.4 for bit definitions. |
 | Authority scope | `authorityScope` / `authority_scope` | No | Named scope in the compiled policy; defaults to the policy's declared `defaultScope` |
 | Policy version | `policyVersion` / `policy_version` | No | Must match the compiled policy's version string; if omitted, the compiled version is used |
-| Proof signing | `proof.signingKey` / `proof_signing_key` | No | PEM-encoded private key. If provided, a signed proof bundle is included in the result. |
+| Proof signing | `proof.signingKey` / `proof_signing_key` | No | P-256 PEM private key. Signing failure yields a null bundle and diagnostic. |
+| Action context | `action` / `action` | No | JSON object describing the effective action; default null |
+| Evidence context | `evidence` / `evidence` | No | JSON object of application-supplied references; default null |
+| Request identity | `requestId` / `request_id` | No | Application correlation ID; generated when absent |
+| Boundary | `boundary` / `boundary` | No | `evaluation` (default), `client-dispatch`, or `server-handler` |
+| Build identity | `buildHash` / `build_hash` | No | Available build identity; null when unavailable |
 
 **Integrity requirement.** The calling application must not modify the intent parameters after the `govern(...)` call returns. VELLA's proof chain is anchored to the envelope constructed from the parameters as submitted.
 
@@ -120,18 +127,17 @@ Returned by the SDK synchronously.
 |---|---|---|---|
 | Decision | `decision` / `decision` | Always | `ALLOWED` or `DENIED` — the enforcement outcome |
 | Reason code | `reasonCode` / `reason_code` | Always | Machine-readable reason for the decision (see §5.2) |
-| Latency | `latencyUs` / `latency_us` | Always | Microsecond latency of the `govern(...)` call |
+| Latency | `latencyUs` / `latency_us` | Always | Microsecond elapsed time through evaluation, before optional signing |
 | Proof bundle | `proofBundle` / `proof_bundle` | When signing key provided | Signed proof record (see §4.3) |
-| Proof error | `proofError` / `proof_error` | When signing failed | Diagnostic string; `proofBundle` will be absent |
+| Proof error | `proofError` / `proof_error` | When signing failed | Diagnostic string; `proofBundle` / `proof_bundle` is `null` |
 
-Only `decision` has enforcement weight. `reasonCode` is informational and must not be used as the basis for appeal or override.
+A denial must halt execution. An allow only satisfies the policy prerequisite; required proof, retention and other operational checks must also succeed. `reasonCode` does not grant an override.
 
 ### 4.3 Proof Bundle
 
-Returned as part of the decision result when a signing key is provided. Defined in `spec/schemas/proof.json`.
+Current development SDKs return the [v2 exact-byte authorization proof](proof-v2.md), defined by `spec/schemas/proof-v2.json`, when signing succeeds. Its typed payload authenticates the complete nested record, loaded policy identity and supplied action context. IDs, timestamps and signatures vary between calls.
 
-The proof bundle is the tamper-evident record of the decision. It includes the `envelope_id`, `envelope_hash`, cryptographic signature, and `sha256_bundle` — the authoritative hash of the complete bundle. All fields are deterministic functions of the intent parameters and the signing key.
-
+Retained v1 records use `spec/schemas/proof.json` and their original verification rules. Their visible fields are not all authenticated; see [legacy limitations](../docs/remediation/migration.md).
 **Persistence.** The SDK does not persist proof bundles. The calling application is responsible for writing bundles to whatever storage its audit regime requires (file, database, object store, append-only log). Applications operating in regulated or defense environments must persist the complete proof bundle at decision time.
 
 **Retention.** The calling application must retain proof bundles for the duration required by its applicable records retention policy.
@@ -147,7 +153,7 @@ The `evidenceMask` parameter is an unsigned integer bitmask asserting which clas
 | 2 | 4 | `FRESHNESS` — evidence is within its freshness window |
 | 3 | 8 | `ATTESTATION` — platform or artifact attestation present |
 
-Custom policies may define additional bits, subject to integer width.
+Custom policies may define additional bits through bit 31. The numeric range is 0 through 4294967295. SDK decimal strings and symbolic convenience forms are validated against the loaded policy; invalid values return `E_EVIDENCE_INVALID` when evidence validation is reached. See [input validation](input-validation.md) for the exact accepted domain and policy compilation rules. The JSON request schema describes the normalized numeric form.
 
 The calling application is responsible for establishing the truth of each bit it asserts. VELLA evaluates the assertion; it does not independently verify the underlying evidence.
 
@@ -171,10 +177,11 @@ The SDK is a synchronous function call. It does not throw exceptions across the 
 | Unknown intent under a scope that disallows unknowns | Returns `DENIED` with `reasonCode` = `DENY_FAST` |
 | Policy version mismatch | Returns `DENIED` with `reasonCode` = `E_POLICY_VERSION_MISMATCH` |
 | Insufficient evidence mask | Returns `DENIED` with `reasonCode` = `E_EVIDENCE_MISSING` |
+| Invalid evidence value | Returns `DENIED` with `reasonCode` = `E_EVIDENCE_INVALID` |
 | Unexpected evaluator exception | Returns `DENIED` with `reasonCode` = `E_EVALUATOR_INTERNAL` |
-| Signing failure (signing key provided but invalid) | Returns the decision unchanged, with `proofBundle` absent and `proofError` populated |
+| Signing failure (signing key provided but invalid) | Returns the decision unchanged, with `proofBundle` set to `null` and `proofError` populated |
 
-**Fail-closed guarantee.** In every error path, the outcome is `DENIED`. There is no implicit `ALLOWED` route. A calling application that receives any unexpected result (missing fields, thrown exceptions from the SDK boundary) must treat the condition as `DENIED` and halt the proposed action.
+**Fail-closed evaluation.** Evaluator errors produce `DENIED`. Optional signing failures leave the policy decision unchanged. A calling application must halt on a denial, an unexpected result, or a failure of any mandatory proof or execution prerequisite. Policy permission and operational eligibility to execute are separate conditions. Invalid custom policy configuration raises at evaluator creation and must not be activated.
 
 ### 5.2 Reason Codes
 
@@ -185,6 +192,7 @@ The SDK is a synchronous function call. It does not throw exceptions across the 
 | `E_INTENT_REQUIRED` | `DENIED` | Request did not include a usable intent identifier. |
 | `E_POLICY_VERSION_MISMATCH` | `DENIED` | Requested policy version does not match the compiled policy version. |
 | `E_EVIDENCE_MISSING` | `DENIED` | Evidence mask does not satisfy the intent's required-evidence mask. |
+| `E_EVIDENCE_INVALID` | `DENIED` | Evidence is outside the supported unsigned integer or known-symbol domain. |
 | `E_EVALUATOR_INTERNAL` | `DENIED` | Internal evaluator error path. Treat as infrastructure fault. |
 
 ---
@@ -199,7 +207,7 @@ The SDK is a synchronous function call. It does not throw exceptions across the 
 
 ### 6.2 Performance Reference
 
-Observed latency in benchmark runs of the embedded SDK:
+Historical benchmark figures from the published SDK, not acceptance measurements for v2 or MCP:
 
 | Measurement | Observed Latency |
 |---|---|
@@ -213,7 +221,7 @@ Figures reflect in-process SDK invocation. They do not apply to the commercial r
 
 Do not implement retry-on-`DENIED` logic. A `DENIED` outcome is a policy decision, not a transient error. Retrying with identical inputs produces an identical outcome. Retry-on-`DENIED` indicates a misunderstanding of the authorization contract.
 
-`govern(...)` is idempotent with respect to policy evaluation: identical inputs produce identical `decision` and `reasonCode`. `proofBundle` fields that depend on time or UUID generation (`envelope_id`, `timestamp`, `exported_at`) will vary between calls with otherwise identical inputs.
+`govern(...)` is idempotent with respect to policy evaluation: identical inputs produce identical `decision` and `reasonCode`. `proofBundle` fields that depend on time or UUID generation (`envelope_id`, `request_id`, `timestamp`; legacy `exported_at`) will vary between calls with otherwise identical inputs.
 
 ---
 
@@ -221,19 +229,19 @@ Do not implement retry-on-`DENIED` logic. A `DENIED` outcome is a policy decisio
 
 The `verify/verify.js`, `verify/verify.py`, and `verify/verify.sh` scripts are normative verification procedures for proof bundle authenticity. They are not test artifacts — they are specified interface commitments. Integrators in regulated and defense environments must run one of these procedures as part of their audit workflow.
 
-**Node.js verifier** (requires only Node.js built-in crypto):
+**Node.js verifier** (built-in crypto; keep the repository modules available):
 
 ```
 node verify/verify.js <bundle.json> <public-key.pem>
 ```
 
-**Python verifier** (requires `cryptography`):
+**Python verifier** (v2 requires the SDK modules, `cryptography`, and `rfc8785`):
 
 ```
 python verify/verify.py <bundle.json> <public-key.pem>
 ```
 
-**Shell verifier** (requires `jq` and `openssl`):
+**Shell verifier** (requires `jq`, `openssl`, Base64/hex/hash utilities; v2 additionally uses the Python structural helper and its dependencies):
 
 ```
 verify/verify.sh <bundle.json> <public-key.pem>
@@ -244,17 +252,13 @@ verify/verify.sh <bundle.json> <public-key.pem>
 1. Obtain the proof bundle JSON for the decision under audit from the calling application's proof store.
 2. Obtain the public key corresponding to the signing key that produced the bundle. (For bundles signed by an integrator, the integrator manages this key. For bundles signed with the repository's example keypair, see `examples/example-signing.pub`.)
 3. Run one of the three verifiers with the proof bundle and public key as arguments.
-4. The verifier checks:
-   - **Envelope hash** — SHA-256 of canonical envelope JSON matches `envelope_hash`
-   - **Signature** — ECDSA-P256 signature over `envelope_hash` is valid against the public key
-   - **Bundle hash** — SHA-256 of the complete signed bundle matches `sha256_bundle`
-5. A passing verification confirms the proof bundle was issued by a signer holding the private key and has not been modified.
-
+4. V2 checks the declared format/algorithm, key identity, encodings, typed-message hash, signature over exact bytes, and authenticated record structure and action digest. V1 uses separate historical hash/signature rules and emits limitation warnings.
+5. Successful verification identifies the format and its claim. V2 authenticates the interpreted record under the supplied key. Neither format proves evidence truth, authority of the signer or external execution. V1 success must not be described as protection of all visible or nested fields.
 **Verification failure** means the proof bundle cannot be relied upon. Do not treat an unverified proof bundle as an authoritative audit record.
 
 ### Cross-form compatibility
 
-Proof bundles produced by the SDK and proof bundles produced by the commercial runtime use the same format and verify with the same procedures. A bundle signed by either form verifies with the verifiers in this repository.
+New v2 proofs from both SDKs are tested across the repository verifier entry points. The shell v2 entry point shares Python structural validation and uses OpenSSL for signature checking. Commercial-runtime compatibility is outside this implementation test matrix.
 
 ---
 
@@ -298,6 +302,7 @@ The following are non-breaking and may occur within v1:
 | Schema File | `$id` | Description |
 |---|---|---|
 | `spec/schemas/icd.json` | `vella://contracts/v1/icd.json.schema.json` | Canonical interface contract |
+| `spec/schemas/proof-v2.json` | `vella://contracts/v2/proof.json.schema.json` | Unreleased exact-byte proof structure and decoded record |
 | `spec/schemas/proof.json` | `vella://contracts/v1/proof.json.schema.json` | Proof bundle structure |
 | `spec/schemas/export.json` | `vella://contracts/v1/export.json.schema.json` | Export evidence record |
 | `spec/threat-model.md` | — | Threat model and protection scope |
@@ -328,7 +333,7 @@ Examples are non-normative. In any conflict between an example and this document
 
 ## 11. Normative Precedence
 
-In descending order of authority:
+For v2 proof interpretation, `spec/proof-v2.md` and its schema govern. Published v1 interface commitments and legacy interpretation remain separate. For the remaining interface, in descending order of authority:
 
 1. This document (ICD.md, v1)
 2. `spec/schemas/icd.json` (machine-readable schema)

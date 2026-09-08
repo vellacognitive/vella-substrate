@@ -1,70 +1,12 @@
 """VELLA SDK — MIT License — Copyright (c) 2026 Vella Cognitive, LLC"""
-
-from __future__ import annotations
-
-import time
-
 from .evaluator import create_evaluator
+from .governor import Governor, create_governor
 from .policy import DEFAULT_POLICY
-from .proof import build_envelope, sign_bundle
+from .proof_v2 import digest as action_digest
+from .proof_v2 import verify_v2 as verify_proof_v2
 
 __version__ = "1.0.3"
+_GOVERNOR = create_governor()
+govern = _GOVERNOR.govern
 
-_EVALUATOR = create_evaluator(DEFAULT_POLICY)
-
-
-def govern(
-    intent: str | None,
-    evidence_mask: object,
-    authority_scope: str | None = None,
-    policy_version: str | None = None,
-    proof_signing_key: str | bytes | None = None,
-) -> dict[str, object]:
-    start = time.monotonic_ns()
-
-    try:
-        result = _EVALUATOR.evaluate(
-            {
-                "intent_id": intent,
-                "evidence_mask": evidence_mask,
-                "authority_scope_id": authority_scope,
-                "policy_version": policy_version,
-            }
-        )
-        latency_us = (time.monotonic_ns() - start) // 1000
-        output: dict[str, object] = {
-            "decision": result["decision"],
-            "reason_code": result["reason_code"],
-            "latency_us": latency_us,
-        }
-
-        if proof_signing_key is not None:
-            try:
-                envelope = build_envelope(
-                    {
-                        "intent_id": intent,
-                        "evidence_mask": evidence_mask,
-                        "authority_scope_id": authority_scope,
-                        "policy_version": policy_version,
-                    },
-                    result,
-                    {
-                        "policyVersion": _EVALUATOR.policy_version,
-                        "authorityScope": authority_scope,
-                    },
-                )
-                output["proof_bundle"] = sign_bundle(envelope, proof_signing_key)
-            except Exception as proof_error:  # noqa: BLE001
-                output["proof_bundle"] = None
-                output["proof_error"] = str(proof_error)
-
-        return output
-    except Exception:  # noqa: BLE001
-        return {
-            "decision": "DENIED",
-            "reason_code": "E_EVALUATOR_INTERNAL",
-            "latency_us": 0,
-        }
-
-
-__all__ = ["DEFAULT_POLICY", "__version__", "create_evaluator", "govern"]
+__all__ = ["DEFAULT_POLICY", "Governor", "__version__", "action_digest", "create_evaluator", "create_governor", "govern", "verify_proof_v2"]

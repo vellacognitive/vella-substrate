@@ -26,6 +26,14 @@ if [ ! -f "$PUBLIC_KEY" ]; then
   exit 1
 fi
 
+if jq -e '.kind == "vella_proof_bundle_v2" or has("payload_type")' "$BUNDLE_FILE" >/dev/null; then
+  exec bash "$(dirname "$0")/verify-v2.sh" "$BUNDLE_FILE" "$PUBLIC_KEY"
+fi
+if ! jq -e '.kind == null or .kind == "vella_proof_bundle_v1"' "$BUNDLE_FILE" >/dev/null; then
+  echo "FAILED: unsupported proof format"
+  exit 1
+fi
+
 ENVELOPE_HASH=$(jq -r '.envelope_hash // empty' "$BUNDLE_FILE")
 SIGNATURE_B64=$(jq -r '.signature // empty' "$BUNDLE_FILE")
 SHA256_BUNDLE=$(jq -r '.sha256_bundle // empty' "$BUNDLE_FILE")
@@ -94,6 +102,7 @@ if [ -n "$BUNDLE_KEY_ID" ]; then
 fi
 
 if [ "$EXPECTED_ENVELOPE_HASH" = "$ENVELOPE_HASH" ] && [ "$SIG_OK" = true ] && [ "$EXPECTED_BUNDLE_HASH" = "$SHA256_BUNDLE" ] && [ "$KEY_ID_OK" = true ]; then
+  echo "WARNING: Legacy v1 authenticates its historical subset, not all metadata or nested Node fields; it does not establish exact action binding or execution." >&2
   echo "VERIFIED"
   exit 0
 fi

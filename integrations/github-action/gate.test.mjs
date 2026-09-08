@@ -181,7 +181,7 @@ test("preserves regular-file overwrite behavior and enforces private permissions
   const result = runGate(fixture);
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(readFileSync(proofPath, "utf8"), /"kind": "vella_proof_bundle_v1"/);
+  assert.match(readFileSync(proofPath, "utf8"), /"kind": "vella_proof_bundle_v2"/);
   assert.equal(lstatSync(proofPath).mode & 0o777, 0o600);
 });
 

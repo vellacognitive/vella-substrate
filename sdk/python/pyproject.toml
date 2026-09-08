@@ -13,7 +13,8 @@ authors = [
   { name = "Vella Cognitive, LLC", email = "agent@vellacognitive.com" }
 ]
 dependencies = [
-  "cryptography>=41.0"
+  "cryptography>=41.0",
+  "rfc8785==0.1.4"
 ]
 keywords = [
   "vella",
@@ -34,7 +35,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-dev = ["ruff", "mypy", "pytest"]
+dev = ["ruff", "mypy", "pytest", "jsonschema"]
 
 [project.urls]
 Homepage = "https://vellacognitive.com/research/an-inspectable-substrate-for-ai-governance"
@@ -46,3 +47,6 @@ include = ["vella*"]
 
 [tool.mypy]
 strict = true
+
+[tool.setuptools.package-data]
+vella = ["py.typed"]

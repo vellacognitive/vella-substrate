@@ -27,11 +27,23 @@ const DECISION_DENIED_EVIDENCE = Object.freeze({
   reason_code: "E_EVIDENCE_MISSING",
 });
 
+const DECISION_DENIED_INVALID_EVIDENCE = Object.freeze({
+  decision: "DENIED", reason_code: "E_EVIDENCE_INVALID",
+});
+const DECISION_DENIED_INTERNAL = Object.freeze({
+  decision: "DENIED", reason_code: "E_EVALUATOR_INTERNAL",
+});
+const MAX_MASK = 0xffffffff;
+
+class InvalidEvidenceError extends TypeError {}
+
+function isMask(value) {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= MAX_MASK;
+}
+
 function normalizeId(value) {
-  if (value == null) {
-    return "";
-  }
-  return String(value).trim().toUpperCase();
+  if (typeof value !== "string") return "";
+  return value.trim().toUpperCase();
 }
 
 function parseUnsignedIntStrict(text) {
@@ -46,72 +58,113 @@ function parseUnsignedIntStrict(text) {
       return -1;
     }
     value = (value * 10) + (code - 48);
-    if (!Number.isFinite(value)) {
+    if (value > MAX_MASK) {
       return -1;
     }
   }
 
-  return value >>> 0;
+  return value;
 }
 
 export function toEvidenceMask(value, evidenceBits) {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return value >>> 0;
+  if (value == null) {
+    return 0;
+  }
+  if (isMask(value)) {
+    return value;
   }
 
   if (typeof value === "string") {
     const trimmed = value.trim();
     const numeric = parseUnsignedIntStrict(trimmed);
     if (numeric >= 0) {
-      return numeric >>> 0;
+      return numeric;
     }
     const bit = evidenceBits[normalizeId(trimmed)];
-    return bit ? (bit >>> 0) : 0;
+    if (Object.hasOwn(evidenceBits, normalizeId(trimmed)) && isMask(bit)) {
+      return bit;
+    }
+    throw new InvalidEvidenceError("evidence must be an unsigned 32-bit integer or known symbol");
   }
 
   if (Array.isArray(value)) {
     let mask = 0;
     for (let i = 0; i < value.length; i += 1) {
-      const bit = evidenceBits[normalizeId(value[i])];
-      if (bit) {
-        mask |= bit;
+      const name = typeof value[i] === "string" ? normalizeId(value[i]) : "";
+      const bit = evidenceBits[name];
+      if (!name || !Object.hasOwn(evidenceBits, name) || !isMask(bit)) {
+        throw new InvalidEvidenceError("every evidence list item must be a known symbol");
       }
+      mask |= bit;
     }
     return mask >>> 0;
   }
 
-  return 0;
+  throw new InvalidEvidenceError("unsupported evidence value");
 }
 
 export function compilePolicy(policyInput) {
-  const policy = policyInput || DEFAULT_POLICY;
-  const evidenceBits = Object.assign(Object.create(null), policy.evidenceBits || {});
-  const scopeEntries = Object.entries(policy.scopes || {});
+  function object(value, label) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      throw new TypeError(`${label} must be an object`);
+    }
+    return value;
+  }
+  function name(value, label) {
+    if (typeof value !== "string" || !value.trim() || value !== value.trim()) {
+      throw new TypeError(`${label} must be a nonempty string without surrounding whitespace`);
+    }
+    return value;
+  }
+  function mask(value, label) {
+    if (!isMask(value)) throw new TypeError(`${label} must be an unsigned 32-bit integer`);
+    return value;
+  }
+  const policy = object(policyInput ?? DEFAULT_POLICY, "policy");
+  const policyVersion = name(policy.policyVersion, "policyVersion");
+  const defaultScope = name(policy.defaultScope, "defaultScope");
+  const evidenceBits = Object.create(null);
+  const usedBits = new Set();
+  for (const [key, value] of Object.entries(object(policy.evidenceBits, "evidenceBits"))) {
+    const id = normalizeId(name(key, "evidence name"));
+    const bit = mask(value, `evidenceBits.${key}`);
+    if (/^[0-9]+$/.test(id) || Object.hasOwn(evidenceBits, id)) {
+      throw new TypeError(`ambiguous evidence name: ${key}`);
+    }
+    if (bit === 0 || (bit & (bit - 1)) !== 0 || usedBits.has(bit)) {
+      throw new TypeError(`evidenceBits.${key} must name a unique single bit`);
+    }
+    evidenceBits[id] = bit;
+    usedBits.add(bit);
+  }
+  const scopeEntries = Object.entries(object(policy.scopes, "scopes"));
   const scopes = new Map();
 
   for (let i = 0; i < scopeEntries.length; i += 1) {
-    const scopeName = scopeEntries[i][0];
-    const scopeCfg = scopeEntries[i][1] || {};
-    const intentEntries = Object.entries(scopeCfg.intents || {});
+    const scopeName = name(scopeEntries[i][0], "scope name");
+    const scopeCfg = object(scopeEntries[i][1], `scopes.${scopeName}`);
+    const intentEntries = Object.entries(object(scopeCfg.intents, `scopes.${scopeName}.intents`));
     const intentRules = new Map();
 
     for (let j = 0; j < intentEntries.length; j += 1) {
-      const intentId = normalizeId(intentEntries[j][0]);
-      if (!intentId) {
-        continue;
+      const intentId = normalizeId(name(intentEntries[j][0], "intent name"));
+      if (intentRules.has(intentId)) {
+        throw new TypeError(`normalized intent collision: ${intentId}`);
       }
-      intentRules.set(intentId, Number(intentEntries[j][1]) >>> 0);
+      intentRules.set(intentId, mask(intentEntries[j][1], `intent ${intentId}`));
     }
 
+    if (scopeCfg.allowUnknownIntents !== undefined && typeof scopeCfg.allowUnknownIntents !== "boolean") {
+      throw new TypeError("allowUnknownIntents must be a boolean");
+    }
     scopes.set(scopeName, {
       allowUnknownIntents: scopeCfg.allowUnknownIntents === true,
-      defaultRequiredMask: Number(scopeCfg.defaultRequiredMask || 0) >>> 0,
+      defaultRequiredMask: mask(scopeCfg.defaultRequiredMask === undefined ? 0 : scopeCfg.defaultRequiredMask, "defaultRequiredMask"),
       intentRules,
     });
   }
 
-  const defaultScope = policy.defaultScope || "sdk_v1_default";
-  const policyVersion = policy.policyVersion || "min-v1";
+  if (!scopes.has(defaultScope)) throw new TypeError("defaultScope must reference a declared scope");
 
   return Object.freeze({
     policyVersion,
@@ -125,7 +178,7 @@ export function createEvaluator(policyInput) {
   const compiled = compilePolicy(policyInput);
   const defaultScope = compiled.scopes.get(compiled.defaultScope) || null;
 
-  function evaluate(input) {
+  function evaluateInput(input) {
     if (!input || typeof input !== "object") {
       return DECISION_DENIED_INTENT_REQUIRED;
     }
@@ -143,7 +196,8 @@ export function createEvaluator(policyInput) {
         return DECISION_DENIED_FAST;
       }
     } else {
-      scope = compiled.scopes.get(String(input.authority_scope_id));
+      if (typeof input.authority_scope_id !== "string") return DECISION_DENIED_FAST;
+      scope = compiled.scopes.get(input.authority_scope_id);
       if (!scope) {
         return DECISION_DENIED_FAST;
       }
@@ -161,17 +215,25 @@ export function createEvaluator(policyInput) {
     if (
       requestedPolicyVersion != null
       && requestedPolicyVersion !== ""
-      && String(requestedPolicyVersion) !== compiled.policyVersion
+      && (typeof requestedPolicyVersion !== "string" || requestedPolicyVersion !== compiled.policyVersion)
     ) {
       return DECISION_DENIED_POLICY_VERSION;
     }
 
     const evidenceMask = toEvidenceMask(input.evidence_mask, compiled.evidenceBits);
-    if ((evidenceMask & requiredMask) !== requiredMask) {
+    if (((evidenceMask & requiredMask) >>> 0) !== requiredMask) {
       return DECISION_DENIED_EVIDENCE;
     }
 
     return DECISION_ALLOWED;
+  }
+
+  function evaluate(input) {
+    try {
+      return evaluateInput(input);
+    } catch (error) {
+      return error instanceof InvalidEvidenceError ? DECISION_DENIED_INVALID_EVIDENCE : DECISION_DENIED_INTERNAL;
+    }
   }
 
   return Object.freeze({

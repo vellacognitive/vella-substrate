@@ -33,11 +33,9 @@ as authorized in the audit record.
 
 ### 2.2 Tampering with decision artifacts
 
-Evidence exports and proof bundles are hash-bound and replay-verifiable.
-A tampered artifact will fail structural verification under the verifiers in `verify/`.
+V2 proof verification authenticates the exact typed payload and validates its structure under a supplied trusted public key. Changes to authenticated content reject. Plain evidence exports are not automatically signed proofs.
 
-**Protection claim:** Modification of a proof bundle after issuance is
-detectable by any party with access to the bundle and the corresponding proof-signing public key.
+**Legacy limitation:** v1 did not authenticate every visible metadata field, and the Node v1 serializer omitted many nested keys. Its historical verification success must not be described as complete tamper detection or exact-action binding. See [migration and legacy limits](../docs/remediation/migration.md).
 
 ### 2.3 Misrepresentation of outputs
 
@@ -100,7 +98,7 @@ technical ones.
 
 In v1, the proof bundle signature is a software-integrity mechanism. It is
 not a court-grade non-repudiation instrument backed by a hardware security
-module or a public CA. It detects tampering reliably. It does not provide
+module or a public CA. Its protection is limited to the historical authenticated subset. It does not provide
 institutional-grade accountability on its own.
 
 ### 3.6 Persistent tamper-evident storage
@@ -172,3 +170,11 @@ This document covers the VELLA decision substrate as specified in
 
 *VELLA — Pre-execution decision authority for agentic AI*  
 *Vella Cognitive, LLC — agent@vellacognitive.com — github.com/vellacognitive/vella-substrate*
+
+## Unreleased local MCP reference
+
+The [local server binding](../integrations/mcp-server/README.md) places the mandatory gate before every handler registered through it. It binds effective arguments, server/tool identity, a resource precondition and operator evidence to v2 authorization. A denied request or failed mandatory prerequisite has no protected handler invocation through that boundary.
+
+Operator-owned launch/evidence/key files and filesystem ancestors are trusted. Local OS UID association is not remote identity verification. Permission and approval truth remain the operator's responsibility. Calls or file access outside the registered boundary, replaced gate code and compromised operator infrastructure are excluded.
+
+The file sink acknowledges file/directory fsync on a local POSIX filesystem. Process-interruption tests do not certify power-loss, replication or hardware guarantees. Execution receipts are explicitly unsigned observations. Missing receipts after interruption imply an unresolved outcome, not proof of no execution. The adapter introduces no automatic replay or universal exactly-once claim.
