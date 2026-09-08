@@ -1,6 +1,6 @@
 # Hybrid migration and rollback — SDK 2.1.0 / MCP 1.1.0 candidate
 
-Status: unpublished candidates. Owner contract accepted 2026-09-08. Installed artifacts, resource/latency runs and hosted matrix must pass before release acceptance. Publication is a separate decision.
+Status: unpublished candidates. Owner contract accepted 2026-09-08. Installed artifacts, resource/latency runs and hosted matrix have passed the qualification described in QUALIFICATION.md. Final owner release acceptance remains pending. Publication is a separate decision.
 
 ## Compatibility
 

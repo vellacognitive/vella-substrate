@@ -1,36 +1,32 @@
 # PQ production acceptance ledger — public v3 candidate
 
-Status: Mike Wilson accepted and authorized M1 on 2026-09-08. The public v3 contract is frozen. Release acceptance is not yet complete. Development branch `codex/pqc-production`. Shared SDK/gate/MCP code now supports an explicit operator-owned proof provider; hybrid modules now have supported SDK, verifier and MCP package entry points. v1/v2 proof algorithms and semantics are preserved.
+SDK 2.1.0 (Node/Python) and MCP 1.1.0 are unpublished, opt-in candidates. Mike Wilson accepted the M1 contract and authorized continuation on 2026-09-08. Engineering qualification passed the referenced final evidence; M5 owner release acceptance remains pending. Publication is a separate decision.
 
-## Local evidence
+## Traceability
 
-- 281 cross-language SDK-provider/proof/domain/rejection assertions passed.
-- 120 schema/vector assertions passed; four public vectors cover both key origins and producers.
-- 26 integration tests cover local key lifecycle, native MCP routes, public-material retention, Node/Python/shell review verifiers, admission pressure, missing signatures, dependency failures, rotation/revocation and process-lock recovery.
-- Existing 98 Node SDK, 80 Python SDK and 16 native MCP tests pass; TypeScript checks cover the new provider path and Python strict typing/lint checks pass.
-- The Isolated Node/Python package installations pass native MCP route and archive verification checks. Both languages expose explicit opt-in v3 entry points; Node/Python/shell v3 routes are separate from existing v1/v2 verifiers. No registry publication is claimed.
+The release packet's SOURCE.json identifies the final source commit, source archive and package hashes. Local duration-controlled measurements use the installed runtime from `a8682521743b5f59759f42d8587d487f9241185c`; `package-payload-equivalence.json` proves the final Node/MCP executable and configuration payloads are identical, with only public type declarations changed. The Python distribution is unchanged. Raw workload records retain their own source inventory and installed lockfile hash. Hosted artifacts identify their actual checkout, including GitHub's synthetic PR merge commit where applicable; the push matrix qualifies the branch commit directly. Historical results are not relabeled as new measurements.
 
-Node hybrid tests ran on 24.20.0, Python proof tests on 3.12.14 / cryptography 50.0.1, on the local macOS machine. Existing Node/MCP compatibility tests also ran on Node 22.22.3. No hosted PQ matrix, sustained candidate run, 30-minute soak, resource qualification, or final production performance claim is established by these checks.
+All expected-versus-observed checks are in the source harness and raw evidence. There are 281 fresh cross-language/provider/domain assertions, 120 schema/vector assertions, four fixed public vectors verified in both languages, and 30 integration tests. The hosted qualification also reruns 98 Node SDK, 80 Python SDK and 16 MCP regression tests, public TypeScript declarations, strict Python typing and lint. The six new-profile jobs use Node 24.20.0 with Python 3.12, 3.13 and 3.14 on Linux/macOS. Legacy runtime checks remain separate. See QUALIFICATION.md for durations, stage/resource measurements, exclusions and actual latency results.
 
-| ID | State | Evidence / remaining work |
+| ID | Technical / review state | Fixture and observed evidence |
 |---|---|---|
-| PQ01 | Owner accepted | Seven-year retention/verification target, annual review/key rotation, local hybrid boundary; no calendar security guarantee |
-| PQ02 | Contract frozen | Owner-approved final v3 identifiers, schemas, exact bytes and bounded domain implemented; 401 conformance/schema assertions pass |
-| PQ03 | Local public-format checks pass | Actual Node/Python SDK governors and isolated installed packages interoperate; hosted matrix pending |
-| PQ04 | Local public-format checks pass | Both signatures mandatory in real gate; changed signatures, keys and weaker profile reject |
-| PQ05 | Partial local checks pass | Bounded parsing and 8-admitted/8-rejected pressure control; full denial-of-service/resource/soak checks pending |
-| PQ06 | Local implementation tested | Protected files, annual expiry, no key reuse, durable rotation/revocation, uncertain-write refusal, live-writer exclusion and explicit crash recovery; final custody/runbook review pending |
-| PQ07 | Local integration tested | SHA-384 definitions/actions/approvals/policy/proofs/receipt references; key-set/revision bound in governed evidence; legacy approvals cannot authorize hybrid calls |
-| PQ08 | Local integration tested | Missing either signature, unavailable signer, changed/expired evidence and authorization-storage failure stop effects |
-| PQ09 | Partial integration tested | Native effects/proofs/receipts reconcile; post-effect receipt failure preserves outcome; broader candidate interruption matrix pending |
-| PQ10 | Partial migration evidence | v2 rejects draft; historical retired-key verification reports trust status and no execution authority; installed mixed-archive/rollback rehearsal pending |
-| PQ11 | API/type groundwork tested | Both SDK provider APIs, updated Node types and package manifest; final distribution/dependency/support qualification pending |
-| PQ12 | Pending candidate qualification | Original latency limits retained; added resource plan fixed as engineering defaults before its measurement |
-| PQ13 | Owner contract accepted | Mike Wilson reviewed and authorized M1; no external specialist certification claimed |
-| PQ14 | In progress | Local evidence and review packet prepared; full handoff/migration/rollout remains pending |
+| PQ01 | Owner accepted | THREAT-AND-HASH-MAP.md, OWNER-REVIEW.md and DEPENDENCY-REVIEW.md define the authorization boundary, seven-year retention target, annual review/rotation and explicit exclusions. |
+| PQ02 | Pass; contract frozen | PROOF-CONTRACT.md, public v3 schemas and public-vectors-v3.json; conformance.mjs, schema_check.py and golden-vectors.test.mjs validate exact bytes, metadata, bounded domain and rejection behavior. |
+| PQ03 | Pass | Fresh and fixed Node/Python vectors plus installed-check.mjs exercise both producers and Node/Python/shell archive verification. Installed and six-platform hosted results pass. |
+| PQ04 | Pass | Conformance and reference integration tests reject missing, changed or substituted signatures/keys, unknown suites and draft/mixed profiles. Both configured signatures are mandatory. |
+| PQ05 | Pass within declared bounds | Bounded parser adversarial checks pass. Native pressure fixture observes 8 accepted, 8 explicitly rejected, 8 effects and zero queue. Full resource/soak evidence passes; no unbounded-input or universal denial-of-service guarantee is implied. |
+| PQ06 | Pass within local custody boundary | Lifecycle/key tests cover portable keys, permissions, expiry, atomic revision changes, concurrent rotation/revocation, uncertain-write refusal and writer exclusion. Native crash/recovery verifies explicit stale-lock recovery and fresh-call restart. MIGRATION.md records compromise response and custody limits. |
+| PQ07 | Pass | Action/digest and native route tests bind SHA-384 action, approval, policy, definition, authorization and receipt references; signed key-set/revision agrees with supplied trust. Mutations and legacy approvals reject. |
+| PQ08 | Pass | Full fault run reconciles zero effects for missing/invalid evidence, signing and authorization-retention prerequisites; all 64 recovery calls succeed. Gate tests recheck expiry and revision immediately before dispatch. |
+| PQ09 | Pass within fsync/process boundary | Full workload artifacts reconcile. Receipt-write failures preserve the observed outcome. Cancellation tests preserve unused authorizations or report unknown outcomes after possible dispatch without replay. Native process termination leaves 8 unused valid proofs, zero effects, then one fresh recovery call. No power-loss guarantee. |
+| PQ10 | Pass | Existing v1/v2 proof/verifier interpretation remains unchanged. Installed mixed-archive checks pass. rollback-check.mjs restores SDK 2.0.0, resumes explicitly classical SDK output, preserves independent v3 archive verification and keeps the hybrid MCP route stopped; no retired key is reactivated. |
+| PQ11 | Pass on qualified matrix | Clean Node archives and Python wheel installs, public types, native provider checks, packaged CLI/shell routes and six hosted combinations pass. Unsupported Node runtime rejects the hybrid operation while default v2 remains available. SDK/MCP pairing is exactly 2.1.0/1.1.0. |
+| PQ12 | Pass | operational/run.mjs retains the unchanged six healthy scenarios, four faults, recovery, matched classical diagnostic and 30-minute soak. QUALIFICATION.md reports passing latency/resource limits, outliers, standalone providers and storage sizing. |
+| PQ13 | Owner contract review accepted | OWNER-REVIEW.md and REVIEW-DISPOSITION.md record Mike Wilson's selected review, corrected findings, retests and residual limits. This is owner review independent of implementation, not external specialist certification. Final candidate acceptance remains pending. |
+| PQ14 | Technical handoff ready; owner acceptance pending | README/ICD/API/release notes, MIGRATION.md, QUALIFICATION.md and the immutable source/package/evidence packet are delivered. Owner selects final acceptance, main merge through the established push workflow, rollout and separate publication. |
 
-M0 owner inputs are resolved. M1 owner format review is closed. Reversible M2/M3 implementation was advanced to make the review concrete; those milestones still require remaining candidate checks for final acceptance. No SOW-wide completion is claimed. Publication remains a separate owner decision.
+## Milestones and remaining decisions
 
-## Candidate versions and remaining release gates
+M0 and M1 owner decisions are resolved. M2 SDK/keys/verifiers, M3 governed MCP and M4 engineering qualification have passed the documented checks. M5 has a prepared handoff and awaits owner acceptance of the final candidate. The selected owner review is recorded honestly; no external review procurement or certification is claimed.
 
-SDK 2.1.0 (Node/Python) and MCP 1.1.0 are unpublished candidates with an exact SDK/MCP peer pairing. MIGRATION.md defines opt-in rollout, fresh approvals, mixed archives, custody/retention and explicit classical rollback. DEPENDENCY-REVIEW.md records NIST errata applicability and native-backend limits. The six Python/platform hosted combinations, full local workloads, matched classical diagnostic and 30-minute hybrid soak remain pending. Smoke results are only harness checks, not acceptance measurements.
+The release packet contains actual local and hosted results, candidate distributions, measured distributions where hashes differ, verification manifests and a rollback fixture rebuilt from the immutable classical source. The latter is labeled as a rebuilt fixture, not a registry download. Package publication and deployment have not occurred. Main remains unchanged until the owner invokes the push workflow.

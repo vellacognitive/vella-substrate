@@ -33,12 +33,6 @@ The reviewed implementation retained draft identifiers. Approval authorizes the 
 
 Changing these identifiers changes the signed bytes. Final vectors, migration tests and performance measurements must be regenerated after the change. The first stable release will not accept the private draft format as an alias for v3.
 
-## Review record to complete
-
-Review the format/claim boundary, portable local key handling, revocation/rollback semantics and the evidence in `ACCEPTANCE.md`. Record **accepted**, **changes requested**, or **not assessed** for the contract. Include any specific concern or requested change. Acceptance does not certify the cryptographic primitives or close the remaining resource, platform, packaging or rollout requirements.
-
-Known work still ahead: move the reviewed hybrid modules into supported package entry points, finalize package versions/dependencies, qualify all public verifier routes and installed artifacts, run the matched sustained tests and 30-minute soak/resource plan, complete the hosted platform matrix, and deliver migration/rollback and release evidence.
-
 ## Completed review record
 
 Mike Wilson: **accepted**. User instruction: “Reviewed and authorized.” Recorded 2026-09-08. M1 is closed; continuation through the remaining SOW work is authorized. The review is owner acceptance, not external specialist certification. Candidate release acceptance and package publication remain separate.
