@@ -1,6 +1,6 @@
 # Migrating to v2 proofs — release preparation
 
-These changes are unreleased. The owner selected SDK 2.0.0 and MCP adapter 1.0.0 for this candidate. SDK 1.0.3 remains the prior published baseline and does not contain this implementation. Both candidate versions remain unreleased; the MCP package remains private. Do not move existing release tags.
+This guide covers SDK 2.0.0 and MCP adapter 1.0.0, authorized for publication by the owner on September 8, 2026. SDK 1.0.3 remains the prior published baseline and does not contain this implementation. Existing release tags remain unchanged. Production migration is a separate operator rollout; see the notice obligations in the release guide.
 
 The owner approved a new exact-byte envelope with separate legacy verification. The development SDK's high-level `govern` now emits `vella_proof_bundle_v2` when signing succeeds. This changes proof output and therefore requires a major release under the repository's compatibility policy. The public release versions are selected; announcement and rollout dates remain pending. The existing ICD's notice commitment remains in effect.
 

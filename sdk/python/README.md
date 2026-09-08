@@ -4,7 +4,7 @@ Python SDK for deterministic pre-execution adjudication and signed proof-bundle 
 
 Evidence conversion now rejects invalid unsigned 32-bit values and unknown symbols with `E_EVIDENCE_INVALID`. Invalid custom policies raise at creation rather than silently weakening rules. See [evidence and policy validation](../../spec/input-validation.md) for accepted forms and compatibility changes.
 
-**Development status:** the v2 proof and policy-bound signing APIs below are unreleased. Published 1.0.3 packages do not include them. See [migration and legacy limits](../../docs/remediation/migration.md).
+**Version 2.0.0:** the v2 proof and policy-bound signing APIs below introduce breaking changes from SDK 1.0.3. See [migration and legacy limits](../../docs/remediation/migration.md).
 
 ## Install
 

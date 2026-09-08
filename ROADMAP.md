@@ -1,13 +1,15 @@
 # Public Roadmap
 
-**Development update:** an unreleased [controlled MCP server reference](integrations/mcp-server/README.md) and reusable mandatory-proof gate now exist. Client dispatch remains a comparison demonstrator. Published-release status below remains separate; see the [acceptance ledger](docs/remediation/acceptance.md).
+**SDK 2.0.0 / MCP 1.0.0:** the [controlled MCP server reference](integrations/mcp-server/README.md) and reusable mandatory-proof gate have completed local acceptance and Linux/macOS CI. Client dispatch remains a comparison demonstrator. See the [release and migration guide](docs/remediation/release-candidate.md).
 
 
-**Last updated:** 2026-09-01
+**Last updated:** 2026-09-08
 
 This roadmap tracks the public reference implementation and its adoption surface. It is directional, not a release-date commitment. Items are marked shipped only when public code, documentation, and a verification path exist.
 
 ## Shipped
+
+- Exact-byte v2 proofs, policy-bound evaluators, mandatory-proof execution gate and local MCP report-export reference.
 
 - Node.js and Python embedded SDKs for deterministic, in-process adjudication.
 - Signed proof-bundle generation and standalone Node.js, Python, and shell verification.
@@ -20,11 +22,9 @@ This roadmap tracks the public reference implementation and its adoption surface
 ## Next
 
 - Runnable consequence-boundary examples for dangerous tool calls, data export, privilege escalation, and external publication.
-- A framework-neutral tool-dispatch wrapper with proof persistence and deny-path conformance tests.
 - Dedicated adapter candidates for MCP client dispatch, Claude Code / Claude Agent SDK hooks, LangGraph, and OpenAI Agents.
 - Easier verifier packaging for CI and downstream audit pipelines.
 - A public downstream-use registry for projects that choose to disclose their VELLA integration.
-- Node.js custom-policy API parity with the stable Python `create_evaluator` surface.
 
 ## Later or exploratory
 

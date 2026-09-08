@@ -108,6 +108,10 @@ if (mcpPackage.peerDependencies?.["@vellacognitive/vella-sdk"] !== nodePackage.v
   fail("MCP peer and locked local SDK must exactly match the tested SDK version");
 }
 
+if (requireReleased && (mcpPackage.private === true || mcpPackage.publishConfig?.access !== "public")) {
+  fail("released MCP package must permit public publication");
+}
+
 const expectedVersion = nodePackage.version;
 for (const [label, version] of versions) {
   if (version !== expectedVersion) {

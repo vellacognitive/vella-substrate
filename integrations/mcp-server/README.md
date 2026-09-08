@@ -1,6 +1,10 @@
-# Vella governed MCP server — unreleased local reference
+# Vella governed MCP server — local reference
 
-This separate package wraps registered MCP tool handlers with the Node SDK's mandatory-proof execution gate. It implements the owner-selected local report-export reference workflow. The 1.0.0 candidate is private and unreleased. Its exact peer dependency is SDK 2.0.0, the tested API pairing; published SDK 1.0.3 cannot supply these APIs. Install the candidate tarballs together until publication is authorized.
+This separate package wraps registered MCP tool handlers with the Node SDK's mandatory-proof execution gate. It implements the owner-selected local report-export reference workflow. Version 1.0.0 requires SDK 2.0.0, the exact tested API pairing; SDK 1.0.3 cannot supply these APIs.
+
+```sh
+npm install @vellacognitive/vella-sdk@2.0.0 @vellacognitive/vella-mcp-server@1.0.0
+```
 
 ## Run from this repository
 
@@ -20,7 +24,7 @@ The reusable exports are `describeGovernedTool` and `registerGovernedTool`. The 
 
 - Controlled server handlers registered through this binding; exact case-sensitive server/tool identities map to explicit intent and scope.
 - Official MCP server/client family 2.0.0, protocol revision 2026-07-28, stdio only. Legacy negotiation is rejected by the example launcher.
-- Initial local runtime: Node 22 on macOS, with Linux/macOS and Node 22/24 coverage configured in CI. Only completed runs establish tested coverage.
+- Tested runtimes: Node 22 and 24 on Linux/macOS; sustained workload acceptance on local Node 22/macOS.
 - Local POSIX filesystem, operator-owned directories, launch configuration, private key and evidence files. The example checks its OS UID and binds the configured session to that local principal. This is not remote-user authentication.
 - Ordinary `tools/call`. Discovery supports explicit registration. Resources, prompts, sampling, elicitation, tasks, HTTP/OAuth and resumed input flows have no governance claim here; resumed input flows explicitly reject. The underlying SDK handles native lifecycle and request cancellation.
 
@@ -52,8 +56,8 @@ A receipt-write failure preserves the observed result and sets `receiptRetained:
 
 Cancellation before dispatch prevents invocation. In-flight dependencies or handlers may finish after cancellation; their completion cannot retroactively authorize a new dispatch or turn an unknown return into a false no-effect assertion. The default gate deadline is 30 seconds, configurable from 1 ms to 300 seconds; receipt retention gets a separate bounded attempt of at most five seconds.
 
-## Packaging and remaining acceptance
+## Packaging and acceptance
 
 The Node declaration test covers a consumer using both packages. Python exposes its v2 verifier and policy-bound governor with typing metadata. Repository verifiers still support separate archival v1 interpretation; see [migration](../../docs/remediation/migration.md).
 
-The build is a review candidate. Hosted CI, final release versions/pins, operating workload acceptance and owner acceptance remain separate from local test passes. See the [acceptance ledger](../../docs/remediation/acceptance.md).
+The accepted local workload completed 71,408 measured calls with zero unexpected failures. Healthy p95 latency remained below 131 ms across the selected 1/4/8-concurrent, 1/4 KB scenarios. Shared-runner CI validates behavior, not those latency thresholds. See the [release guide](https://github.com/vellacognitive/vella-substrate/blob/v2.0.0/docs/remediation/release-candidate.md) for operating limits, migration and rollback.

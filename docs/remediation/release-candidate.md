@@ -1,10 +1,10 @@
-# SDK 2.0.0 and MCP 1.0.0 — unreleased candidate
+# SDK 2.0.0 and MCP 1.0.0 — release guide
 
-The owner selected these versions on September 8, 2026. This is a candidate for validation and handoff, not a published release. The major SDK increment reflects changed signing output and stricter input validation. The MCP package remains private until its separate publication decision.
+The owner selected these versions and explicitly authorized publication on September 8, 2026. The major SDK increment reflects changed signing output and stricter input validation. The SDK and MCP runtime passed the accepted local workload and hosted compatibility checks before release preparation.
 
 ## Supported pairing and boundaries
 
-| Component | Candidate contract | Qualification |
+| Component | Version contract | Qualification |
 |---|---|---|
 | Node SDK | 2.0.0; Node >=18 | Core CI on Node 18 and 24/Linux; local Node 22/macOS. Windows proof-output smoke does not qualify the POSIX execution sink. |
 | Python SDK | 2.0.0; Python >=3.10 | CI on Python 3.10 and 3.14/Linux; local Python 3.12/macOS. |
@@ -16,11 +16,11 @@ The SDK has no MCP dependencies. The adapter's exact SDK peer avoids claiming co
 
 ## Install and stage
 
-Use the supplied candidate tarballs together in a fresh application environment:
+Install the exact paired versions in a fresh application environment after registry publication:
 
 ```sh
-npm install ./vellacognitive-vella-sdk-2.0.0.tgz ./vellacognitive-vella-mcp-server-1.0.0.tgz
-python -m pip install ./vella_sdk-2.0.0-py3-none-any.whl
+npm install @vellacognitive/vella-sdk@2.0.0 @vellacognitive/vella-mcp-server@1.0.0
+python -m pip install vella-sdk==2.0.0
 ```
 
 Verify artifact SHA-256 hashes against the candidate manifest first. Use an isolated Python environment and retain its resolved dependency list. The candidate source archive preserves the repository verifier layout, schemas, tests, lockfiles, examples and operating documentation.
@@ -58,6 +58,6 @@ The prior immutable SDK 1.0.3 baseline is `cbafda49ddb1682832b438498437d62de4f84
 
 ## Publication and notice
 
-The ICD promises a minimum 90-day notice for breaking changes affecting production integrators. No notice start date, affected-integrator acknowledgment, rollout date or waiver has been established by this build. Keep the 2.0.0 changelog entry unreleased until the owner resolves the notice and release schedule. Preparation and testing do not authorize announcing or publishing a release.
+The owner explicitly authorized SDK 2.0.0 and MCP 1.0.0 publication on September 8, 2026. This authorizes making the new versions available; it does not establish that production integrators received the ICD's minimum 90-day breaking-change notice. No prior notice date or integrator acknowledgment is recorded here. Existing 1.x versions remain available and unchanged. Production integrators must retain their existing pins until their applicable notice and migration arrangements are satisfied; publication does not initiate an automatic production rollout.
 
-The existing stable-tag publication workflow verifies metadata, immutable tag binding and released status before registry publication. MCP 1.0.0 remains private and is not silently added to that SDK publisher. A later explicit publication decision must cover the MCP registry workflow and package access as well as SDK release timing.
+The stable-tag publisher verifies aligned versions, the released changelog and immutable tag binding. All registry jobs check out that verified commit. SDK npm and PyPI publishing use existing trusted publishers. MCP npm publishing requires its own trusted publisher for repository `vellacognitive/vella-substrate`, workflow `publish.yml`, environment `release`, with direct publishing enabled. The first MCP publication requires an authenticated npm maintainer to bootstrap the new package, then configure that trust; do not create a placeholder version or reuse another package's token. The workflow's `mcp` target supports later adapter publication from the verified SDK release tag. Registry publication results and artifact hashes are recorded separately from source approval.
