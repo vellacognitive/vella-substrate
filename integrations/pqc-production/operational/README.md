@@ -8,6 +8,7 @@ node integrations/pqc-production/operational/run.mjs --app /absolute/installed/a
 node integrations/pqc-production/operational/run.mjs --app /absolute/installed/app --profile classical --output /absolute/evidence/classical.json
 node integrations/pqc-production/operational/pressure.mjs /absolute/installed/app
 node integrations/pqc-production/operational/crash.mjs /absolute/installed/app
+node integrations/pqc-production/operational/restore.mjs /absolute/installed/app
 node integrations/pqc-production/operational/proof-sizes.mjs /absolute/installed/app
 ```
 
@@ -44,3 +45,14 @@ The confirmed defect is a policy mismatch: smoke excluded request-latency accept
 The private wrapper now records startup, warmup, measured and recovery histograms separately. Before workload timing begins, the controller writes a per-process phase request, signals only its own transport process, and waits for the matching acknowledgement. This uses POSIX signals and is intended for the existing Linux/macOS qualification matrix. It adds no MCP tool or distributed SDK option. Phase boundaries retain the previous histogram and reset the phase histogram; lifetime acceptance still includes startup/warmup and each recovery process. Host load, free memory and cumulative process CPU accompany the snapshots. The injected-delay regression test verifies attribution of a 150 ms stall to measured work and preserves final snapshots.
 
 The [October 15 qualification report](../../../docs/remediation/performance-qualification-2026-10-15.md) records the unchanged sustained hybrid plan, 30-minute soak and classical comparison, all run serially with Node 24.20.0 on an identified M3 Ultra workstation. All passed; raw reports preserve outliers and source/installation identity. Hosted phase traces also retain timing warnings instead of converting smoke results into performance acceptance. These results qualify that local reference setup and do not establish deployment-wide SLAs or statistically isolate cryptographic overhead.
+
+
+## Verifier-only restore rehearsal
+
+`restore.mjs` takes only an installed application path. It creates its own disposable producer, backup and restore directories; it does not accept production archive or key paths. Three approved reports include 1,024 ASCII bytes, 4,096 BMP Unicode code units (8,192 UTF-8 bytes), and 2,048 supplementary characters (4,096 code units / 8,192 UTF-8 bytes). A key rotation between calls exercises both retired and active signing keys.
+
+After calls settle, the fixture inventories the source files, copies only reports and public archive material, and verifies the backup matches the independently held manifest. It removes its own synthetic producer (including private keys) before restoring. The installed Node CLI verifies every restored authorization against public trust captured separately from the archive. Receipts and reports are compared with the separately retained fixture responses and expected content. Receipts remain unsigned; signature verification alone does not establish their authenticity or effect completion.
+
+Negative checks require rejection of a corrupted proof (by both verifier and inventory), an altered receipt, a missing report, an unexpected file, missing retained trust material, and unavailable independent trust. A final clean audit must pass after restoring the fixture. JSON records source/installation hashes, the file manifest, counts, Unicode sizes and measured restore-plus-verification duration. CI retains `restore.json` for every hybrid matrix job.
+
+This is a synthetic local copy/restore test, not a backup product, private-key recovery rehearsal, off-host durability test or production RTO/RPO claim. Its small-data timing is diagnostic. Use the [operations runbook](../../../docs/operations/local-mcp.md) and exercise the actual backup service on the selected deployment before closing PROD-04. The Unicode checks establish these individual correctness cases; the sustained ASCII benchmark is not relabeled as Unicode performance qualification.
