@@ -1,8 +1,22 @@
-# Production readiness
+# Public substrate quality and release readiness
 
-Status reviewed October 15, 2026. This is the current readiness entry point for the public repository. Historical acceptance ledgers remain immutable evidence for their named candidates; their original open items are not a current backlog.
+Status reviewed October 15, 2026. VELLA is a framework-neutral, embedded authority primitive: proposed action, policy and evidence produce a deterministic authorization decision and portable proof. Node/Python SDKs and independent verifiers are the core. MCP and GitHub Actions are reference adapters. See the [interface contract](../spec/icd.md), [integration map](../INTEGRATIONS.md) and [deployment scope](../DEPLOYMENT.md).
 
-The public SDK and local MCP reference have completed the documented engineering qualification. Acceptance of a particular production deployment remains open. The commercial remote/service components are outside this repository's qualification.
+This page tracks quality of the reusable public repository and its packages. It does not assume a Vella Cognitive production installation, require a customer host, or make one adapter the substrate's deployment architecture. Applications own enforcement, evidence truth, policy, storage and operation within the documented contracts.
+
+## Repository quality criteria
+
+| Area | Release expectation |
+|---|---|
+| Decision and proof contracts | Deterministic evaluation, fail-closed input/error behavior, exact documented signing/verification semantics and tamper rejection; preserve versioned compatibility. |
+| SDKs and verifiers | Supported runtime tests, cross-language conformance, package/API/type compatibility and independent verification from installed artifacts. |
+| Reference adapters | Explicit consequence boundary, tested deny/fault paths and honest supported-platform limits. Adapters do not become core architectural dependencies. |
+| Reliability and performance | Reproducible fixtures; distinguish evaluator, signing, gate/storage and transport costs. Retain failures and timing diagnostics. Reference measurements are not universal latency guarantees. |
+| Security | Evidence-backed review of the relevant source and dependency boundaries, explicit trust assumptions and responsible disclosure. A scoped adapter scan does not certify the whole substrate. |
+| Distribution and maintenance | Immutable releases, provenance/integrity checks, dependency maintenance, accurate release notes and protected PR checks. |
+| Documentation | Separate shipped capabilities, optional profiles, reference measurements, adopter obligations and commercial components. |
+
+A generic library can meet its release criteria without knowing each adopter's workload or infrastructure. Supporting that use requires explicit compatibility and limits, not a universal deployment SLA.
 
 ## Completed evidence
 
@@ -14,58 +28,45 @@ The public SDK and local MCP reference have completed the documented engineering
 | Repository change controls | Main protection was verified October 15: PRs, all 16 required checks, up-to-date branches, resolved conversations and administrator enforcement; force pushes/deletion blocked. Zero required approvals supports the current solo-maintainer workflow. These are GitHub settings and must be rechecked if administration changes. |
 | Release history | [v2.1.0 release](https://github.com/vellacognitive/vella-substrate/releases/tag/v2.1.0). A GitHub release alone does not verify the bytes installed from a registry in a deployment. |
 
-## Selected deployment target
+## Reference profiles and adopter guidance
 
-On October 15, the owner selected **local single-host MCP** as the first production target. Use operator-controlled local stdio and local storage as the reference boundary. The intended production machine, filesystem, traffic profile, operational owner and service/recovery targets still need to be recorded; the benchmark workstation is not implicitly the production host. Remote services and embedded-only adoption are separate acceptance scopes.
+The local single-host MCP selection made during the October review is treated as a **reference qualification profile**, not a commitment to operate a particular production installation. It does not narrow embedded Node/Python use or other supported integration surfaces.
 
-The [local operations runbook](operations/local-mcp.md) defines monitoring, stop/drain, reconciliation, restore, key maintenance and rollout procedures. Deployment-specific configuration and exercised evidence remain required for PROD-03, PROD-04 and PROD-06.
-
-## Deployment acceptance checklist
-
-Use these stable IDs in follow-up PRs and deployment evidence. Open means evidence has not been established for the intended deployment, not that the SDK necessarily lacks a feature. Assign an accountable operator and evidence location before marking a gate complete.
-
-| ID | Status | Required evidence before deployment acceptance |
-|---|---|---|
-| PROD-01 | Partial: local single-host MCP selected | Record local MCP, embedded SDK or separately scoped remote service; host/OS/runtime, transport, filesystem, identity authority, consequence boundary, workload and operator. Record latency percentiles, error budget, recovery time and acceptable evidence loss. Do not infer customer targets from local test limits. |
-| PROD-02 | Open: target qualification | On the selected environment, retain immutable package/source identities and resolved dependencies; run sustained, soak, fault, overload and crash fixtures. Add representative competing load, bursts, actual payloads (including maximum supported non-ASCII content), and a duration justified by operational use. Repeat runs to characterize variability. Preserve failures and maxima. |
-| PROD-03 | Open: observability and response | Demonstrate detection and routing of signing/authorization-storage failures, receipt retention failures, unknown outcomes, capacity rejection, disk pressure and key expiry. Record alert thresholds, responder, reconciliation procedure and evidence of an exercised incident. Do not automatically replay uncertain or completed effects. |
-| PROD-04 | Open: retention and restore | Size actual evidence volume and retention, including unused authorizations, public-key/policy history, indexes, filesystem overhead and backup copies. Restore a backup into an isolated environment and verify retained proofs. Establish access controls and key custody, scheduled rotation and compromise response. Existing process-crash tests do not establish replicated retention or power-loss survival. |
-| PROD-05 | Partial: scoped adapter source review complete | Review the actual execution boundary, bypass paths, hybrid composition, key custody and resolved dependencies against the deployment threat model. Bind findings/dispositions to immutable artifacts. Owner review is complete; external specialist certification is not claimed. Scope any specialist review according to the consequence and assurance required. |
-| PROD-06 | Open: rollout rehearsal | Verify registry package identities and installation integrity; stage the exact versions/configuration, exercise denied and fault paths, rehearse rollback while retaining historical verification capability, and identify the rollout/stop decision owner. Publication is separate from deployment acceptance. |
-
-A gate can be marked not applicable only with a recorded reason tied to the selected deployment. Remote transport, external IAM, network storage and multi-tenant enforcement require their own design and qualification; the local reference evidence does not cover them.
+The [local MCP operations runbook](operations/local-mcp.md) and [optional acceptance template](operations/local-mcp-acceptance.md) are guidance for adopters choosing that adapter. Their PROD-01–06 identifiers cover an adopter's host, workload, operations, recovery, security and rollout decisions. They are not unresolved product requirements or prerequisites to SDK publication. No host, operator, alert service or backup system is assumed to have been commissioned.
 
 ## Dependency maintenance
 
 The source dependency baseline now pins MCP client 2.3.1 (with client core 2.3.1), while the server remains 2.0.0. Both local integrations use the same client pin. [GHSA-6qxp-vccf-f47h](https://github.com/advisories/GHSA-6qxp-vccf-f47h) affects HTTP OAuth credential handling in client 2.0.0; upstream explicitly excludes stdio clients and MCP servers. The shipped operator client constructs a stdio transport and exposes no HTTP OAuth path. This upgrade is dependency maintenance, not evidence of a credential leak in the local reference. Custom HTTP clients require separate assessment.
 
-The new client/core distributions include upstream Apache-2.0 transition notices; retain their supplied license files when redistributing dependencies. Historical performance reports and published package versions retain their original dependency identities. This source update does not republish MCP 1.1.0 or qualify the new dependency set for production performance; PROD-02 and PROD-06 still require exact-artifact deployment evidence.
+The new client/core distributions include upstream Apache-2.0 transition notices; retain their supplied license files when redistributing dependencies. Historical performance reports and published package versions retain their original dependency identities. This source update does not republish MCP 1.1.0 or qualify the new dependency set for production performance; adopters must qualify the exact artifacts they use.
 
 ## Restore and registry evidence
 
-The [installed restore rehearsal](../integrations/pqc-production/operational/README.md#verifier-only-restore-rehearsal) verifies a synthetic archive after removal of its producer and private keys, across active/retired signing keys and maximum-length Unicode reports. CI runs it in all six hybrid jobs. Local source-built SDK 2.1.0/MCP 1.1.0 and separately downloaded registry versions both passed on Node 24.20.0 on October 15. Three reports, three authorizations, three receipts and three verification-material files restored successfully; six negative cases rejected. This advances PROD-02/04 but does not close target-environment qualification or backup acceptance.
+The [installed restore rehearsal](../integrations/pqc-production/operational/README.md#verifier-only-restore-rehearsal) verifies a synthetic archive after removal of its producer and private keys, across active/retired signing keys and maximum-length Unicode reports. CI runs it in all six hybrid jobs. Local source-built SDK 2.1.0/MCP 1.1.0 and separately downloaded registry versions both passed on Node 24.20.0 on October 15. Three reports, three authorizations, three receipts and three verification-material files restored successfully; six negative cases rejected. This validates a reference fixture; adopters remain responsible for their own backups and recovery requirements.
 
-The fresh registry installation's `npm audit signatures` returned no invalid or missing signatures. Its MCP package still pins client 2.0.0; the current source build pins 2.3.1. Registry identity/signature verification is not a vulnerability scan or a deployment approval. Delivering the source dependency maintenance requires a new immutable release; no existing registry version was overwritten or republished. Production rollout and its operator rehearsal remain open under PROD-06.
+The fresh registry installation's `npm audit signatures` returned no invalid or missing signatures. Its MCP package still pins client 2.0.0; the current source build pins 2.3.1. Registry identity/signature verification is not a vulnerability scan or a deployment approval. Delivering the source dependency maintenance requires a new immutable release; no existing registry version was overwritten or republished. Any adopter rollout remains separate from package release.
 
 ## MCP patch candidate
 
-Source MCP 1.1.1 retains the exact SDK 2.1.0 peer and packages client 2.3.1. It remains unreleased. [Release preparation](operations/mcp-release.md) defines the independent `mcp-v1.1.1` tag, publication guards and post-publication checks. Preparing a candidate does not close PROD-02 or PROD-06.
+Source MCP 1.1.1 retains the exact SDK 2.1.0 peer and packages client 2.3.1. It remains unreleased. [Release preparation](operations/mcp-release.md) defines the independent `mcp-v1.1.1` tag, publication guards and post-publication checks. The candidate does not require a named customer host to qualify as a reusable package.
 
-The October 15 static security scan at `31bfba777cba266bacbe23ab53f0a2d41e1a9fb5` reviewed all 23 tracked files under `integrations/mcp-server`, with supporting gate/storage/key code traced as needed. Independent baseline and focused exact-action/filesystem reviews identified no reportable vulnerability. This is scoped source evidence, not a full SDK, dependency or deployed-host assessment. Operator custody, protected directory ancestors and local stdio are assumptions; PROD-05 remains open for the actual deployment.
+The October 15 static security scan at `31bfba777cba266bacbe23ab53f0a2d41e1a9fb5` reviewed all 23 tracked files under `integrations/mcp-server`, with supporting gate/storage/key code traced as needed. Independent baseline and focused exact-action/filesystem reviews identified no reportable vulnerability. This is scoped source evidence, not a full SDK, dependency or deployed-host assessment. Operator custody, protected directory ancestors and local stdio are assumptions; adopters must assess their own execution boundary.
 
-## Remaining engineering investigation
+## Remaining repository work
 
-**PERF-01 — macOS delay attribution (open).** Phase telemetry observed delays in measured work as well as startup/warmup/recovery. High host load and low process CPU relative to elapsed time are consistent with contention or blocking, but do not prove the cause. Compare repeated runs on an idle dedicated macOS host and under controlled competing load, retaining phase/CPU/resource traces and profiling evidence. Do not tune acceptance thresholds to make failures pass. A target-environment timing failure blocks that environment's acceptance; a hosted smoke diagnostic alone is not a functional failure.
+- **MCP patch distribution:** 1.1.1 is prepared but unreleased. Keep publication paused while the scope correction is reviewed; publication requires a separate release decision and registry verification.
+- **PERF-01 — macOS delay attribution:** investigate repeatable idle-versus-controlled-load behavior and preserve phase/CPU/resource traces. This is harness/performance characterization, not a request for a customer deployment. Do not relax acceptance thresholds to make failures pass.
+- **Maintain the quality criteria above:** expand review or tests where concrete gaps are found. Existing evidence is scoped; it is not an exhaustive whole-repository security certification or a guarantee across arbitrary environments.
 
 ## PR completion procedure
 
-1. Start from a clean checkout synchronized with remote main. Inventory existing changes and open PRs; preserve unrelated work.
-2. Keep each PR scoped to a reviewable outcome. Record checks, evidence and remaining limits in its description; update the applicable readiness ID.
-3. Inspect the final diff and run appropriate local checks. Run every required hosted check against the final PR revision; investigate failures before merge. Disclose reruns and retain timing diagnostics.
-4. Merge through branch protection. Fetch and fast-forward local main, verify its commit matches remote main, and confirm `git status --porcelain` is empty before starting the next PR. Preserve evidence outside the tracked checkout; do not delete unrelated files to manufacture a clean status.
+1. Start from a clean checkout synchronized with remote main; preserve unrelated work.
+2. Scope each PR to a reviewable outcome and identify affected SDK, verifier, adapter or documentation contracts.
+3. Inspect the final diff and run appropriate local checks plus every required hosted check against the final revision. Investigate failures; disclose reruns and retain diagnostics.
+4. Merge through protection, fast-forward local main, confirm its commit matches remote main, and verify an empty working-tree status. Keep evidence outside the tracked checkout.
 
 ## Reading historical records
 
-The [September classical acceptance snapshot](remediation/acceptance.md) and [SDK 2.0.0 / MCP 1.0.0 guide](remediation/release-candidate.md) describe their original candidates. Use the hybrid ledger for SDK 2.1.0 / MCP 1.1.0, the October report for the latest local performance evidence, and this checklist for deployment work. No historical report is retroactively relabeled as a new measurement.
+Historical ledgers describe their named artifacts and workloads. Preserve their results without relabeling them as new measurements. The [classical acceptance snapshot](remediation/acceptance.md), [hybrid ledger](../spec/pqc/ACCEPTANCE.md) and [October performance report](remediation/performance-qualification-2026-10-15.md) remain evidence for those scopes.
 
-Public claim supported by this evidence: **qualified local reference implementation with documented operating limits and reproducible test evidence**. A deployment SLA requires completion of its applicable acceptance gates.
+The public claim is a reusable embedded authority substrate with versioned contracts, tested reference integrations and reproducible evidence. Each adopter owns acceptance of its surrounding application and operational environment.

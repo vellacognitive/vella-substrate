@@ -16,7 +16,7 @@
 
 **SDK 2.1.0 / MCP 1.1.0:** the owner-approved [v3 hybrid proof contract](spec/pqc/PROOF-CONTRACT.md) adds opt-in P-256 + ML-DSA-65 proofs and SHA-384 bindings. [Migration](spec/pqc/MIGRATION.md) · [Measured qualification](spec/pqc/QUALIFICATION.md) · [Acceptance ledger](spec/pqc/ACCEPTANCE.md). This is a proof-boundary feature, not a claim that the whole platform is quantum safe.
 
-**Production readiness:** [Completed evidence and deployment acceptance checklist](docs/production-readiness.md). Local qualification does not establish a deployment SLA.
+**Public substrate quality:** [Release criteria, supported reference evidence and adopter guidance](docs/production-readiness.md). The SDK is framework-neutral; reference measurements do not establish a universal deployment SLA.
 
 **Install:** `npm install @vellacognitive/vella-sdk` or `pip install vella-sdk` · [Run the two-minute example](#quick-example)
 
