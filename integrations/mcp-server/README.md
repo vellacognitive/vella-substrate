@@ -21,7 +21,7 @@ The reusable exports are `describeGovernedTool` and `registerGovernedTool`. The 
 ## Supported reference boundary
 
 - Controlled server handlers registered through this binding; exact case-sensitive server/tool identities map to explicit intent and scope.
-- Official MCP server/client family 2.0.0, protocol revision 2026-07-28, stdio only. Legacy negotiation is rejected by the example launcher.
+- Official MCP server 2.0.0 and client 2.3.1, protocol revision 2026-07-28, stdio only. Legacy negotiation is rejected by the example launcher.
 - Tested runtimes: Node 22 and 24 on Linux/macOS; sustained workload acceptance on local Node 22/macOS.
 - Local POSIX filesystem, operator-owned directories, launch configuration, private key and evidence files. The example checks its OS UID and binds the configured session to that local principal. This is not remote-user authentication.
 - Ordinary `tools/call`. Discovery supports explicit registration. Resources, prompts, sampling, elicitation, tasks, HTTP/OAuth and resumed input flows have no governance claim here; resumed input flows explicitly reject. The underlying SDK handles native lifecycle and request cancellation.
