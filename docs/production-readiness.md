@@ -48,13 +48,13 @@ The fresh registry installation's `npm audit signatures` returned no invalid or 
 
 ## MCP patch candidate
 
-Source MCP 1.1.1 retains the exact SDK 2.1.0 peer and packages client 2.3.1. It remains unreleased. [Release preparation](operations/mcp-release.md) defines the independent `mcp-v1.1.1` tag, publication guards and post-publication checks. The candidate does not require a named customer host to qualify as a reusable package.
+Source MCP 1.1.1 retains the exact SDK 2.1.0 peer and packages client 2.3.1. Its release metadata is finalized; registry publication and verification remain separate steps. [Release preparation](operations/mcp-release.md) defines the independent `mcp-v1.1.1` tag, publication guards and post-publication checks. The candidate does not require a named customer host to qualify as a reusable package.
 
 The October 15 static security scan at `31bfba777cba266bacbe23ab53f0a2d41e1a9fb5` reviewed all 23 tracked files under `integrations/mcp-server`, with supporting gate/storage/key code traced as needed. Independent baseline and focused exact-action/filesystem reviews identified no reportable vulnerability. This is scoped source evidence, not a full SDK, dependency or deployed-host assessment. Operator custody, protected directory ancestors and local stdio are assumptions; adopters must assess their own execution boundary.
 
 ## Remaining repository work
 
-- **MCP patch distribution:** 1.1.1 is prepared but unreleased. Keep publication paused while the scope correction is reviewed; publication requires a separate release decision and registry verification.
+- **MCP patch distribution:** 1.1.1 release publication was authorized after scope correction and documentation review. Finalize the immutable release through protected CI/publishing and verify registry artifacts; this does not change adopter responsibilities.
 - **PERF-01 — macOS delay attribution:** investigate repeatable idle-versus-controlled-load behavior and preserve phase/CPU/resource traces. This is harness/performance characterization, not a request for a customer deployment. Do not relax acceptance thresholds to make failures pass.
 - **Maintain the quality criteria above:** expand review or tests where concrete gaps are found. Existing evidence is scoped; it is not an exhaustive whole-repository security certification or a guarantee across arbitrary environments.
 
