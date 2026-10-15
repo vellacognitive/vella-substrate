@@ -1,9 +1,10 @@
+import {summarizePhases} from "./telemetry.mjs";
 import {assessScenario} from "./assessment.mjs";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { mkdtemp, readFile, writeFile, readdir, mkdir, rm, rename } from "node:fs/promises";
 import { join, resolve, dirname } from "node:path";
-import { tmpdir, cpus, platform, release } from "node:os";
+import { tmpdir, cpus, platform, release, arch, totalmem, freemem, loadavg } from "node:os";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import {createRequire} from 'node:module';
@@ -28,6 +29,21 @@ async function connect(configPath, mode, metricsPath) {
   const client = new Client({name:'v3-qualification', version:'1.0.0'}, {versionNegotiation:{mode:{pin:'2026-07-28'}}});
   const transport = new StdioClientTransport({command:process.execPath, args:[fileURLToPath(new URL('./server.mjs',import.meta.url)),configPath,app,mode,metricsPath,profile]});
   try { await client.connect(transport); await client.listTools(); } catch (error) { await transport.close(); throw error; }
+  client.setMeasurementPhase = async phase => {
+    const pid = transport.pid;
+    if (!pid) throw new Error('transport process unavailable for phase boundary');
+    const controlPath = `${metricsPath}.${pid}.phase`;
+    const request = {phase, token: `${pid}-${performance.now()}`};
+    await writeFile(controlPath, JSON.stringify(request), {mode:0o600});
+    process.kill(pid, 'SIGUSR2');
+    const deadline = performance.now()+5000;
+    while (performance.now()<deadline) {
+      const ack = await readFile(`${controlPath}.ack`, 'utf8').catch(error => {if(error.code==='ENOENT') return '{}'; throw error;});
+      if (JSON.parse(ack).token === request.token) return;
+      await new Promise(resolve=>setTimeout(resolve,5));
+    }
+    throw new Error('telemetry phase acknowledgement timed out');
+  };
   return client;
 }
 const output = resolve(arg("--output", "operational-results.json"));
@@ -39,7 +55,7 @@ for (const path of sourceFiles) files.push({ path, sha256: createHash("sha256").
 const sourceDigest = actionDigest(files);
 const report = { kind: "vella-operational-results-v1", startedAt: new Date().toISOString(), acceptanceRun: !smoke, runMode: smoke ? "functional-smoke" : "performance-acceptance", plan, planSha256: createHash("sha256").update(planBytes).digest("hex"),
   baseCommit: execFileSync("git", ["rev-parse", "HEAD"], { cwd: root }).toString().trim(), sourceDigest, files, profile, soak, installedApplication: app, installedLockSha256: createHash("sha256").update(await readFile(join(app,"package-lock.json"))).digest("hex"),
-  machine: { cpu: cpus()[0].model, cpuCount: cpus().length, platform: platform(), release: release(), node: process.version }, scenarios: [], status: "running" };
+  machine: { cpu: cpus()[0].model, cpuCount: cpus().length, platform: platform(), release: release(), node: process.version, arch: arch(), totalMemoryBytes: totalmem(), freeMemoryBytes: freemem(), loadAverage: loadavg() }, scenarios: [], status: "running" };
 await mkdir(dirname(output), { recursive: true });
 const save = () => writeFile(output, JSON.stringify(report, null, 2) + "\n");
 await save();
@@ -90,7 +106,9 @@ for (const scenario of cases) {
         }
       }
     }
+    await client.setMeasurementPhase("warmup");
     for (let i=0; i < plan.warmupBatches; i++) await wave(scenario.mode, false);
+    await client.setMeasurementPhase("measured");
     const started = performance.now();
     do {
       const waveStart = performance.now(); await wave(scenario.mode, true);
@@ -104,6 +122,7 @@ for (const scenario of cases) {
     const recoveryStart = expected.length;
     if (scenario.mode !== "healthy") {
       client = await connect(f.configPath, "healthy", metricsPath);
+      await client.setMeasurementPhase("recovery");
       await wave("healthy", false); await wave("healthy", false); await client.close(); client = null;
     }
     let verifiedProofs = 0, verifiedReceipts = 0, effects = 0;
@@ -137,7 +156,7 @@ for (const scenario of cases) {
     const row = { ...scenario, elapsedMs, measuredCalls: samples.length, throughputCallsPerSecond: samples.length/(elapsedMs/1000),
       successCalls: samples.filter(s=>s.shouldExecute).length, expectedStoppedCalls: samples.filter(s=>!s.shouldExecute).length,
       endToEndMs, stagesMs: Object.fromEntries(stages.map(name=>[name, quantiles(samples.map(s=>s.timings[name]).filter(Number.isFinite))])),
-      resources: {samples:resource.length,rssBytes:rss,perSecondEventLoopP99Ms:eventLoop,eventLoopP99Ms:assessment.timing.eventLoopP99Ms,settledRssMedian:settledRss,lateRssMedian:lateRss,artifactBytes:accountedBytes,passed:assessment.resourcesPassed}, unexpected, effectsIncludingWarmupAndRecovery: effects, verifiedProofs, verifiedReceipts, recoveryCalls: expected.length-recoveryStart,
+      resources: {phases:summarizePhases(resource),samples:resource.length,rssBytes:rss,perSecondEventLoopP99Ms:eventLoop,eventLoopP99Ms:assessment.timing.eventLoopP99Ms,settledRssMedian:settledRss,lateRssMedian:lateRss,artifactBytes:accountedBytes,passed:assessment.resourcesPassed}, unexpected, effectsIncludingWarmupAndRecovery: effects, verifiedProofs, verifiedReceipts, recoveryCalls: expected.length-recoveryStart,
       passed: assessment.passed, failureReasons: assessment.failures, timing: assessment.timing, diagnostics: assessment.diagnostics,
       limits: { p95Ms: p95Limit, p99Ms: plan.thresholds.p99Ms } };
     report.scenarios.push(row); await save(); console.log(JSON.stringify({ completed: row.mode, bytes: row.bytes, concurrency: row.concurrency, measuredCalls: row.measuredCalls, passed: row.passed, failureReasons: row.failureReasons, diagnostics: row.diagnostics, endToEndMs }));

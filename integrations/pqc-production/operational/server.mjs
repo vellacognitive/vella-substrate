@@ -3,19 +3,11 @@ import fs from 'node:fs';
 import {createRequire} from 'node:module';
 import {pathToFileURL} from 'node:url';
 import {dirname, join} from 'node:path';
-import {monitorEventLoopDelay} from 'node:perf_hooks';
+import {startTelemetry} from './telemetry.mjs';
 const [configPath, app, mode, metricsPath, profile] = process.argv.slice(2);
 const require = createRequire(join(app, 'package.json'));
 const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-const histogram = monitorEventLoopDelay({resolution: 10}), lifetime = monitorEventLoopDelay({resolution: 10}); histogram.enable(); lifetime.enable();
-function sampleResources(final = false) {
-  const sample = {at: Date.now(), pid: process.pid, final, eventLoopSamples: histogram.count, lifetimeEventLoopSamples: lifetime.count, rss: process.memoryUsage().rss, cpu: process.cpuUsage(), lifetimeEventLoopP99Ms: lifetime.percentile(99) / 1e6, eventLoopP99Ms: histogram.percentile(99) / 1e6, eventLoopMaxMs: histogram.max / 1e6};
-  histogram.reset();
-  fs.appendFileSync(metricsPath, JSON.stringify(sample)+'\n', {mode:0o600});
-  if (!final && sample.rss > 512*1024*1024) { process.stderr.write('RESOURCE_RSS_LIMIT\n'); process.exit(2); }
-}
-const timer = setInterval(sampleResources, 1000); timer.unref();
-process.once('exit', () => { clearInterval(timer); sampleResources(true); });
+startTelemetry(metricsPath);
 if (profile === 'classical') {
   await import(pathToFileURL(join(dirname(dirname(dirname(require.resolve('@vellacognitive/vella-mcp-server/pqc/operator')))), 'example/report-server.mjs')));
 } else {
