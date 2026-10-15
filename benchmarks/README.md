@@ -80,28 +80,18 @@ in.
 
 ## Notes on interpretation
 
-- **Decision-only is dominated by function-call overhead** at this scale.
-  The actual policy evaluation is a small constant-time check; the measurement
-  largely reflects the runtime's own dispatch cost. Node's V8 inlines the hot
-  path aggressively, hence the ~130 ns floor.
-- **With-proof is dominated by ECDSA signing** (~150 µs is roughly what a
-  P-256 sign costs on Apple Silicon). Hashing and envelope serialization are
-  comparable noise.
-- **The wide p99→max gap on a single run** (visible in the JSON's
-  `sample_run_ns` field) is the OS scheduler, not the SDK. The
-  median-of-medians strips most of it; if your SLO is tail-bound, plan for
-  ~500 µs decision-only worst case on a typical desktop and budget the
-  difference against your scheduler's QoS guarantees.
+- **Decision-only** measures the complete call path, including runtime and timer overhead. The harness does not isolate policy evaluation from dispatch or establish which component dominates.
+- **With-proof** measures envelope construction, hashing and signing together. Profiling or separately controlled measurements are needed to attribute their individual costs.
+- **Tail observations are scoped to the recorded run.** In the May 7 M2 Pro JSON, the Node decision-only sample run observed a maximum of 146,833 ns (about 147 µs). That is an observed sample maximum, not a desktop worst-case bound. The `sample_run_ns` fields retain tails that the median-of-medians summary does not capture.
+- Scheduler activity, runtime behavior and competing host work are possible contributors to variability. Elapsed samples alone do not establish the cause or rule out SDK work. Set integration targets using representative measurements; this reference does not supply a universal latency guarantee.
 
 ## Reproducibility
 
-The harness is deterministic given an unloaded machine. To compare numbers
-between runs:
+The harness provides a repeatable workload and measurement procedure. Elapsed timing varies even on an otherwise idle machine. To compare runs:
 
-1. Quiesce background processes (close browsers, dev servers, etc.).
-2. Plug into wall power if on a laptop.
-3. Run several times — the median-of-medians should settle within a few
-   percent across consecutive invocations.
+1. Record the source/package revision, runtime, hardware and operating conditions alongside the JSON output.
+2. Quiesce background work for an idle baseline and use consistent power settings.
+3. Repeat measurements and retain all results, including tails and slow runs. Do not assume a fixed percentage of variation or discard failures because a rerun passes.
+4. Measure representative competing load separately when evaluating integration performance.
 
-If your numbers diverge significantly from the reference table on similar
-hardware, please file an issue with the JSON output attached.
+If results differ significantly on similar hardware, file an issue with the JSON output and environment details. Preserve historical reference results under their original scope.
