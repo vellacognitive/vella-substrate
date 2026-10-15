@@ -1,5 +1,7 @@
 # SDK 2.0.0 and MCP 1.0.0 — release guide
 
+For current completed evidence and outstanding deployment gates, see [Production readiness](../production-readiness.md). This document retains its historical candidate scope.
+
 The owner selected these versions and explicitly authorized publication on September 8, 2026. The major SDK increment reflects changed signing output and stricter input validation. The SDK and MCP runtime passed the accepted local workload and hosted compatibility checks before release preparation.
 
 ## Supported pairing and boundaries

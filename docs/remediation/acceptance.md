@@ -1,5 +1,7 @@
 # SOW acceptance ledger — local review candidate
 
+For current completed evidence and outstanding deployment gates, see [Production readiness](../production-readiness.md). This document retains its historical candidate scope.
+
 Date: September 8, 2026. Base commit: `7af5a878ed002271f74a0c1d1a0b3071d7e66985`. Branch: `codex/sow-contract-and-validation`. This ledger is a **pre-commit local evidence snapshot**, not a published-release acceptance. The associated pull request records the immutable candidate and subsequent hosted checks; publication remains a separate decision.
 
 The owner approved exact signed payload bytes for v2, separate legacy interpretation, and the local operator-controlled MCP reference. Local checks ran on macOS with Node 22.22.3 and Python 3.12.14. “Local pass” below means the listed fixtures passed in that environment; it does not mean owner acceptance or complete deployment coverage.

@@ -1,5 +1,7 @@
 # PQ production acceptance ledger — public v3 candidate
 
+For current completed evidence and outstanding deployment gates, see [Production readiness](../../docs/production-readiness.md). This document retains its historical candidate scope.
+
 SDK 2.1.0 (Node/Python) and MCP 1.1.0 are qualified, opt-in releases. Mike Wilson accepted the M1 contract and authorized continuation on 2026-09-08. Engineering qualification passed the referenced final evidence; The owner accepted the candidate for merge with “push,” then explicitly authorized publication on 2026-09-08. Registry completion remains separately verifiable.
 
 ## Traceability
