@@ -30,7 +30,7 @@
 
 **VELLA is the decision layer between an AI agent or autonomous system proposing an action and that action being taken.** It sits where alignment, input safety, and IAM don't: at the specific moment an autonomous system is about to act, under a specific policy, with specific evidence in hand.
 
-Given an intent and an evidence mask, VELLA returns `ALLOWED` or `DENIED` deterministically and can emit a signed proof when optional signing succeeds. Applications supply the effective action context; the mandatory gate additionally requires trusted evidence and acknowledged proof retention before dispatch. The bundle can be verified offline by any third party with only the bundle and a public key. No access to VELLA, the agent, or the originating system is required.
+Given an intent and an evidence mask, VELLA returns `ALLOWED` or `DENIED` deterministically and can emit a signed proof when optional signing succeeds. Applications supply the effective action context; the mandatory gate additionally requires trusted evidence and acknowledged proof retention before dispatch. The bundle can be verified offline by a third party using independently trusted verification material for its proof version. [Classical v2 verification](spec/proof-v2.md) uses a trusted public key; [hybrid v3 verification](spec/pqc/PROOF-CONTRACT.md) requires a trusted P-256/ML-DSA-65 public-key pair and an explicitly selected suite, with both signatures verified. Historical verification also requires the applicable archival trust policy. No connection to VELLA, the agent, or the originating system is required.
 
 This is a reference implementation, MIT-licensed. It's designed to be the primitive that agent frameworks, audit pipelines, and compliance systems build on.
 
