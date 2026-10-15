@@ -1,7 +1,18 @@
 import fs from 'node:fs';
+import {randomUUID} from 'node:crypto';
 import {loadavg, freemem} from 'node:os';
 import {monitorEventLoopDelay} from 'node:perf_hooks';
 import {performance} from 'node:perf_hooks';
+
+// Readers poll this path concurrently. Publish complete JSON by same-directory
+// rename so they see either the previous acknowledgement or the complete new one.
+export function publishPhaseAcknowledgement(path, request) {
+  const temporary = `${path}.${randomUUID()}.tmp`;
+  try {
+    fs.writeFileSync(temporary, JSON.stringify(request), {mode: 0o600, flag: 'wx'});
+    fs.renameSync(temporary, path);
+  } finally { fs.rmSync(temporary, {force: true}); }
+}
 
 // Private harness instrumentation, never exposed as an MCP tool or SDK option.
 export function startTelemetry(metricsPath) {
@@ -32,7 +43,7 @@ export function startTelemetry(metricsPath) {
     if (!['warmup','measured','recovery'].includes(request.phase)) throw new Error('invalid telemetry phase');
     sample({phaseEnd:true});
     phase=request.phase; phaseStartedAt=performance.now(); phaseHistogram.reset(); interval.reset();
-    fs.writeFileSync(`${controlPath}.ack`, JSON.stringify(request), {mode:0o600});
+    publishPhaseAcknowledgement(`${controlPath}.ack`, request);
   }
   const timer=setInterval(()=>sample(),1000); timer.unref();
   process.on('SIGUSR2',transition);
