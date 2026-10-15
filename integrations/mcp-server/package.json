@@ -1,6 +1,6 @@
 {
   "name": "@vellacognitive/vella-mcp-server",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "description": "Vella governed MCP server binding for local stdio tools",
   "license": "MIT",
@@ -18,6 +18,7 @@
     "index.js",
     "index.d.ts",
     "README.md",
+    "CHANGELOG.md",
     "example",
     "LICENSE"
   ],

@@ -21,7 +21,7 @@ export async function createLocalHybridReference(config, dependencies = {}) {
   const keyProvider = dependencies.keyProvider ? dependencies.keyProvider(keys) : keys;
   const evidenceProvider = createOperatorEvidenceProvider({loadState: async () => JSON.parse(await readFile(config.evidenceStatePath, 'utf8'))});
   const createServer = () => {
-    const server = new McpServer({name: config.serverId, version: '1.1.0'});
+    const server = new McpServer({name: config.serverId, version: '1.1.1'});
     const gate = withAdmissionLimit(createExecutionGate({policy: reportPolicy, proofProfile: HYBRID_PROFILE,
       keyProvider, evidenceProvider, proofSink: sink, buildHash: config.buildHash ?? null, timeoutMs: 30000}), {capacity: 8, receiptKind: HYBRID_PROFILE.receiptKind});
     for (const name of ['exportReport', 'ExportReport']) {

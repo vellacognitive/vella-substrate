@@ -47,11 +47,11 @@ const expectedCommit = expectedCommitIndex >= 0 ? args[expectedCommitIndex + 1] 
 const requireReleased = args.includes("--require-released");
 const requireTaggedHead = args.includes("--require-tagged-head");
 const stableVersionPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
-const stableTagPattern = /^v((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))$/;
+const stableTagPattern = /^(?:mcp-)?v((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))$/;
 const fullCommitPattern = /^[0-9a-f]{40}$/i;
 
 if (tagIndex >= 0 && !tag) {
-  fail("--tag requires a value such as v1.0.3");
+  fail("--tag requires a value such as v2.1.0 or mcp-v1.1.1");
 }
 
 if (expectedCommitIndex >= 0 && !expectedCommit) {
@@ -67,8 +67,9 @@ if (requireTaggedHead && !tag) {
 }
 
 const tagMatch = tag?.match(stableTagPattern);
+const mcpRelease = tagMatch && tag.startsWith("mcp-");
 if (tag && !tagMatch) {
-  fail(`tag ${JSON.stringify(tag)} is not a stable release tag such as v1.0.3`);
+  fail(`tag ${JSON.stringify(tag)} is not a stable release tag such as v2.1.0 or mcp-v1.1.1`);
 }
 
 const nodePackage = JSON.parse(read("sdk/node/package.json"));
@@ -125,8 +126,9 @@ if (!stableVersionPattern.test(expectedVersion)) {
 
 if (tagMatch) {
   const tagVersion = tagMatch[1];
-  if (tagVersion !== expectedVersion) {
-    fail(`tag ${tag} does not match package version ${expectedVersion}`);
+  const targetVersion = mcpRelease ? mcpPackage.version : expectedVersion;
+  if (tagVersion !== targetVersion) {
+    fail(`tag ${tag} does not match package version ${targetVersion}`);
   }
 }
 
@@ -168,6 +170,15 @@ if (!releaseMatch) {
   fail(`CHANGELOG.md has no release heading for ${expectedVersion}`);
 } else if (requireReleased && releaseMatch[1] === "Unreleased") {
   fail(`CHANGELOG.md still marks ${expectedVersion} as Unreleased`);
+}
+
+const mcpChangelog = read("integrations/mcp-server/CHANGELOG.md");
+const mcpHeading = new RegExp(`^## \\[${escapeRegExp(mcpPackage.version)}\\] - (Unreleased|\\d{4}-\\d{2}-\\d{2})$`, "m");
+const mcpReleaseMatch = mcpChangelog.match(mcpHeading);
+if (!/^## \[Unreleased\]$/m.test(mcpChangelog) || !mcpReleaseMatch) {
+  fail(`MCP CHANGELOG.md must contain [Unreleased] and a release heading for ${mcpPackage.version}`);
+} else if (requireReleased && mcpRelease && mcpReleaseMatch[1] === "Unreleased") {
+  fail(`MCP CHANGELOG.md still marks ${mcpPackage.version} as Unreleased`);
 }
 
 if (process.exitCode) {
