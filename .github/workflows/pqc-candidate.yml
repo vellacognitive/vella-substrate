@@ -36,7 +36,7 @@ jobs:
           node scripts/check-release-consistency.mjs
           node integrations/pqc-production/conformance.mjs > "$RUNNER_TEMP/pq/conformance.json"
           python integrations/pqc-production/schema_check.py "$PQC_PUBLIC_VECTORS" > "$RUNNER_TEMP/pq/schemas.json"
-          node --test integrations/pqc-production/*.test.mjs
+          node --test integrations/pqc-production/*.test.mjs integrations/pqc-production/operational/*.test.mjs
           node --test sdk/node/test/*.test.js
           python -m pytest sdk/python/tests -q
           ruff check sdk/python/vella integrations/pqc-production

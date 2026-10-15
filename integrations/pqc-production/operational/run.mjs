@@ -1,3 +1,4 @@
+import {assessScenario} from "./assessment.mjs";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { mkdtemp, readFile, writeFile, readdir, mkdir, rm, rename } from "node:fs/promises";
@@ -36,7 +37,7 @@ const sourceFiles = execFileSync("git", ["ls-files", "--cached", "--others", "--
 const files = [];
 for (const path of sourceFiles) files.push({ path, sha256: createHash("sha256").update(await readFile(join(root, path))).digest("hex") });
 const sourceDigest = actionDigest(files);
-const report = { kind: "vella-operational-results-v1", startedAt: new Date().toISOString(), acceptanceRun: !smoke, plan, planSha256: createHash("sha256").update(planBytes).digest("hex"),
+const report = { kind: "vella-operational-results-v1", startedAt: new Date().toISOString(), acceptanceRun: !smoke, runMode: smoke ? "functional-smoke" : "performance-acceptance", plan, planSha256: createHash("sha256").update(planBytes).digest("hex"),
   baseCommit: execFileSync("git", ["rev-parse", "HEAD"], { cwd: root }).toString().trim(), sourceDigest, files, profile, soak, installedApplication: app, installedLockSha256: createHash("sha256").update(await readFile(join(app,"package-lock.json"))).digest("hex"),
   machine: { cpu: cpus()[0].model, cpuCount: cpus().length, platform: platform(), release: release(), node: process.version }, scenarios: [], status: "running" };
 await mkdir(dirname(output), { recursive: true });
@@ -128,21 +129,22 @@ for (const scenario of cases) {
     const firstAt = resource[0]?.at ?? 0, lastAt = resource.at(-1)?.at ?? 0;
     const settledRss = quantiles(resource.filter(s=>s.at >= firstAt+30000 && s.at < firstAt+330000).map(s=>s.rss)).p50;
     const lateRss = quantiles(resource.filter(s=>s.at >= lastAt-300000).map(s=>s.rss)).p50;
-    const resourcesPassed = resource.length > 0 && rss.max <= 512*1024**2 && resource.at(-1).lifetimeEventLoopP99Ms <= 50 && (!soak || smoke || lateRss <= settledRss+64*1024**2);
     await writeFile(output+`.${report.scenarios.length}.resources.json`, JSON.stringify(resource));
     const endToEndMs = quantiles(samples.map(s=>s.elapsed));
     const stages = [...new Set(samples.flatMap(s=>Object.keys(s.timings)))];
     const p95Limit = scenario.concurrency === 1 ? plan.thresholds.singleP95Ms : plan.thresholds.concurrentP95Ms;
+    const assessment = assessScenario({smoke, soak, resource, settledRss, lateRss, endToEndMs, p95Limit, p99Limit: plan.thresholds.p99Ms, unexpected});
     const row = { ...scenario, elapsedMs, measuredCalls: samples.length, throughputCallsPerSecond: samples.length/(elapsedMs/1000),
       successCalls: samples.filter(s=>s.shouldExecute).length, expectedStoppedCalls: samples.filter(s=>!s.shouldExecute).length,
       endToEndMs, stagesMs: Object.fromEntries(stages.map(name=>[name, quantiles(samples.map(s=>s.timings[name]).filter(Number.isFinite))])),
-      resources: {samples:resource.length,rssBytes:rss,perSecondEventLoopP99Ms:eventLoop,eventLoopP99Ms:resource.at(-1)?.lifetimeEventLoopP99Ms,settledRssMedian:settledRss,lateRssMedian:lateRss,artifactBytes:accountedBytes,passed:resourcesPassed}, unexpected, effectsIncludingWarmupAndRecovery: effects, verifiedProofs, verifiedReceipts, recoveryCalls: expected.length-recoveryStart,
-      passed: unexpected.length === 0 && resourcesPassed && (smoke || (endToEndMs.p95 <= p95Limit && endToEndMs.p99 <= plan.thresholds.p99Ms)),
+      resources: {samples:resource.length,rssBytes:rss,perSecondEventLoopP99Ms:eventLoop,eventLoopP99Ms:assessment.timing.eventLoopP99Ms,settledRssMedian:settledRss,lateRssMedian:lateRss,artifactBytes:accountedBytes,passed:assessment.resourcesPassed}, unexpected, effectsIncludingWarmupAndRecovery: effects, verifiedProofs, verifiedReceipts, recoveryCalls: expected.length-recoveryStart,
+      passed: assessment.passed, failureReasons: assessment.failures, timing: assessment.timing, diagnostics: assessment.diagnostics,
       limits: { p95Ms: p95Limit, p99Ms: plan.thresholds.p99Ms } };
-    report.scenarios.push(row); await save(); console.log(JSON.stringify({ completed: row.mode, bytes: row.bytes, concurrency: row.concurrency, measuredCalls: row.measuredCalls, passed: row.passed, endToEndMs }));
+    report.scenarios.push(row); await save(); console.log(JSON.stringify({ completed: row.mode, bytes: row.bytes, concurrency: row.concurrency, measuredCalls: row.measuredCalls, passed: row.passed, failureReasons: row.failureReasons, diagnostics: row.diagnostics, endToEndMs }));
   } catch (error) {
     report.scenarios.push({ ...scenario, passed: false, error: String(error), unexpected }); await save(); throw error;
   } finally { await client?.close(); await rm(directory, { recursive: true, force: true }); }
 }
+report.performanceAcceptancePassed = smoke ? null : report.scenarios.every(s=>s.passed);
 report.status = "complete"; report.finishedAt = new Date().toISOString(); report.allPassed = report.scenarios.every(s=>s.passed); await save();
 process.exitCode = report.allPassed ? 0 : 1;
