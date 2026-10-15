@@ -33,6 +33,12 @@ Use these stable IDs in follow-up PRs and deployment evidence. Open means eviden
 
 A gate can be marked not applicable only with a recorded reason tied to the selected deployment. Remote transport, external IAM, network storage and multi-tenant enforcement require their own design and qualification; the local reference evidence does not cover them.
 
+## Dependency maintenance
+
+The source dependency baseline now pins MCP client 2.3.1 (with client core 2.3.1), while the server remains 2.0.0. Both local integrations use the same client pin. [GHSA-6qxp-vccf-f47h](https://github.com/advisories/GHSA-6qxp-vccf-f47h) affects HTTP OAuth credential handling in client 2.0.0; upstream explicitly excludes stdio clients and MCP servers. The shipped operator client constructs a stdio transport and exposes no HTTP OAuth path. This upgrade is dependency maintenance, not evidence of a credential leak in the local reference. Custom HTTP clients require separate assessment.
+
+The new client/core distributions include upstream Apache-2.0 transition notices; retain their supplied license files when redistributing dependencies. Historical performance reports and published package versions retain their original dependency identities. This source update does not republish MCP 1.1.0 or qualify the new dependency set for production performance; PROD-02 and PROD-06 still require exact-artifact deployment evidence.
+
 ## Remaining engineering investigation
 
 **PERF-01 — macOS delay attribution (open).** Phase telemetry observed delays in measured work as well as startup/warmup/recovery. High host load and low process CPU relative to elapsed time are consistent with contention or blocking, but do not prove the cause. Compare repeated runs on an idle dedicated macOS host and under controlled competing load, retaining phase/CPU/resource traces and profiling evidence. Do not tune acceptance thresholds to make failures pass. A target-environment timing failure blocks that environment's acceptance; a hosted smoke diagnostic alone is not a functional failure.
