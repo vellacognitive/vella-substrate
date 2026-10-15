@@ -1,8 +1,8 @@
 # Vella governed MCP server — local reference
 
-This package wraps registered MCP tool handlers with the Node SDK's mandatory-proof execution gate. MCP 1.1.0 pairs with SDK 2.1.0. The default local example remains v2; `example/pqc/reference-server.mjs` opts into v3 hybrid proofs. The required peer is exactly SDK 2.1.0.
+This package wraps registered MCP tool handlers with the Node SDK's mandatory-proof execution gate. The source candidate MCP 1.1.1 pairs with SDK 2.1.0. The default local example remains v2; `example/pqc/reference-server.mjs` opts into v3 hybrid proofs. The required peer is exactly SDK 2.1.0.
 
-Install the exact pair with `npm install @vellacognitive/vella-sdk@2.1.0 @vellacognitive/vella-mcp-server@1.1.0`, or use the matching verified handoff tarballs. See [migration and runtime requirements](https://github.com/vellacognitive/vella-substrate/blob/main/spec/pqc/MIGRATION.md).
+MCP 1.1.1 is not yet published. The existing registry pair remains `npm install @vellacognitive/vella-sdk@2.1.0 @vellacognitive/vella-mcp-server@1.1.0`. Qualify 1.1.1 using verified candidate tarballs until publication. See [adapter release notes](CHANGELOG.md). See [migration and runtime requirements](https://github.com/vellacognitive/vella-substrate/blob/main/spec/pqc/MIGRATION.md).
 
 ## Run from this repository
 
@@ -40,7 +40,7 @@ The report resource must be absent. The handler uses exclusive creation to enfor
 
 ## Retention, receipts and recovery
 
-The gate requires a valid v2 proof verified under the configured public key and a matching sink acknowledgment before dispatch. `createLocalProofSink` exclusively creates a mode-0600 file, flushes it with `fsync`, then flushes the directory and its parent. The directory must already exist under operator-controlled ancestors. Never put secrets in action or evidence payloads; the reference report content is intentionally retained in its proof.
+The gate requires a valid proof under the selected profile (v2 by default; v3 for the opt-in hybrid reference), verified under the configured public key or hybrid public-key set and a matching sink acknowledgment before dispatch. `createLocalProofSink` exclusively creates a mode-0600 file, flushes it with `fsync`, then flushes the directory and its parent. The directory must already exist under operator-controlled ancestors. Never put secrets in action or evidence payloads; the reference report content is intentionally retained in its proof.
 
 The acknowledgment is `file-and-directory-fsync` on the tested local filesystem. Process-kill tests cover interrupted execution and subsequent proof verification. This is not tested protection against hardware power loss, a lying storage device, network-filesystem failure or machine loss; it is not replication.
 
@@ -52,7 +52,7 @@ The result distinguishes policy `decision`, `eligible`, `outcome`, `authorizatio
 
 A receipt-write failure preserves the observed result and sets `receiptRetained: false`. After restart, an authorization without a retained receipt must be treated as an unresolved/unknown execution attempt. Its presence alone cannot distinguish a crash before dispatch from a crash after the effect. Reconcile the target file before any retry. The adapter never automatically replays consequential calls, and the example never overwrites an existing report.
 
-Cancellation before dispatch prevents invocation. In-flight dependencies or handlers may finish after cancellation; their completion cannot retroactively authorize a new dispatch or turn an unknown return into a false no-effect assertion. The default gate deadline is 30 seconds, configurable from 1 ms to 300 seconds; receipt retention gets a separate bounded attempt of at most five seconds.
+Cancellation before dispatch prevents invocation. In-flight dependencies or handlers may finish after cancellation; their completion cannot retroactively authorize a new dispatch or turn an unknown return into a false no-effect assertion. The default v2 launcher uses a 30-second gate deadline, configurable from 1 ms to 300 seconds. The hybrid reference fixes its deadline at 30 seconds and admission at eight gate calls. Admission slots are released when the gate settles; this does not bound all asynchronous work that may finish after cancellation. Receipt retention gets a separate bounded attempt of at most five seconds.
 
 ## Packaging and acceptance
 

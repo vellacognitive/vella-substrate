@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {pathToFileURL} from 'node:url';
-import {resolve, join} from 'node:path';
+import {resolve, join, dirname} from 'node:path';
 import {mkdtemp, readFile, readdir, writeFile, rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {spawnSync} from 'node:child_process';
@@ -10,6 +10,10 @@ import {generateKeyPairSync} from 'node:crypto';
 const app = resolve(process.argv[2]), python = process.argv[3];
 const require = createRequire(join(app, 'package.json'));
 const load = name => import(pathToFileURL(require.resolve(name)));
+const installedVersion = async name => JSON.parse(await readFile(join(dirname(require.resolve(name)), 'package.json'), 'utf8')).version;
+const sdkVersion = await installedVersion('@vellacognitive/vella-sdk');
+// The main adapter export is ESM-only; its operator subpath resolves for this harness.
+const mcpVersion = JSON.parse(await readFile(resolve(dirname(require.resolve('@vellacognitive/vella-mcp-server/pqc/operator')), '../../package.json'), 'utf8')).version;
 const sdk = await load('@vellacognitive/vella-sdk');
 const pq = await load('@vellacognitive/vella-sdk/pqc/index.js');
 const operator = await load('@vellacognitive/vella-mcp-server/pqc/operator');
@@ -59,6 +63,6 @@ try {
   await writeFile(bundlePath, JSON.stringify(draft));
   const pyReject = spawnSync(python, ['-I','-m','vella.pqc.verify_cli',...args], {encoding:'utf8',env});
   assert.equal(pyReject.status, 1);
-  console.log(JSON.stringify({kind:'vella-installed-v3-checks',allPassed:true,node:process.version,nodeOpenSSL:process.versions.openssl,pythonRuntime:produced.python,pythonCryptography:produced.cryptography,pythonOpenSSL:produced.openssl,rfc8785:produced.rfc8785,sdk:'2.1.0',mcp:'1.1.0',pythonSDK:produced.version,
+  console.log(JSON.stringify({kind:'vella-installed-v3-checks',allPassed:true,node:process.version,nodeOpenSSL:process.versions.openssl,pythonRuntime:produced.python,pythonCryptography:produced.cryptography,pythonOpenSSL:produced.openssl,rfc8785:produced.rfc8785,sdk:sdkVersion,mcp:mcpVersion,pythonSDK:produced.version,
     checks:['both native MCP routes','Node-produced archive verified by installed Node/Python CLIs','installed Python-produced proof verified by Node','v2 default retained','mixed-format/draft rejection'],sourceCheckoutUsed:false},null,2));
 } finally { await client?.close(); await rm(root, {recursive:true,force:true}); }

@@ -48,7 +48,9 @@ jobs:
           (cd sdk/node && npm pack --json --pack-destination "$RUNNER_TEMP/pq/packages") > "$RUNNER_TEMP/pq/node-pack.json"
           (cd integrations/mcp-server && npm pack --json --pack-destination "$RUNNER_TEMP/pq/packages") > "$RUNNER_TEMP/pq/mcp-pack.json"
           python -m pip wheel ./sdk/python --no-deps --no-build-isolation --wheel-dir "$RUNNER_TEMP/pq/packages"
-          npm install --prefix "$RUNNER_TEMP/pq/app" --ignore-scripts "$RUNNER_TEMP/pq/packages/vellacognitive-vella-sdk-2.1.0.tgz" "$RUNNER_TEMP/pq/packages/vellacognitive-vella-mcp-server-1.1.0.tgz"
+          NODE_PACK="$(node -p "require(process.env.RUNNER_TEMP + '/pq/node-pack.json')[0].filename")"
+          MCP_PACK="$(node -p "require(process.env.RUNNER_TEMP + '/pq/mcp-pack.json')[0].filename")"
+          npm install --prefix "$RUNNER_TEMP/pq/app" --ignore-scripts "$RUNNER_TEMP/pq/packages/$NODE_PACK" "$RUNNER_TEMP/pq/packages/$MCP_PACK"
           python -m venv "$RUNNER_TEMP/pq/python"
           "$RUNNER_TEMP/pq/python/bin/python" -m pip install "$RUNNER_TEMP/pq/packages/vella_sdk-2.1.0-py3-none-any.whl[pqc]"
       - name: Installed interoperability and local operational smoke

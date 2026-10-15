@@ -17,9 +17,12 @@ const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const releaseVersion = JSON.parse(
   readFileSync(join(repositoryRoot, "sdk/node/package.json"), "utf8"),
 ).version;
+const mcpVersion = JSON.parse(readFileSync(join(repositoryRoot, "integrations/mcp-server/package.json"), "utf8")).version;
+const mcpTag = `mcp-v${mcpVersion}`;
 const releaseTag = `v${releaseVersion}`;
 const releaseFiles = [
   "integrations/mcp-server/package.json",
+  "integrations/mcp-server/CHANGELOG.md",
   "integrations/mcp-server/package-lock.json",
   "CHANGELOG.md",
   "CITATION.cff",
@@ -62,12 +65,16 @@ function createTaggedRepository(t) {
   );
   writeFileSync(changelogPath, changelog, "utf8");
 
+  const mcpNotes = join(fixtureRoot, "integrations/mcp-server/CHANGELOG.md");
+  writeFileSync(mcpNotes, readFileSync(mcpNotes, "utf8").replace(new RegExp(`(## \\[${mcpVersion.replaceAll(".", "\\.")}\\] - )[^\\n]+`), "$1Unreleased"));
+
   runGit(fixtureRoot, "init", "--quiet");
   runGit(fixtureRoot, "config", "user.name", "VELLA Release Test");
   runGit(fixtureRoot, "config", "user.email", "release-test@example.invalid");
   runGit(fixtureRoot, "add", ".");
   runGit(fixtureRoot, "commit", "--quiet", "-m", "release fixture");
   runGit(fixtureRoot, "tag", releaseTag);
+  runGit(fixtureRoot, "tag", mcpTag);
   return fixtureRoot;
 }
 
@@ -177,4 +184,51 @@ test("refuses release publication when the MCP package is private", (t) => {
   const result = checkRelease(fixtureRoot, "--require-released");
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /must permit public publication/);
+});
+
+test("MCP candidate tag is versioned independently and cannot publish unreleased notes", t => {
+  const root = createTaggedRepository(t);
+  assert.equal(checkRelease(root, '--tag', mcpTag, '--require-tagged-head').status, 0);
+  const blocked = checkRelease(root, '--tag', mcpTag, '--require-released', '--require-tagged-head');
+  assert.equal(blocked.status, 1);
+  assert.match(blocked.stderr, /MCP CHANGELOG.md still marks .* as Unreleased/);
+  const path = join(root, 'integrations/mcp-server/CHANGELOG.md');
+  writeFileSync(path, readFileSync(path, 'utf8').replace(`## [${mcpVersion}] - Unreleased`, `## [${mcpVersion}] - 2000-01-01`));
+  runGit(root, 'add', '.');
+  runGit(root, 'commit', '--quiet', '-m', 'release MCP fixture');
+  // Old tag must not validate the new release checkout.
+  assert.equal(checkRelease(root, '--tag', mcpTag, '--require-released', '--require-tagged-head').status, 1);
+  runGit(root, 'tag', '--force', mcpTag);
+  const released = checkRelease(root, '--tag', mcpTag, '--require-released', '--require-tagged-head');
+  assert.equal(released.status, 0, released.stderr);
+  const mismatch = checkRelease(root, '--tag', 'mcp-v999.0.0');
+  assert.equal(mismatch.status, 1);
+  assert.match(mismatch.stderr, /does not match package version/);
+});
+
+test("publish workflow routes MCP only through explicit MCP-tag dispatch", t => {
+  const workflow = readFileSync(join(repositoryRoot, '.github/workflows/publish.yml'), 'utf8');
+  const script = workflow.split('      - name: Validate release tag\n')[1].split('        run: |\n')[1].split('\n      - uses:')[0].split('\n').map(line => line.replace(/^          /, '')).join('\n');
+  const dir = mkdtempSync(join(tmpdir(), 'vella-release-routing-'));
+  t.after(() => rmSync(dir, {recursive:true, force:true}));
+  const output = join(dir, 'output');
+  for (const [tag, event, registry, component] of [
+    [mcpTag, 'workflow_dispatch', 'mcp', 'mcp'],
+    [releaseTag, 'release', '', 'sdk'],
+    [releaseTag, 'workflow_dispatch', 'both', 'sdk'],
+    [releaseTag, 'workflow_dispatch', 'npm', 'sdk'],
+    [releaseTag, 'workflow_dispatch', 'pypi', 'sdk'],
+    [mcpTag, 'release', '', null],
+    [mcpTag, 'workflow_dispatch', 'both', null],
+    [mcpTag, 'workflow_dispatch', 'npm', null],
+    [mcpTag, 'workflow_dispatch', 'pypi', null],
+    [releaseTag, 'workflow_dispatch', 'mcp', null],
+    [`${mcpTag}$(uname)`, 'workflow_dispatch', 'mcp', null],
+    ['mcp-v01.1.1', 'workflow_dispatch', 'mcp', null],
+  ]) {
+    writeFileSync(output, '');
+    const result = spawnSync('bash', ['-e', '-c', script], {encoding:'utf8', env:{...process.env, RELEASE_TAG:tag, RELEASE_EVENT:event, RELEASE_TARGET:registry, GITHUB_OUTPUT:output}});
+    assert.equal(result.status, component ? 0 : 1, `${tag}/${event}/${registry}: ${result.stderr}`);
+    if (component) assert.match(readFileSync(output, 'utf8'), new RegExp(`^component=${component}$`, 'm'));
+  }
 });

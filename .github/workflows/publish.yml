@@ -1,7 +1,8 @@
 name: Publish SDKs and MCP
 
 # Triggers on a published GitHub Release. Tag the release `vX.Y.Z` and the
-# version across packages, citation metadata, and changelog must match. Both jobs use OIDC
+# SDK version across packages, citation metadata, and changelog must match.
+# MCP-only publication uses explicit dispatch and an mcp-vX.Y.Z tag. Jobs use OIDC
 # Trusted Publisher flows; no long-lived secrets in the repo.
 #
 # One-time setup (already done; documented here for the audit trail):
@@ -17,7 +18,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag to verify (must match every release surface, e.g. v1.0.3)"
+        description: "Immutable tag: vX.Y.Z for SDKs; mcp-vX.Y.Z for adapter"
         required: true
       registry:
         description: "Publish target (both = SDK npm and PyPI; mcp = adapter only)"
@@ -39,9 +40,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      RELEASE_TARGET: ${{ inputs.registry }}
+      RELEASE_EVENT: ${{ github.event_name }}
       RELEASE_EVENT_SHA: ${{ github.event_name == 'release' && github.sha || '' }}
     outputs:
       version: ${{ steps.derive.outputs.version }}
+      component: ${{ steps.derive.outputs.component }}
       sha: ${{ steps.source.outputs.sha }}
       tag: ${{ steps.derive.outputs.tag }}
     steps:
@@ -49,11 +53,24 @@ jobs:
         id: derive
         shell: bash
         run: |
-          if [[ ! "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
-            echo "Release tag must use stable vMAJOR.MINOR.PATCH syntax" >&2
+          if [[ "$RELEASE_TAG" =~ ^mcp-v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            if [[ "$RELEASE_EVENT" != workflow_dispatch || "$RELEASE_TARGET" != mcp ]]; then
+              echo "MCP tags require explicit workflow_dispatch with registry=mcp" >&2
+              exit 1
+            fi
+            VERSION="${RELEASE_TAG#mcp-v}"
+            echo "component=mcp" >> "$GITHUB_OUTPUT"
+          elif [[ "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            if [[ "$RELEASE_TARGET" == mcp ]]; then
+              echo "MCP publication requires its own mcp-vMAJOR.MINOR.PATCH tag" >&2
+              exit 1
+            fi
+            VERSION="${RELEASE_TAG#v}"
+            echo "component=sdk" >> "$GITHUB_OUTPUT"
+          else
+            echo "Release tag must use stable vMAJOR.MINOR.PATCH or mcp-vMAJOR.MINOR.PATCH syntax" >&2
             exit 1
           fi
-          VERSION="${RELEASE_TAG#v}"
           echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Validated tag $RELEASE_TAG with expected version $VERSION"
@@ -103,7 +120,7 @@ jobs:
   publish-node:
     name: Publish @vellacognitive/vella-sdk to npm
     needs: verify-versions
-    if: github.event_name == 'release' || inputs.registry == 'both' || inputs.registry == 'npm'
+    if: needs.verify-versions.outputs.component == 'sdk' && (github.event_name == 'release' || inputs.registry == 'both' || inputs.registry == 'npm')
     runs-on: ubuntu-latest
     environment: release
     permissions:
@@ -136,7 +153,7 @@ jobs:
   publish-python:
     name: Publish vella-sdk to PyPI
     needs: verify-versions
-    if: github.event_name == 'release' || inputs.registry == 'both' || inputs.registry == 'pypi'
+    if: needs.verify-versions.outputs.component == 'sdk' && (github.event_name == 'release' || inputs.registry == 'both' || inputs.registry == 'pypi')
     runs-on: ubuntu-latest
     environment: release
     permissions:
@@ -171,13 +188,12 @@ jobs:
         with:
           packages-dir: sdk/python/dist/
 
-  # Bootstrap MCP 1.0.0 through an authenticated maintainer first, then configure
-  # its own npm trusted publisher. Adapter publication is an explicit dispatch
-  # because its version is independent from the SDK release tag.
+  # MCP has its own npm trusted-publisher configuration. Its immutable mcp-v tag
+  # is published only by explicit dispatch, independently from SDK releases.
   publish-mcp:
     name: Publish @vellacognitive/vella-mcp-server to npm
     needs: verify-versions
-    if: github.event_name == 'workflow_dispatch' && inputs.registry == 'mcp'
+    if: needs.verify-versions.outputs.component == 'mcp' && github.event_name == 'workflow_dispatch' && inputs.registry == 'mcp'
     runs-on: ubuntu-latest
     environment: release
     permissions:
