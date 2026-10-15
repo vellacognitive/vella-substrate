@@ -10,7 +10,7 @@ The SDK in this repository is **one of several VELLA components**. The others �
 
 ### In-process adjudication inside Node.js or Python applications
 
-The SDK is a library. You import it and call `govern()`. The decision returns in single-digit microseconds (warm); with signed proof bundle generation, approximately 250 microseconds end to end. No network hop, no subprocess, no container.
+The SDK is a library. You import it and call `govern()`. Decision evaluation, proof generation and mandatory-gate execution have different costs. Use the [benchmark methodology and historical results](benchmarks/README.md) and [versioned qualification evidence](docs/production-readiness.md) with their recorded runtime, hardware and workload; historical timings are not current cross-platform guarantees. No network hop, no subprocess, no container.
 
 This makes it well-suited for:
 
@@ -18,10 +18,10 @@ This makes it well-suited for:
 - **Local CLI and developer-tool governance.** Git hooks, pre-commit checks, shell scripts, deploy gates invoked as a function call rather than a service.
 - **CI/CD pipeline steps.** GitHub Actions, GitLab CI, Jenkins, Buildkite — any step that can run a Node script or Python script can call the SDK directly without spinning up a container.
 - **Research notebooks and evaluation frameworks.** Jupyter, `uv`-managed scripts, academic eval harnesses. Runs wherever a Python or Node interpreter runs.
-- **Edge compute.** Nvidia Jetson, OT gateway, ruggedized Linux, embedded devices running Python or Node without a container runtime. The SDK has zero external dependencies (Node) or a single standard dependency (Python `cryptography`).
+- **Edge compute.** Nvidia Jetson, OT gateway, ruggedized Linux, embedded devices running Python or Node without a container runtime. The Node package declares no runtime dependencies. The Python base package declares `cryptography` and `rfc8785`; opt-in hybrid support has additional version/runtime requirements in [hybrid migration](spec/pqc/MIGRATION.md).
 - **Air-gapped and disconnected environments.** Full offline governance. Proof bundles produced offline are verifiable later, anywhere, by anyone with the public key.
 - **Autonomous systems at mission-authority level.** Mode transitions, command commits, state changes at human-command or mission-event frequency. Not inside control loops (see below).
-- **Batch and bulk processing.** Pipelines adjudicating thousands or millions of proposed actions. Single-digit microseconds per call; no container-startup or network latency.
+- **Batch and bulk processing.** Pipelines adjudicating thousands or millions of proposed actions. In-process calls avoid a required network hop; throughput depends on the selected proof profile and surrounding integration.
 - **Multi-agent orchestration.** Inter-agent authorization with evidence-bound proofs.
 - **Desktop and native applications.** Electron apps, Python applications, or any Node/Python-hosted product that ships with governance embedded.
 - **Node or Python microservices in-process.** Adjudication inside a single service's own process space.
@@ -119,18 +119,19 @@ The SDK may be sufficient if your deployment fits the "designed for" list above 
 
 | | SDK (this repository) | Runtime / sidecar (commercial) |
 |---|---|---|
-| Latency (decision only) | 1–76 µs (warm: 1–5 µs) | p50 349 µs, p95 851 µs, p99 1.68 ms |
-| Latency (with proof bundle) | ~250 µs | ~1 ms |
+| Performance evidence | Versioned reference benchmarks; no universal latency bound | Not qualified by this repository |
 | Deployment model | Library, in-process | Service, out-of-process |
 | Language support | Node.js ≥18, Python ≥3.10 | Any language via HTTP/gRPC |
 | Network dependency | None | Localhost or cluster-internal |
 | Container required | No | Typically yes |
 | Multi-tenant | No | Yes |
-| Policy hot-reload | Via application restart | Yes |
-| Proof bundle format | Identical across components | Identical across components |
-| Verification tooling | Included in this repository | Same tooling — identical bundles |
+| Policy activation | Create a new validated governor/evaluator instance; no mutable global reload | Outside this repository's qualification |
+| Proof bundle format | Versioned v1 archival, v2 default, opt-in v3 contracts | Compatibility must be established for the producer/version |
+| Verification tooling | Included in this repository | Applicable only to producers conforming to the supported contract |
 
-The proof bundle format is identical across all VELLA components. A bundle produced by the SDK is verifiable by the same verifier as a bundle produced by the runtime, and vice versa. There is no compatibility break between the free SDK and the commercial runtime.
+The runtime versions above describe the base SDK. Optional hybrid profiles and reference adapters have narrower requirements documented in their own migration and package guides.
+
+Proof compatibility is versioned. This repository tests its SDK producers and verifiers; it does not test the commercial runtime. Compatibility with another producer must be demonstrated against the relevant proof contract and trusted keys, as stated in the [ICD](spec/icd.md).
 
 ---
 

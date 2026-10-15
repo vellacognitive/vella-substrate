@@ -1,7 +1,7 @@
 # VELLA SDK — Latency Benchmarks
 
-Reproducible benchmarks for the in-process SDK. Backs the latency claims in
-[`DEPLOYMENT.md`](../DEPLOYMENT.md).
+Reproducible benchmarks for the in-process SDK. Provides reference measurements for
+[`DEPLOYMENT.md`](../DEPLOYMENT.md), not universal latency guarantees. Historical results retain their original artifact and environment scope.
 
 The harness measures two scenarios:
 
@@ -53,7 +53,7 @@ python3 benchmarks/bench.py
 ```
 
 The Python script adds `sdk/python` to `sys.path` directly, so `pip install`
-is not required — only `cryptography` needs to be available in the active
+is not required — install the dependencies declared by `sdk/python/pyproject.toml` in the active
 environment.
 
 ## Reference results

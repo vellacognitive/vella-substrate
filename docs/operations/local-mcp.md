@@ -1,10 +1,10 @@
 # Local single-host MCP operations
 
-Scope: operator-controlled local stdio, local filesystem, SDK 2.1.0 and the hybrid MCP reference. Use the [readiness checklist](../production-readiness.md) to record deployment acceptance. This runbook supplies procedures; it does not establish that a production operator, monitoring service or backup system is configured.
+Scope: operator-controlled local stdio, local filesystem, SDK 2.1.0 and the hybrid MCP reference. This is optional adopter guidance for this reference adapter, not a repository release checklist. Use the [acceptance template](local-mcp-acceptance.md) only when qualifying your own installation. This runbook supplies procedures; it does not establish that a production operator, monitoring service or backup system is configured.
 
 ## Deployment record
 
-Before admitting consequential work, record the host and OS, filesystem and mount options, Node version, exact SDK/MCP package hashes and lockfile, operator UID, server identity, configuration digest, policy digest and current public trust revision. Keep the configuration itself private. Specify the expected arrival pattern, payload distribution, concurrency, latency/error targets, retention volume, recovery time and acceptable evidence loss. Name the operator and incident contact. Unknown fields keep PROD-01 open.
+Before admitting consequential work, record the host and OS, filesystem and mount options, Node version, exact SDK/MCP package hashes and lockfile, operator UID, server identity, configuration digest, policy digest and current public trust revision. Keep the configuration itself private. Specify the expected arrival pattern, payload distribution, concurrency, latency/error targets, retention volume, recovery time and acceptable evidence loss. Name the operator and incident contact. Unknown fields remain the adopter's acceptance questions; they do not block SDK release.
 
 The hybrid reference admits eight concurrent calls with no waiting queue and uses a 30-second gate deadline. Excess requests receive `CAPACITY_EXCEEDED`; admission is not a retry service. Keep public trust, policy history and a qualified verifier separately recoverable. The demo approval issuer is a fixture, not a production approval service.
 
