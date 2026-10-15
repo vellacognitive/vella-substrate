@@ -18,6 +18,8 @@ The public SDK and local MCP reference have completed the documented engineering
 
 On October 15, the owner selected **local single-host MCP** as the first production target. Use operator-controlled local stdio and local storage as the reference boundary. The intended production machine, filesystem, traffic profile, operational owner and service/recovery targets still need to be recorded; the benchmark workstation is not implicitly the production host. Remote services and embedded-only adoption are separate acceptance scopes.
 
+The [local operations runbook](operations/local-mcp.md) defines monitoring, stop/drain, reconciliation, restore, key maintenance and rollout procedures. Deployment-specific configuration and exercised evidence remain required for PROD-03, PROD-04 and PROD-06.
+
 ## Deployment acceptance checklist
 
 Use these stable IDs in follow-up PRs and deployment evidence. Open means evidence has not been established for the intended deployment, not that the SDK necessarily lacks a feature. Assign an accountable operator and evidence location before marking a gate complete.
