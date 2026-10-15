@@ -52,5 +52,9 @@ include = ["vella*"]
 [tool.mypy]
 strict = true
 
+[tool.ruff]
+# Keep root-invoked qualification checks aligned with requires-python.
+target-version = "py310"
+
 [tool.setuptools.package-data]
 vella = ["py.typed"]
