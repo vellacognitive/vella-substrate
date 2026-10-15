@@ -1,6 +1,6 @@
 # MCP patch release preparation
 
-MCP 1.1.1 is an **unreleased candidate** paired with SDK 2.1.0. It delivers the client 2.3.1 dependency maintenance already on main. SDK 2.1.0 is not republished. Published MCP 1.1.0 retains its original bytes and dependencies.
+MCP 1.1.1 release metadata is finalized and paired with SDK 2.1.0. Registry publication and verification are separate release steps. It delivers the client 2.3.1 dependency maintenance already on main. SDK 2.1.0 is not republished. Published MCP 1.1.0 retains its original bytes and dependencies.
 
 ## Candidate verification
 

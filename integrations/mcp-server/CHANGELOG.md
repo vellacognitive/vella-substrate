@@ -4,7 +4,7 @@ The adapter is versioned independently from the SDK. The exact supported SDK pee
 
 ## [Unreleased]
 
-## [1.1.1] - Unreleased
+## [1.1.1] - 2026-10-15
 
 - Pin the operator harness MCP client/core to 2.3.1; MCP server remains 2.0.0. The upstream HTTP OAuth advisory does not affect the reference stdio transport.
 - Clarify default v2 versus opt-in hybrid proof retention and deadline configuration.
