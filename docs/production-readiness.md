@@ -41,6 +41,12 @@ The source dependency baseline now pins MCP client 2.3.1 (with client core 2.3.1
 
 The new client/core distributions include upstream Apache-2.0 transition notices; retain their supplied license files when redistributing dependencies. Historical performance reports and published package versions retain their original dependency identities. This source update does not republish MCP 1.1.0 or qualify the new dependency set for production performance; PROD-02 and PROD-06 still require exact-artifact deployment evidence.
 
+## Restore and registry evidence
+
+The [installed restore rehearsal](../integrations/pqc-production/operational/README.md#verifier-only-restore-rehearsal) verifies a synthetic archive after removal of its producer and private keys, across active/retired signing keys and maximum-length Unicode reports. CI runs it in all six hybrid jobs. Local source-built SDK 2.1.0/MCP 1.1.0 and separately downloaded registry versions both passed on Node 24.20.0 on October 15. Three reports, three authorizations, three receipts and three verification-material files restored successfully; six negative cases rejected. This advances PROD-02/04 but does not close target-environment qualification or backup acceptance.
+
+The fresh registry installation's `npm audit signatures` returned no invalid or missing signatures. Its MCP package still pins client 2.0.0; the current source build pins 2.3.1. Registry identity/signature verification is not a vulnerability scan or a deployment approval. Delivering the source dependency maintenance requires a new immutable release; no existing registry version was overwritten or republished. Production rollout and its operator rehearsal remain open under PROD-06.
+
 ## Remaining engineering investigation
 
 **PERF-01 — macOS delay attribution (open).** Phase telemetry observed delays in measured work as well as startup/warmup/recovery. High host load and low process CPU relative to elapsed time are consistent with contention or blocking, but do not prove the cause. Compare repeated runs on an idle dedicated macOS host and under controlled competing load, retaining phase/CPU/resource traces and profiling evidence. Do not tune acceptance thresholds to make failures pass. A target-environment timing failure blocks that environment's acceptance; a hosted smoke diagnostic alone is not a functional failure.
