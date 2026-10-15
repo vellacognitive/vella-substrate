@@ -12,7 +12,8 @@ const require = createRequire(join(app, 'package.json'));
 const load = name => import(pathToFileURL(require.resolve(name)));
 const installedVersion = async name => JSON.parse(await readFile(join(dirname(require.resolve(name)), 'package.json'), 'utf8')).version;
 const sdkVersion = await installedVersion('@vellacognitive/vella-sdk');
-const mcpVersion = await installedVersion('@vellacognitive/vella-mcp-server');
+// The main adapter export is ESM-only; its operator subpath resolves for this harness.
+const mcpVersion = JSON.parse(await readFile(resolve(dirname(require.resolve('@vellacognitive/vella-mcp-server/pqc/operator')), '../../package.json'), 'utf8')).version;
 const sdk = await load('@vellacognitive/vella-sdk');
 const pq = await load('@vellacognitive/vella-sdk/pqc/index.js');
 const operator = await load('@vellacognitive/vella-mcp-server/pqc/operator');
