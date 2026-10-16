@@ -103,15 +103,18 @@ The Node package has no runtime dependencies. The Python package depends on [`cr
 
 Python applications with an application-supplied policy can use the stable `from vella import create_evaluator` API. See the [Python SDK custom-policy documentation](sdk/python/README.md#custom-policy-evaluators).
 
-Releases on npm and PyPI are published via [Trusted Publisher](https://docs.pypi.org/trusted-publishers/) (OIDC) from this repository's tagged GitHub Releases. The npm package carries [provenance attestations](https://docs.npmjs.com/generating-provenance-statements) you can verify with `npm audit signatures`.
+Releases on npm and PyPI are published via [Trusted Publisher](https://docs.pypi.org/trusted-publishers/) (OIDC) from this repository's immutable tags. SDK publication uses tagged GitHub Releases; MCP adapter patches use explicit workflow dispatch (see the [MCP release record](docs/operations/mcp-release.md)). The npm package carries [provenance attestations](https://docs.npmjs.com/generating-provenance-statements) you can verify with `npm audit signatures`.
 
 ## Quick example
 
+Use a P-256 PEM private key in `example-signing.key` and its matching, independently trusted public key in `example-signing.pub`. These examples use the default v2 proof format. Verify the proof before reading its authenticated authorization record; `envelope_id` is not an outer-envelope field. Evaluation and proof verification do not execute the proposed action.
+
 ```js
-import { govern } from "@vellacognitive/vella-sdk";
+import { govern, verifyProofV2 } from "@vellacognitive/vella-sdk";
 import fs from "node:fs";
 
 const signingKey = fs.readFileSync("./example-signing.key", "utf8");
+const publicKey = fs.readFileSync("./example-signing.pub", "utf8");
 
 const result = govern({
   intent: "EXECUTE_CHANGE",
@@ -120,13 +123,18 @@ const result = govern({
 });
 
 console.log(result.decision, result.reasonCode);
-console.log(result.proofBundle.envelope_id);
+const verified = verifyProofV2(result.proofBundle, publicKey);
+if (!verified.ok || verified.format !== "v2") {
+  throw new Error("Expected a valid v2 authorization proof");
+}
+console.log(verified.authenticated.envelope_id);
 ```
 
 ```python
-from vella import govern
+from vella import govern, verify_proof_v2
 
 signing_key = open("./example-signing.key", "r", encoding="utf-8").read()
+public_key = open("./example-signing.pub", "r", encoding="utf-8").read()
 
 result = govern(
     intent="EXECUTE_CHANGE",
@@ -135,7 +143,10 @@ result = govern(
 )
 
 print(result["decision"], result["reason_code"])
-print(result["proof_bundle"]["envelope_id"])
+verified = verify_proof_v2(result.get("proof_bundle"), public_key)
+if not verified["ok"] or verified["format"] != "v2":
+    raise ValueError("Expected a valid v2 authorization proof")
+print(verified["authenticated"]["envelope_id"])
 ```
 
 ## Local development
